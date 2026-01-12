@@ -9,7 +9,33 @@ import SakuraNav from "@/components/SakuraNav";
 import { translations, Lang } from "@/lib/data"; 
 import { getAllPosts, getPostsByTag, getSectionContent } from "@/lib/actions"; 
 
-// ... (Giữ nguyên các Type Definition) ...
+// --- DỮ LIỆU TÊN ---
+const MY_NAMES = {
+    vi: "Vũ Trí Dũng",
+    en: "David Miller",
+    jp: "明菜青い" 
+};
+
+// --- DỮ LIỆU THƠ LOADING (Mỗi ngôn ngữ 1 dòng) ---
+const LOADING_POEMS = {
+    en: [
+        "Crafting digital dreams...",
+        "The cherry blossoms fall, code stands tall...",
+        "Patience is the companion of wisdom..."
+    ],
+    vi: [
+        "Dệt mộng kỹ thuật số...",
+        "Cánh hoa tàn, nhưng hồn hoa vẫn nở...",
+        "Đợi một chút, mùa xuân đang về..."
+    ],
+    jp: [
+        "デジタルな夢を紡ぐ...",
+        "桜散る、コードに残る、夢の跡...",
+        "待てば海路の日和あり..."
+    ]
+};
+
+// --- TYPES ---
 type Post = { id: string; title: string; images: string; createdAt: Date | string; tag?: string; language?: string; content?: string; };
 type SectionData = { contentEn: string; contentVi: string; contentJp: string; };
 type SectionBox = { id: string; title: string; items: { label: string; value: string }[]; };
@@ -20,8 +46,11 @@ interface ExpGroup { id: string; title: string; items: ExpItem[]; }
 export default function SakuraHome() {
   const [currentLang, setCurrentLang] = useState<Lang>("en");
   const [isLoading, setIsLoading] = useState(true);
+  
+  // State lưu 3 câu thơ cho 3 ngôn ngữ
+  const [loadingQuotes, setLoadingQuotes] = useState({ en: "", vi: "", jp: "" });
 
-  // Data States... (Giữ nguyên)
+  // Data States
   const [dbUniProjects, setDbUniProjects] = useState<Post[]>([]);
   const [dbPersonalProjects, setDbPersonalProjects] = useState<Post[]>([]);
   const [dbItEvents, setDbItEvents] = useState<Post[]>([]);
@@ -34,15 +63,27 @@ export default function SakuraHome() {
 
   const t = translations[currentLang]; 
 
-  // [CẬP NHẬT] Logic Font chữ theo ngôn ngữ
-  const getFontFamily = () => {
-      if (currentLang === 'vi') return "'Noto Serif', serif";      // Tiếng Việt
-      if (currentLang === 'jp') return "'Noto Serif JP', serif";   // Tiếng Nhật
-      return "'Noto Sans', sans-serif";                            // Tiếng Anh (Mặc định)
+  // --- HÀM ĐỔI NGÔN NGỮ CÓ LƯU VÀO BỘ NHỚ ---
+  const handleSetLanguage = (lang: Lang) => {
+      setCurrentLang(lang);
+      localStorage.setItem("sakura_lang", lang); // Lưu lại lựa chọn
   };
 
   useEffect(() => {
-    // ... (Giữ nguyên phần fetch data) ...
+    // 1. Kiểm tra ngôn ngữ đã lưu trong LocalStorage khi mới vào
+    const savedLang = localStorage.getItem("sakura_lang") as Lang;
+    if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) {
+        setCurrentLang(savedLang);
+    }
+
+    // 2. Random 3 câu thơ cho màn hình loading
+    setLoadingQuotes({
+        en: LOADING_POEMS.en[Math.floor(Math.random() * LOADING_POEMS.en.length)],
+        vi: LOADING_POEMS.vi[Math.floor(Math.random() * LOADING_POEMS.vi.length)],
+        jp: LOADING_POEMS.jp[Math.floor(Math.random() * LOADING_POEMS.jp.length)]
+    });
+
+    // 3. Fetch Data
     Promise.all([
         getPostsByTag("uni_projects").then(d => setDbUniProjects(d as unknown as Post[])),
         getPostsByTag("personal_projects").then(d => setDbPersonalProjects(d as unknown as Post[])),
@@ -61,7 +102,9 @@ export default function SakuraHome() {
             setDynamicSections(secs);
             if (secs.global_config) try { setGlobalConfig(JSON.parse(secs.global_config.contentEn)); } catch {}
         })
-    ]).finally(() => setTimeout(() => setIsLoading(false), 500));
+    ]).finally(() => {
+        setTimeout(() => setIsLoading(false), 2000); // Tăng thời gian loading lên 2s để kịp đọc thơ
+    });
   }, []);
 
   const getTxt = (key: string) => { const d = dynamicSections[key]; if(!d) return null; return (currentLang==='en'?d.contentEn:(currentLang==='vi'?d.contentVi:d.contentJp)) || null; };
@@ -72,8 +115,14 @@ export default function SakuraHome() {
       return d || { fullName: "Vu Tri Dung", nickName1: "David Miller", nickName2: "Akina Aoi", avatarUrl: "/pictures/VuTriDung.jpg", greeting: "Hi, I am", description: "Loading...", typewriter: "[]" };
   })();
   
-  // [CẬP NHẬT] Sử dụng ảnh khung Sakura mới cho Avatar lớn
-  const avatarSrc = "/pictures/sakura_avatar.png"; 
+  const currentMainName = MY_NAMES[currentLang]; 
+  const subNames = [
+      { lang: 'vi', label: 'VN', val: MY_NAMES.vi },
+      { lang: 'en', label: 'GB', val: MY_NAMES.en },
+      { lang: 'jp', label: 'JP', val: MY_NAMES.jp }
+  ].filter(n => n.val !== currentMainName);
+
+  const avatarSrc = (hero.avatarUrl && hero.avatarUrl.trim() !== "") ? hero.avatarUrl : "/pictures/VuTriDung.jpg";
 
   const getCover = (json: string) => { 
       try { const arr = JSON.parse(json); return (arr.length > 0 && arr[0]) ? arr[0] : "https://placehold.co/600x400/ffc0cb/ffffff?text=Sakura"; } catch { return "https://placehold.co/600x400/ffc0cb/ffffff?text=Sakura"; } 
@@ -83,15 +132,43 @@ export default function SakuraHome() {
   const contactBoxes = getJson<SectionBox[]>('contact');
   const experienceData = getJson<ExpGroup[]>('experience');
 
-  return (
-    // [CẬP NHẬT] Áp dụng Font chữ động vào thẻ Main
-    <main style={{ fontFamily: getFontFamily() }}>
-        <SakuraFalling />
-        <SakuraNav t={t} currentLang={currentLang} setCurrentLang={setCurrentLang} resumeUrl={globalConfig?.resumeUrl} />
+  // Logic Font chữ
+  const getFontFamily = (lang: string) => {
+      if (lang === 'vi') return "'Noto Serif', serif";
+      if (lang === 'jp') return "'Noto Serif JP', serif";
+      return "'Noto Sans', sans-serif";
+  };
 
+  return (
+    <main style={{ fontFamily: getFontFamily(currentLang) }}>
+        <SakuraFalling />
+        {/* Truyền hàm handleSetLanguage thay vì setCurrentLang thuần túy */}
+        <SakuraNav t={t} currentLang={currentLang} setCurrentLang={handleSetLanguage} resumeUrl={globalConfig?.resumeUrl} />
+
+        {/* --- MÀN HÌNH LOADING 3 NGÔN NGỮ --- */}
         {isLoading ? (
-            <div style={{height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#ff69b4', fontWeight: 'bold', fontSize: '1.5rem'}}>
-                🌸 LOADING...
+            <div style={{
+                position: 'fixed', inset: 0, zIndex: 9999,
+                background: '#fff0f5',
+                display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+                textAlign: 'center', padding: '20px'
+            }}>
+                <div style={{fontSize: '4rem', animation: 'spin-slow 3s linear infinite', marginBottom: '30px'}}>🌸</div>
+                
+                {/* 3 Câu thơ hiện cùng lúc */}
+                <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
+                    <h2 style={{fontSize: '1.2rem', color: '#5d4037', fontFamily: "'Noto Sans', sans-serif", fontStyle: 'italic'}}>
+                        &quot;{loadingQuotes.en}&quot;
+                    </h2>
+                    <h2 style={{fontSize: '1.2rem', color: '#ff69b4', fontFamily: "'Noto Serif', serif", fontStyle: 'italic', fontWeight: 'bold'}}>
+                        &quot;{loadingQuotes.vi}&quot;
+                    </h2>
+                    <h2 style={{fontSize: '1.4rem', color: '#8d6e63', fontFamily: "'Noto Serif JP', serif"}}>
+                        {loadingQuotes.jp}
+                    </h2>
+                </div>
+                
+                <p style={{marginTop: '40px', color: '#ff69b4', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '3px', animation: 'pulse 1s infinite'}}>INITIALIZING...</p>
             </div>
         ) : (
             <div>
@@ -99,10 +176,16 @@ export default function SakuraHome() {
                 <section id="home" className="hero-section">
                     <div className="hero-text">
                         <span className="hero-greeting">{hero.greeting}</span>
-                        <h1 className="hero-name">{hero.fullName}</h1>
+                        <h1 className="hero-name" style={{fontFamily: getFontFamily(currentLang)}}>
+                            {currentMainName}
+                        </h1>
                         <div className="hero-names-box">
-                            <span className="hero-badge">🇬🇧 {hero.nickName1}</span>
-                            <span className="hero-badge">🇯🇵 {hero.nickName2}</span>
+                            {subNames.map((sub, idx) => (
+                                <span key={idx} className="hero-badge">
+                                    <strong style={{color: '#ff69b4', marginRight: '5px'}}>{sub.label}</strong> 
+                                    {sub.val}
+                                </span>
+                            ))}
                         </div>
                         {globalConfig?.isOpenForWork && (
                             <div style={{color: '#2e7d32', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '5px'}}>
@@ -116,29 +199,19 @@ export default function SakuraHome() {
                             <a href="#contact" className="btn-big btn-white">{t.btn_contact}</a>
                         </div>
                     </div>
+                    
                     <div className="hero-image-container">
-                        {/* Lớp 1: Nền hồng */}
                         <div className="blob-bg"></div>
                         
-                        {/* Lớp 2: Ảnh thật (VuTriDung.jpg) */}
-                        <img 
-                            src="/pictures/VuTriDung.jpg" 
-                            alt="Real Avatar" 
-                            className="avatar-real" 
-                        />
-
-                        {/* Lớp 3: Khung Sakura đè lên (sakura_avatar.png) */}
-                        <img 
-                            src="/pictures/sakura_avatar.png" 
-                            alt="Sakura Frame" 
-                            className="avatar-frame-overlay" 
-                        />
+                        {/* Ảnh thật bên dưới - Đã fix CSS thành hình tròn */}
+                        <img src="/pictures/VuTriDung.jpg" alt="Real Face" className="avatar-real" />
+                        
+                        {/* Khung Sakura bên trên */}
+                        <img src="/pictures/sakura_avatar.png" alt="Frame" className="avatar-frame-overlay" />
                     </div>
                 </section>
 
                 <div style={{maxWidth: '1200px', margin: '0 auto', padding: '0 20px'}}>
-                    
-                    {/* Các section bên dưới sử dụng class 'glass-box' từ globals.css để nổi bật trên nền ảnh */}
                     
                     {/* 01. ABOUT ME */}
                     <section id="about" style={{padding: '80px 0', textAlign: 'center', scrollMarginTop: '100px'}}>
@@ -165,11 +238,7 @@ export default function SakuraHome() {
                             ))}
                         </div>
                     </section>
-                    
-                    {/* ... (Các phần Certificates, Career, Skills, Projects... bạn giữ nguyên code cũ, 
-                    chỉ cần lưu ý các div bao ngoài nên thêm class="glass-box" hoặc background trắng mờ 
-                    để dễ đọc chữ trên hình nền mới) ... */}
-                    
+
                     {/* 03. CERTIFICATES */}
                     <section id="certificates" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <h2 className="section-title"><span>✿ {t.sec_cert} ✿</span></h2>
@@ -183,7 +252,6 @@ export default function SakuraHome() {
                             )) : <div style={{textAlign: 'center', width: '100%'}}>No Certificates Found</div>}
                         </div>
                         
-                         {/* Tech Certs */}
                         <h3 style={{fontSize: '1.5rem', marginBottom: '20px', color: '#4a3b32', textAlign: 'center', fontWeight: 'bold'}}>❖ {t.cat_tech}</h3>
                         <div className="grid-3" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
                             {dbTechCerts.length > 0 ? dbTechCerts.map(p => (
