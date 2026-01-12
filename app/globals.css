@@ -1,0 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&family=Quicksand:wght@500;700&display=swap');
+
+:root {
+  --bg-pink: #fff0f5;       /* Nền hồng phấn */
+  --primary: #ff69b4;       /* Màu hồng đậm (Chữ nhấn) */
+  --text-main: #5d4037;     /* Màu nâu đất (Chữ chính) */
+  --text-light: #8d6e63;    /* Màu nâu nhạt (Chữ phụ) */
+  --glass: rgba(255, 255, 255, 0.7); /* Hiệu ứng kính */
+  --shadow: 0 8px 32px rgba(255, 105, 180, 0.15); /* Bóng hồng */
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background-color: var(--bg-pink);
+  color: var(--text-main);
+  font-family: 'Quicksand', sans-serif; /* Font chữ tròn trịa */
+  overflow-x: hidden;
+}
+
+a { text-decoration: none; color: inherit; transition: 0.3s; }
+ul { list-style: none; }
+
+/* --- 🌸 NAVBAR (THANH MENU) --- */
+.navbar {
+  position: fixed; top: 0; left: 0; width: 100%; height: 80px;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 50px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px); /* Mờ nền */
+  border-bottom: 2px solid rgba(255, 192, 203, 0.5);
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Phần bên trái: Avatar nhỏ + Tên */
+.nav-left { display: flex; align-items: center; gap: 15px; width: 250px; }
+.nav-logo-img { 
+  width: 45px; height: 45px; border-radius: 50%; 
+  border: 2px solid var(--primary); overflow: hidden; 
+}
+.nav-logo-text h1 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); line-height: 1; }
+.nav-logo-text span { font-size: 0.75rem; color: var(--primary); font-weight: 600; letter-spacing: 1px; }
+
+/* Phần giữa: Menu Links */
+.nav-center { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.nav-row { display: flex; gap: 20px; }
+.nav-link { 
+  font-size: 0.85rem; font-weight: 700; color: var(--text-light); 
+  text-transform: uppercase; padding: 2px 8px; border-radius: 5px;
+}
+.nav-link:hover { color: var(--primary); background: rgba(255, 105, 180, 0.1); }
+
+/* Phần phải: Nút ngôn ngữ + CV */
+.nav-right { display: flex; gap: 10px; width: 250px; justify-content: flex-end; align-items: center; }
+.btn-lang { 
+  border: 1px solid #ffc1e3; background: white; padding: 5px 10px; 
+  border-radius: 8px; font-size: 0.8rem; font-weight: bold; color: var(--text-light); cursor: pointer; 
+}
+.btn-lang.active { background: var(--primary); color: white; border-color: var(--primary); }
+.btn-cv { 
+  background: var(--primary); color: white; padding: 6px 18px; 
+  border-radius: 20px; font-weight: bold; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(255, 105, 180, 0.4); 
+}
+.btn-cv:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 105, 180, 0.6); }
+
+/* --- 🌸 HERO SECTION (TRANG CHỦ) --- */
+.hero-section {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 100px 10% 50px; gap: 60px;
+  background: radial-gradient(circle at top right, #ffe6ee, transparent 60%);
+}
+
+.hero-text { flex: 1; max-width: 600px; }
+.hero-greeting { 
+  display: inline-block; background: white; padding: 6px 16px; 
+  border-radius: 20px; color: var(--primary); font-weight: bold; 
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;
+}
+.hero-name { font-size: 4rem; font-weight: 800; color: var(--text-main); margin-bottom: 10px; line-height: 1.1; }
+.hero-names-box { display: flex; gap: 15px; margin-bottom: 25px; }
+.hero-badge { background: rgba(255,255,255,0.6); border: 1px solid #ffc1e3; padding: 5px 15px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; color: var(--text-light); }
+
+.hero-desc { font-size: 1.1rem; line-height: 1.8; color: var(--text-main); margin-bottom: 30px; opacity: 0.9; }
+
+.hero-btns { display: flex; gap: 15px; }
+.btn-big { padding: 12px 30px; border-radius: 30px; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; transition: 0.3s; }
+.btn-pink { background: var(--primary); color: white; box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4); }
+.btn-pink:hover { transform: translateY(-3px); background: #ff47a0; }
+.btn-white { background: white; color: var(--primary); border: 2px solid #ffc1e3; }
+.btn-white:hover { border-color: var(--primary); background: #fff0f5; }
+
+/* --- 🌸 AVATAR HERO (FIX LỖI MẤT HÌNH) --- */
+.hero-image-container {
+  position: relative; width: 400px; height: 400px; 
+  display: flex; justify-content: center; align-items: center;
+}
+.blob-bg {
+  position: absolute; width: 100%; height: 100%;
+  background: #ffc1e3; border-radius: 50%; filter: blur(50px);
+  opacity: 0.6; z-index: 0; animation: float 6s infinite ease-in-out;
+}
+.avatar-frame {
+  width: 360px; height: 360px; border-radius: 50%;
+  border: 8px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  overflow: hidden; position: relative; z-index: 1; background: white; /* Thêm nền trắng để tránh trong suốt */
+}
+.avatar-img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Animation */
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+@media (max-width: 768px) {
+  .navbar { padding: 10px 20px; height: auto; flex-direction: column; gap: 15px; }
+  .nav-left, .nav-right { width: 100%; justify-content: center; }
+  .hero-section { flex-direction: column-reverse; padding-top: 140px; text-align: center; }
+  .hero-names-box, .hero-btns { justify-content: center; }
+  .hero-image-container { width: 300px; height: 300px; }
+  .avatar-frame { width: 280px; height: 280px; }
+}
