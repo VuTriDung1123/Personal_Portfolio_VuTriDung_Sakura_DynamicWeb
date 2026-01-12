@@ -9,7 +9,7 @@ import SakuraNav from "@/components/SakuraNav";
 import { translations, Lang } from "@/lib/data"; 
 import { getAllPosts, getPostsByTag, getSectionContent } from "@/lib/actions"; 
 
-// --- TYPES (Giữ nguyên) ---
+// --- TYPES ---
 type Post = { id: string; title: string; images: string; createdAt: Date | string; tag?: string; language?: string; content?: string; };
 type SectionData = { contentEn: string; contentVi: string; contentJp: string; };
 type SectionBox = { id: string; title: string; items: { label: string; value: string }[]; };
@@ -65,7 +65,6 @@ export default function SakuraHome() {
       return d || { fullName: "Vu Tri Dung", nickName1: "David Miller", nickName2: "Akina Aoi", avatarUrl: "/pictures/VuTriDung.jpg", greeting: "Hi, I am", description: "Loading...", typewriter: "[]" };
   })();
   
-  // Logic lấy ảnh avatar an toàn
   const avatarSrc = (hero.avatarUrl && hero.avatarUrl.trim() !== "") ? hero.avatarUrl : "/pictures/VuTriDung.jpg";
 
   const getCover = (json: string) => { 
@@ -87,7 +86,7 @@ export default function SakuraHome() {
             </div>
         ) : (
             <div>
-                {/* HERO SECTION */}
+                {/* 00. HERO SECTION (Trang chủ) */}
                 <section id="home" className="hero-section">
                     <div className="hero-text">
                         <span className="hero-greeting">{hero.greeting}</span>
@@ -108,30 +107,28 @@ export default function SakuraHome() {
                             <a href="#contact" className="btn-big btn-white">{t.btn_contact}</a>
                         </div>
                     </div>
-                    
                     <div className="hero-image-container">
                         <div className="blob-bg"></div>
                         <div className="avatar-frame">
-                            {/* Dùng thẻ img thường để chắc chắn hiện */}
                             <img src={avatarSrc} alt="Hero Avatar" className="avatar-img" />
                         </div>
                     </div>
                 </section>
 
-                {/* Các section khác tôi giữ đơn giản để code không quá dài, style đã có trong globals.css */}
                 <div style={{maxWidth: '1200px', margin: '0 auto', padding: '0 20px'}}>
                     
-                    {/* ABOUT */}
-                    <section id="about" style={{padding: '80px 0', textAlign: 'center'}}>
-                        <h2 style={{fontSize: '2.5rem', color: '#ff69b4', marginBottom: '30px'}}>✿ {t.sec_about} ✿</h2>
+                    {/* 01. ABOUT ME */}
+                    <section id="about" style={{padding: '80px 0', textAlign: 'center', scrollMarginTop: '100px'}}>
+                        {/* Đã xóa số '01.' cứng, chỉ giữ lại ✿ và nội dung từ data */}
+                        <h2 className="section-title"><span>✿ {t.sec_about} ✿</span></h2>
                         <div style={{background: 'rgba(255,255,255,0.7)', padding: '40px', borderRadius: '30px', border: '1px solid white'}}>
                             <p style={{whiteSpace: 'pre-line', lineHeight: '1.8'}}>{getTxt("about")}</p>
                         </div>
                     </section>
 
-                    {/* PROFILE */}
-                    <section id="profile" style={{padding: '80px 0'}}>
-                        <h2 style={{textAlign: 'center', fontSize: '2.5rem', color: '#ff69b4', marginBottom: '40px'}}>✿ {t.sec_profile} ✿</h2>
+                    {/* 02. PROFILE */}
+                    <section id="profile" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <h2 className="section-title"><span>✿ {t.sec_profile} ✿</span></h2>
                         <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px'}}>
                             {profileBoxes?.map(box => (
                                 <div key={box.id} style={{background: 'white', padding: '30px', borderRadius: '20px', boxShadow: '0 5px 15px rgba(255,105,180,0.1)'}}>
@@ -147,9 +144,92 @@ export default function SakuraHome() {
                         </div>
                     </section>
 
-                    {/* PROJECTS */}
-                    <section id="projects" style={{padding: '80px 0'}}>
-                        <h2 style={{textAlign: 'center', fontSize: '2.5rem', color: '#ff69b4', marginBottom: '40px'}}>✿ {t.sec_proj} ✿</h2>
+                    {/* 03. CERTIFICATES */}
+                    <section id="certificates" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <h2 className="section-title"><span>✿ {t.sec_cert} ✿</span></h2>
+                        
+                        {/* Language Certs */}
+                        <h3 style={{fontSize: '1.5rem', marginBottom: '20px', color: '#8d6e63', textAlign: 'center'}}>❖ {t.cat_lang}</h3>
+                        <div className="grid-3" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px', marginBottom: '50px'}}>
+                            {dbLangCerts.length > 0 ? dbLangCerts.map(p => (
+                                <Link key={p.id} href={`/blog/${p.id}`} className="project-card" style={{background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', display: 'block'}}>
+                                    <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                    <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                </Link>
+                            )) : <div style={{textAlign: 'center', width: '100%'}}>No Certificates Found</div>}
+                        </div>
+
+                        {/* Tech Certs */}
+                        <h3 style={{fontSize: '1.5rem', marginBottom: '20px', color: '#8d6e63', textAlign: 'center'}}>❖ {t.cat_tech}</h3>
+                        <div className="grid-3" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
+                            {dbTechCerts.length > 0 ? dbTechCerts.map(p => (
+                                <Link key={p.id} href={`/blog/${p.id}`} className="project-card" style={{background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', display: 'block'}}>
+                                    <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                    <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                </Link>
+                            )) : <div style={{textAlign: 'center', width: '100%'}}>No Certificates Found</div>}
+                        </div>
+                    </section>
+
+                    {/* 04. CAREER */}
+                    <section id="career" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <h2 className="section-title"><span>✿ {t.sec_career} ✿</span></h2>
+                        <div style={{background: 'white', padding: '40px', borderRadius: '30px', borderLeft: '10px solid #ff69b4', boxShadow: '0 5px 15px rgba(0,0,0,0.05)'}}>
+                            <p style={{whiteSpace: 'pre-line', fontStyle: 'italic', fontSize: '1.2rem', lineHeight: '1.8', color: '#5d4037'}}>&quot;{getTxt("career")}&quot;</p>
+                        </div>
+                    </section>
+
+                    {/* 05. ACHIEVEMENTS */}
+                    <section id="achievements" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <h2 className="section-title"><span>✿ {t.sec_achievements} ✿</span></h2>
+                        <p style={{textAlign: 'center', marginBottom: 30, color: '#8d6e63'}}>{t.achievements_desc}</p>
+                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
+                            {dbAchievements.map(p => (
+                                <Link key={p.id} href={`/blog/${p.id}`} className="project-card" style={{background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', display: 'block'}}>
+                                    <div style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                    <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* 06. SKILLS */}
+                    <section id="skills" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <h2 className="section-title"><span>✿ {t.sec_skills} ✿</span></h2>
+                        <div style={{background: 'rgba(255,255,255,0.7)', padding: '40px', borderRadius: '30px', textAlign: 'center'}}>
+                            <p style={{whiteSpace: 'pre-line', fontSize: '1.2rem', lineHeight: '2'}}>{getTxt("skills")}</p>
+                        </div>
+                    </section>
+
+                    {/* 07. EXPERIENCE */}
+                    <section id="experience" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <h2 className="section-title"><span>✿ {t.sec_exp} ✿</span></h2>
+                        <div style={{borderLeft: '2px solid #ffb7b2', paddingLeft: '30px'}}>
+                            {experienceData?.map((group) => (
+                                <div key={group.id} style={{marginBottom: 50}}>
+                                    <h3 style={{color: '#ff69b4', marginBottom: 20, fontSize: '1.5rem'}}>{group.title}</h3>
+                                    {group.items.map(item => (
+                                        <div key={item.id} style={{marginBottom: '40px', position: 'relative'}}>
+                                            <div style={{position: 'absolute', left: '-36px', top: '0', width: '14px', height: '14px', background: '#ff69b4', borderRadius: '50%', border: '3px solid white', boxShadow: '0 0 0 2px #ffb7b2'}}></div>
+                                            <div style={{background: 'white', padding: '25px', borderRadius: '20px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)'}}>
+                                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap'}}>
+                                                    <span style={{fontSize: '1.2rem', fontWeight: 'bold', color: '#5d4037'}}>{item.role}</span>
+                                                    <span style={{background: '#fff0f5', color: '#ff69b4', padding: '5px 15px', borderRadius: '15px', fontWeight: 'bold', fontSize: '0.9rem'}}>{item.time}</span>
+                                                </div>
+                                                <ul style={{paddingLeft: 20}}>
+                                                    {item.details.map((l, i) => <li key={i} style={{listStyle: 'disc', fontSize: '0.95rem', marginBottom: '5px', color: '#666'}}>{l}</li>)}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* 08. PROJECTS */}
+                    <section id="projects" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <h2 className="section-title"><span>✿ {t.sec_proj} ✿</span></h2>
                         {[
                             { title: t.cat_uni_proj, data: dbUniProjects },
                             { title: t.cat_personal_proj, data: dbPersonalProjects }
@@ -173,8 +253,41 @@ export default function SakuraHome() {
                         ))}
                     </section>
 
-                    {/* CONTACT */}
-                    <section id="contact" style={{padding: '80px 0', marginBottom: '50px'}}>
+                    {/* 09. BLOG PREVIEW */}
+                    <section id="blog" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40}}>
+                            <h2 className="section-title" style={{marginBottom: 0, width: 'auto'}}>✿ {t.nav_blog} ✿</h2>
+                            <Link href="/blog" style={{background: 'white', border: '2px solid #ffb7b2', padding: '10px 20px', borderRadius: '30px', color: '#ff69b4', fontWeight: 'bold'}}>View All →</Link>
+                        </div>
+                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
+                            {latestPosts.map(p => (
+                                <Link key={p.id} href={`/blog/${p.id}`} style={{background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', display: 'block'}}>
+                                    <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                    <div style={{padding: '20px'}}>
+                                        <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h4>
+                                        <span style={{fontSize: '0.8rem', color: '#aaa'}}>{new Date(p.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* 10. GALLERY */}
+                    <section id="gallery" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <h2 className="section-title"><span>✿ 10. GALLERY ✿</span></h2>
+                        <h3 style={{fontSize: '1.2rem', marginBottom: 20, color: '#8d6e63'}}>✿ {t.cat_it_event}</h3>
+                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
+                            {dbItEvents.map(p => (
+                                <Link key={p.id} href={`/blog/${p.id}`} style={{background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', display: 'block'}}>
+                                    <div style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                    <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* 11. CONTACT */}
+                    <section id="contact" style={{padding: '80px 0', marginBottom: '50px', scrollMarginTop: '100px'}}>
                         <div style={{background: 'rgba(255,255,255,0.8)', padding: '50px', borderRadius: '30px', textAlign: 'center'}}>
                             <h2 style={{fontSize: '2.5rem', color: '#ff69b4', marginBottom: '20px'}}>{t.sec_contact || "Contact"}</h2>
                             <p style={{fontSize: '1.2rem', color: '#8d6e63', marginBottom: '30px'}}>Let&apos;s create something beautiful together! ✨</p>
