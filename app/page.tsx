@@ -16,7 +16,7 @@ const MY_NAMES = {
     jp: "明菜青い" 
 };
 
-// --- DỮ LIỆU THƠ LOADING (Mỗi ngôn ngữ 1 dòng) ---
+// --- DỮ LIỆU THƠ LOADING ---
 const LOADING_POEMS = {
     en: [
         "Crafting digital dreams...",
@@ -43,11 +43,17 @@ type HeroData = { fullName: string; nickName1: string; nickName2: string; avatar
 interface ExpItem { id: string; time: string; role: string; details: string[]; }
 interface ExpGroup { id: string; title: string; items: ExpItem[]; }
 
+// --- [FIX 1] ĐƯA COMPONENT NÀY RA NGOÀI (Không để trong SakuraHome) ---
+const EmptyState = ({ message, lang }: { message?: string, lang?: Lang }) => (
+    <div className="glass-box" style={{textAlign: 'center', padding: '40px', color: '#8d6e63', fontStyle: 'italic', background: 'rgba(255,255,255,0.6)'}}>
+        <div style={{fontSize: '2rem', marginBottom: '10px'}}>🍃</div>
+        <p>{message || (lang === 'vi' ? "Đang cập nhật dữ liệu..." : (lang === 'jp' ? "データ更新中..." : "Updating data..."))}</p>
+    </div>
+);
+
 export default function SakuraHome() {
   const [currentLang, setCurrentLang] = useState<Lang>("en");
   const [isLoading, setIsLoading] = useState(true);
-  
-  // State lưu 3 câu thơ cho 3 ngôn ngữ
   const [loadingQuotes, setLoadingQuotes] = useState({ en: "", vi: "", jp: "" });
 
   // Data States
@@ -63,27 +69,27 @@ export default function SakuraHome() {
 
   const t = translations[currentLang]; 
 
-  // --- HÀM ĐỔI NGÔN NGỮ CÓ LƯU VÀO BỘ NHỚ ---
+  // Hàm đổi ngôn ngữ & Lưu lại
   const handleSetLanguage = (lang: Lang) => {
       setCurrentLang(lang);
-      localStorage.setItem("sakura_lang", lang); // Lưu lại lựa chọn
+      localStorage.setItem("sakura_lang", lang);
   };
 
+  // --- [FIX 2] TÁCH RIÊNG USE EFFECT ĐỂ TRÁNH LỖI SETSTATE ---
   useEffect(() => {
-    // 1. Kiểm tra ngôn ngữ đã lưu trong LocalStorage khi mới vào
+    // Chỉ chạy 1 lần khi web vừa mở lên (Mount)
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
     if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) {
         setCurrentLang(savedLang);
     }
 
-    // 2. Random 3 câu thơ cho màn hình loading
     setLoadingQuotes({
         en: LOADING_POEMS.en[Math.floor(Math.random() * LOADING_POEMS.en.length)],
         vi: LOADING_POEMS.vi[Math.floor(Math.random() * LOADING_POEMS.vi.length)],
         jp: LOADING_POEMS.jp[Math.floor(Math.random() * LOADING_POEMS.jp.length)]
     });
 
-    // 3. Fetch Data
+    // Gọi API lấy dữ liệu
     Promise.all([
         getPostsByTag("uni_projects").then(d => setDbUniProjects(d as unknown as Post[])),
         getPostsByTag("personal_projects").then(d => setDbPersonalProjects(d as unknown as Post[])),
@@ -103,10 +109,11 @@ export default function SakuraHome() {
             if (secs.global_config) try { setGlobalConfig(JSON.parse(secs.global_config.contentEn)); } catch {}
         })
     ]).finally(() => {
-        setTimeout(() => setIsLoading(false), 2000); // Tăng thời gian loading lên 2s để kịp đọc thơ
+        setTimeout(() => setIsLoading(false), 2000);
     });
-  }, []);
+  }, []); // [] Rỗng -> Đảm bảo chỉ chạy 1 lần
 
+  // Helpers
   const getTxt = (key: string) => { const d = dynamicSections[key]; if(!d) return null; return (currentLang==='en'?d.contentEn:(currentLang==='vi'?d.contentVi:d.contentJp)) || null; };
   const getJson = <T,>(key: string): T | null => { const d = dynamicSections[key]; if(!d) return null; try { return JSON.parse((currentLang==='en'?d.contentEn:(currentLang==='vi'?d.contentVi:d.contentJp))); } catch { return null; } };
   
@@ -122,7 +129,7 @@ export default function SakuraHome() {
       { lang: 'jp', label: 'JP', val: MY_NAMES.jp }
   ].filter(n => n.val !== currentMainName);
 
-  const avatarSrc = (hero.avatarUrl && hero.avatarUrl.trim() !== "") ? hero.avatarUrl : "/pictures/VuTriDung.jpg";
+  // [FIX 3] Đã xóa biến avatarSrc thừa thãi gây warning
 
   const getCover = (json: string) => { 
       try { const arr = JSON.parse(json); return (arr.length > 0 && arr[0]) ? arr[0] : "https://placehold.co/600x400/ffc0cb/ffffff?text=Sakura"; } catch { return "https://placehold.co/600x400/ffc0cb/ffffff?text=Sakura"; } 
@@ -132,7 +139,6 @@ export default function SakuraHome() {
   const contactBoxes = getJson<SectionBox[]>('contact');
   const experienceData = getJson<ExpGroup[]>('experience');
 
-  // Logic Font chữ
   const getFontFamily = (lang: string) => {
       if (lang === 'vi') return "'Noto Serif', serif";
       if (lang === 'jp') return "'Noto Serif JP', serif";
@@ -142,32 +148,20 @@ export default function SakuraHome() {
   return (
     <main style={{ fontFamily: getFontFamily(currentLang) }}>
         <SakuraFalling />
-        {/* Truyền hàm handleSetLanguage thay vì setCurrentLang thuần túy */}
         <SakuraNav t={t} currentLang={currentLang} setCurrentLang={handleSetLanguage} resumeUrl={globalConfig?.resumeUrl} />
 
-        {/* --- MÀN HÌNH LOADING 3 NGÔN NGỮ --- */}
         {isLoading ? (
             <div style={{
-                position: 'fixed', inset: 0, zIndex: 9999,
-                background: '#fff0f5',
+                position: 'fixed', inset: 0, zIndex: 9999, background: '#fff0f5',
                 display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
                 textAlign: 'center', padding: '20px'
             }}>
                 <div style={{fontSize: '4rem', animation: 'spin-slow 3s linear infinite', marginBottom: '30px'}}>🌸</div>
-                
-                {/* 3 Câu thơ hiện cùng lúc */}
                 <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
-                    <h2 style={{fontSize: '1.2rem', color: '#5d4037', fontFamily: "'Noto Sans', sans-serif", fontStyle: 'italic'}}>
-                        &quot;{loadingQuotes.en}&quot;
-                    </h2>
-                    <h2 style={{fontSize: '1.2rem', color: '#ff69b4', fontFamily: "'Noto Serif', serif", fontStyle: 'italic', fontWeight: 'bold'}}>
-                        &quot;{loadingQuotes.vi}&quot;
-                    </h2>
-                    <h2 style={{fontSize: '1.4rem', color: '#8d6e63', fontFamily: "'Noto Serif JP', serif"}}>
-                        {loadingQuotes.jp}
-                    </h2>
+                    <h2 style={{fontSize: '1.2rem', color: '#5d4037', fontFamily: "'Noto Sans', sans-serif", fontStyle: 'italic'}}>&quot;{loadingQuotes.en}&quot;</h2>
+                    <h2 style={{fontSize: '1.2rem', color: '#ff69b4', fontFamily: "'Noto Serif', serif", fontStyle: 'italic', fontWeight: 'bold'}}>&quot;{loadingQuotes.vi}&quot;</h2>
+                    <h2 style={{fontSize: '1.4rem', color: '#8d6e63', fontFamily: "'Noto Serif JP', serif"}}>{loadingQuotes.jp}</h2>
                 </div>
-                
                 <p style={{marginTop: '40px', color: '#ff69b4', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '3px', animation: 'pulse 1s infinite'}}>INITIALIZING...</p>
             </div>
         ) : (
@@ -176,15 +170,10 @@ export default function SakuraHome() {
                 <section id="home" className="hero-section">
                     <div className="hero-text">
                         <span className="hero-greeting">{hero.greeting}</span>
-                        <h1 className="hero-name" style={{fontFamily: getFontFamily(currentLang)}}>
-                            {currentMainName}
-                        </h1>
+                        <h1 className="hero-name" style={{fontFamily: getFontFamily(currentLang)}}>{currentMainName}</h1>
                         <div className="hero-names-box">
                             {subNames.map((sub, idx) => (
-                                <span key={idx} className="hero-badge">
-                                    <strong style={{color: '#ff69b4', marginRight: '5px'}}>{sub.label}</strong> 
-                                    {sub.val}
-                                </span>
+                                <span key={idx} className="hero-badge"><strong style={{color: '#ff69b4', marginRight: '5px'}}>{sub.label}</strong>{sub.val}</span>
                             ))}
                         </div>
                         {globalConfig?.isOpenForWork && (
@@ -202,11 +191,7 @@ export default function SakuraHome() {
                     
                     <div className="hero-image-container">
                         <div className="blob-bg"></div>
-                        
-                        {/* Ảnh thật bên dưới - Đã fix CSS thành hình tròn */}
                         <img src="/pictures/VuTriDung.jpg" alt="Real Face" className="avatar-real" />
-                        
-                        {/* Khung Sakura bên trên */}
                         <img src="/pictures/sakura_avatar.png" alt="Frame" className="avatar-frame-overlay" />
                     </div>
                 </section>
@@ -216,27 +201,31 @@ export default function SakuraHome() {
                     {/* 01. ABOUT ME */}
                     <section id="about" style={{padding: '80px 0', textAlign: 'center', scrollMarginTop: '100px'}}>
                         <h2 className="section-title"><span>✿ {t.sec_about} ✿</span></h2>
-                        <div className="glass-box">
-                            <p style={{whiteSpace: 'pre-line', lineHeight: '1.8'}}>{getTxt("about")}</p>
-                        </div>
+                        {getTxt("about") ? (
+                            <div className="glass-box">
+                                <p style={{whiteSpace: 'pre-line', lineHeight: '1.8'}}>{getTxt("about")}</p>
+                            </div>
+                        ) : <EmptyState lang={currentLang} />}
                     </section>
 
                     {/* 02. PROFILE */}
                     <section id="profile" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <h2 className="section-title"><span>✿ {t.sec_profile} ✿</span></h2>
-                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px'}}>
-                            {profileBoxes?.map(box => (
-                                <div key={box.id} className="glass-box" style={{padding: '30px', background: 'rgba(255,255,255,0.9)'}}>
-                                    <h3 style={{color: '#ff69b4', borderBottom: '1px dashed #ffc1e3', paddingBottom: '10px', marginBottom: '15px'}}>{box.title}</h3>
-                                    {box.items.map((it, i) => (
-                                        <div key={i} style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
-                                            <span style={{fontWeight: 'bold', color: '#aaa', fontSize: '0.85rem'}}>{it.label}</span>
-                                            <span style={{fontWeight: 'bold', color: '#5d4037'}}>{it.value}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            ))}
-                        </div>
+                        {profileBoxes && profileBoxes.length > 0 ? (
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px'}}>
+                                {profileBoxes.map(box => (
+                                    <div key={box.id} className="glass-box" style={{padding: '30px', background: 'rgba(255,255,255,0.9)'}}>
+                                        <h3 style={{color: '#ff69b4', borderBottom: '1px dashed #ffc1e3', paddingBottom: '10px', marginBottom: '15px'}}>{box.title}</h3>
+                                        {box.items.map((it, i) => (
+                                            <div key={i} style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+                                                <span style={{fontWeight: 'bold', color: '#aaa', fontSize: '0.85rem'}}>{it.label}</span>
+                                                <span style={{fontWeight: 'bold', color: '#5d4037'}}>{it.value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : <EmptyState lang={currentLang} />}
                     </section>
 
                     {/* 03. CERTIFICATES */}
@@ -249,7 +238,7 @@ export default function SakuraHome() {
                                     <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
                                     <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
                                 </Link>
-                            )) : <div style={{textAlign: 'center', width: '100%'}}>No Certificates Found</div>}
+                            )) : <EmptyState lang={currentLang} message={currentLang === 'vi' ? "Chưa có chứng chỉ 🍃" : (currentLang === 'jp' ? "証明書が見つかりません 🍃" : "No certificates found 🍃")} />}
                         </div>
                         
                         <h3 style={{fontSize: '1.5rem', marginBottom: '20px', color: '#4a3b32', textAlign: 'center', fontWeight: 'bold'}}>❖ {t.cat_tech}</h3>
@@ -259,64 +248,72 @@ export default function SakuraHome() {
                                     <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
                                     <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
                                 </Link>
-                            )) : <div style={{textAlign: 'center', width: '100%'}}>No Certificates Found</div>}
+                            )) : <EmptyState lang={currentLang} message={currentLang === 'vi' ? "Chưa có chứng chỉ 🍃" : (currentLang === 'jp' ? "証明書が見つかりません 🍃" : "No certificates found 🍃")} />}
                         </div>
                     </section>
 
                     {/* 04. CAREER */}
                     <section id="career" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <h2 className="section-title"><span>✿ {t.sec_career} ✿</span></h2>
-                        <div className="glass-box" style={{borderLeft: '10px solid #ff69b4'}}>
-                            <p style={{whiteSpace: 'pre-line', fontStyle: 'italic', fontSize: '1.2rem', lineHeight: '1.8', color: '#5d4037'}}>&quot;{getTxt("career")}&quot;</p>
-                        </div>
+                        {getTxt("career") ? (
+                            <div className="glass-box" style={{borderLeft: '10px solid #ff69b4'}}>
+                                <p style={{whiteSpace: 'pre-line', fontStyle: 'italic', fontSize: '1.2rem', lineHeight: '1.8', color: '#5d4037'}}>&quot;{getTxt("career")}&quot;</p>
+                            </div>
+                        ) : <EmptyState lang={currentLang} />}
                     </section>
 
                     {/* 05. ACHIEVEMENTS */}
                     <section id="achievements" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <h2 className="section-title"><span>✿ {t.sec_achievements} ✿</span></h2>
                         <p style={{textAlign: 'center', marginBottom: 30, color: '#4a3b32', fontWeight: 'bold'}}>{t.achievements_desc}</p>
-                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
-                            {dbAchievements.map(p => (
-                                <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                    <div style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                    <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
-                                </Link>
-                            ))}
-                        </div>
+                        {dbAchievements.length > 0 ? (
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
+                                {dbAchievements.map(p => (
+                                    <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
+                                        <div style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                        <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : <EmptyState lang={currentLang} />}
                     </section>
 
                     {/* 06. SKILLS */}
                     <section id="skills" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <h2 className="section-title"><span>✿ {t.sec_skills} ✿</span></h2>
-                        <div className="glass-box" style={{textAlign: 'center'}}>
-                            <p style={{whiteSpace: 'pre-line', fontSize: '1.2rem', lineHeight: '2'}}>{getTxt("skills")}</p>
-                        </div>
+                        {getTxt("skills") ? (
+                            <div className="glass-box" style={{textAlign: 'center'}}>
+                                <p style={{whiteSpace: 'pre-line', fontSize: '1.2rem', lineHeight: '2'}}>{getTxt("skills")}</p>
+                            </div>
+                        ) : <EmptyState lang={currentLang} />}
                     </section>
 
                     {/* 07. EXPERIENCE */}
                     <section id="experience" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <h2 className="section-title"><span>✿ {t.sec_exp} ✿</span></h2>
-                        <div style={{borderLeft: '2px solid #ffb7b2', paddingLeft: '30px'}}>
-                            {experienceData?.map((group) => (
-                                <div key={group.id} style={{marginBottom: 50}}>
-                                    <h3 style={{color: '#ff69b4', marginBottom: 20, fontSize: '1.5rem', background: 'rgba(255,255,255,0.8)', display: 'inline-block', padding: '5px 15px', borderRadius: '10px'}}>{group.title}</h3>
-                                    {group.items.map(item => (
-                                        <div key={item.id} style={{marginBottom: '40px', position: 'relative'}}>
-                                            <div style={{position: 'absolute', left: '-36px', top: '0', width: '14px', height: '14px', background: '#ff69b4', borderRadius: '50%', border: '3px solid white', boxShadow: '0 0 0 2px #ffb7b2'}}></div>
-                                            <div className="glass-box" style={{padding: '25px', background: 'rgba(255,255,255,0.95)'}}>
-                                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap'}}>
-                                                    <span style={{fontSize: '1.2rem', fontWeight: 'bold', color: '#5d4037'}}>{item.role}</span>
-                                                    <span style={{background: '#fff0f5', color: '#ff69b4', padding: '5px 15px', borderRadius: '15px', fontWeight: 'bold', fontSize: '0.9rem'}}>{item.time}</span>
+                        {experienceData && experienceData.length > 0 ? (
+                            <div style={{borderLeft: '2px solid #ffb7b2', paddingLeft: '30px'}}>
+                                {experienceData.map((group) => (
+                                    <div key={group.id} style={{marginBottom: 50}}>
+                                        <h3 style={{color: '#ff69b4', marginBottom: 20, fontSize: '1.5rem', background: 'rgba(255,255,255,0.8)', display: 'inline-block', padding: '5px 15px', borderRadius: '10px'}}>{group.title}</h3>
+                                        {group.items.map(item => (
+                                            <div key={item.id} style={{marginBottom: '40px', position: 'relative'}}>
+                                                <div style={{position: 'absolute', left: '-36px', top: '0', width: '14px', height: '14px', background: '#ff69b4', borderRadius: '50%', border: '3px solid white', boxShadow: '0 0 0 2px #ffb7b2'}}></div>
+                                                <div className="glass-box" style={{padding: '25px', background: 'rgba(255,255,255,0.95)'}}>
+                                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap'}}>
+                                                        <span style={{fontSize: '1.2rem', fontWeight: 'bold', color: '#5d4037'}}>{item.role}</span>
+                                                        <span style={{background: '#fff0f5', color: '#ff69b4', padding: '5px 15px', borderRadius: '15px', fontWeight: 'bold', fontSize: '0.9rem'}}>{item.time}</span>
+                                                    </div>
+                                                    <ul style={{paddingLeft: 20}}>
+                                                        {item.details.map((l, i) => <li key={i} style={{listStyle: 'disc', fontSize: '0.95rem', marginBottom: '5px', color: '#666'}}>{l}</li>)}
+                                                    </ul>
                                                 </div>
-                                                <ul style={{paddingLeft: 20}}>
-                                                    {item.details.map((l, i) => <li key={i} style={{listStyle: 'disc', fontSize: '0.95rem', marginBottom: '5px', color: '#666'}}>{l}</li>)}
-                                                </ul>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ))}
-                        </div>
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : <EmptyState lang={currentLang} />}
                     </section>
 
                     {/* 08. PROJECTS */}
@@ -328,54 +325,60 @@ export default function SakuraHome() {
                         ].map((cat, idx) => (
                             <div key={idx} style={{marginBottom: '60px'}}>
                                 <h3 style={{fontSize: '1.5rem', color: '#4a3b32', marginBottom: '20px', borderLeft: '5px solid #ff69b4', paddingLeft: '15px', fontWeight: 'bold'}}>{cat.title}</h3>
-                                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
-                                    {cat.data.map(p => (
-                                        <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
-                                            <div style={{height: '200px', overflow: 'hidden'}}>
-                                                <img src={getCover(p.images)} alt={p.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-                                            </div>
-                                            <div style={{padding: '20px'}}>
-                                                <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h4>
-                                                <span style={{fontSize: '0.8rem', color: '#ff69b4', fontWeight: 'bold', textTransform: 'uppercase'}}>View Details →</span>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
+                                {cat.data.length > 0 ? (
+                                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
+                                        {cat.data.map(p => (
+                                            <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
+                                                <div style={{height: '200px', overflow: 'hidden'}}>
+                                                    <img src={getCover(p.images)} alt={p.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                                                </div>
+                                                <div style={{padding: '20px'}}>
+                                                    <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h4>
+                                                    <span style={{fontSize: '0.8rem', color: '#ff69b4', fontWeight: 'bold', textTransform: 'uppercase'}}>View Details →</span>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                ) : <EmptyState lang={currentLang} />}
                             </div>
                         ))}
                     </section>
 
-                    {/* 09. BLOG PREVIEW */}
+                    {/* 09. BLOG */}
                     <section id="blog" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40}}>
                             <h2 className="section-title" style={{marginBottom: 0, width: 'auto'}}><span>✿ {t.nav_blog} ✿</span></h2>
                             <Link href="/blog" style={{background: 'white', border: '2px solid #ffb7b2', padding: '10px 20px', borderRadius: '30px', color: '#ff69b4', fontWeight: 'bold'}}>View All →</Link>
                         </div>
-                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
-                            {latestPosts.map(p => (
-                                <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                    <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                    <div style={{padding: '20px'}}>
-                                        <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h4>
-                                        <span style={{fontSize: '0.8rem', color: '#aaa'}}>{new Date(p.createdAt).toLocaleDateString()}</span>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
+                        {latestPosts.length > 0 ? (
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
+                                {latestPosts.map(p => (
+                                    <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
+                                        <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                        <div style={{padding: '20px'}}>
+                                            <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h4>
+                                            <span style={{fontSize: '0.8rem', color: '#aaa'}}>{new Date(p.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : <EmptyState lang={currentLang} />}
                     </section>
 
                     {/* 10. GALLERY */}
                     <section id="gallery" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <h2 className="section-title"><span>✿ 10. GALLERY ✿</span></h2>
                         <h3 style={{fontSize: '1.2rem', marginBottom: 20, color: '#4a3b32', fontWeight: 'bold'}}>✿ {t.cat_it_event}</h3>
-                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
-                            {dbItEvents.map(p => (
-                                <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                    <div style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                    <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
-                                </Link>
-                            ))}
-                        </div>
+                        {dbItEvents.length > 0 ? (
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
+                                {dbItEvents.map(p => (
+                                    <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
+                                        <div style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                        <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : <EmptyState lang={currentLang} />}
                     </section>
 
                     {/* 11. CONTACT */}
@@ -383,14 +386,16 @@ export default function SakuraHome() {
                         <div className="glass-box" style={{textAlign: 'center'}}>
                             <h2 style={{fontSize: '2.5rem', color: '#ff69b4', marginBottom: '20px'}}>{t.sec_contact || "Contact"}</h2>
                             <p style={{fontSize: '1.2rem', color: '#4a3b32', marginBottom: '30px'}}>Let&apos;s create something beautiful together! ✨</p>
-                            <div style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px'}}>
-                                {contactBoxes?.map(box => box.items.map((it, i) => (
-                                    <div key={i} style={{background: 'white', padding: '15px 30px', borderRadius: '15px', boxShadow: '0 5px 15px rgba(255,105,180,0.15)'}}>
-                                        <span style={{display: 'block', fontSize: '0.75rem', color: '#aaa', fontWeight: 'bold', textTransform: 'uppercase'}}>{it.label}</span>
-                                        <span style={{fontWeight: 'bold', color: '#5d4037'}}>{it.value}</span>
-                                    </div>
-                                )))}
-                            </div>
+                            {contactBoxes && contactBoxes.length > 0 ? (
+                                <div style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px'}}>
+                                    {contactBoxes.map(box => box.items.map((it, i) => (
+                                        <div key={i} style={{background: 'white', padding: '15px 30px', borderRadius: '15px', boxShadow: '0 5px 15px rgba(255,105,180,0.15)'}}>
+                                            <span style={{display: 'block', fontSize: '0.75rem', color: '#aaa', fontWeight: 'bold', textTransform: 'uppercase'}}>{it.label}</span>
+                                            <span style={{fontWeight: 'bold', color: '#5d4037'}}>{it.value}</span>
+                                        </div>
+                                    )))}
+                                </div>
+                            ) : <EmptyState lang={currentLang} />}
                         </div>
                     </section>
 
