@@ -5,18 +5,38 @@ import { Lang } from "@/lib/data";
 
 interface TopNavProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t: any; currentLang: Lang; setCurrentLang: (l: Lang) => void; resumeUrl?: string; 
+  t: any; 
+  currentLang: Lang; 
+  setCurrentLang: (l: Lang) => void; 
+  resumeUrl?: string; 
 }
 
 export default function SakuraNav({ t, currentLang, setCurrentLang, resumeUrl }: TopNavProps) {
-  const navItems = ['home', 'about', 'profile', 'certificates', 'career', 'achievements', 'skills', 'experience', 'projects', 'blog', 'gallery', 'contact'];
+  // Danh sách các mục - Tên này phải trùng khớp với ID bên file page.tsx
+  const navItems = [
+    'home', 'about', 'profile', 'certificates', 
+    'career', 'achievements', 'skills', 'experience', 
+    'projects', 'blog', 'gallery', 'contact'
+  ];
+  
   const row1 = navItems.slice(0, 6);
   const row2 = navItems.slice(6, 12);
 
   const NavLink = ({ item }: { item: string }) => {
+    // Lấy tên hiển thị từ file ngôn ngữ, nếu không có thì viết hoa tên mục
     let label = t[`nav_${item}`] || item.toUpperCase();
-    if(item === 'cert') label = t.nav_cert; if(item === 'exp') label = t.nav_exp; if(item === 'proj') label = t.nav_proj;
-    const href = item === 'home' ? '/' : (item === 'blog' ? '/blog' : `#${item}`);
+    
+    // Xử lý một số từ viết tắt cho đẹp menu
+    if(item === 'certificates') label = t.nav_cert || "CERTIFICATES"; 
+    if(item === 'experience') label = t.nav_exp || "EXPERIENCE"; 
+    if(item === 'projects') label = t.nav_proj || "PROJECTS";
+    
+    // Logic đường dẫn:
+    // - Home: Về đầu trang ('/')
+    // - Blog: Sang trang blog riêng ('/blog')
+    // - Các mục khác: Cuộn xuống ID tương ứng (#about, #certificates...)
+    const href = item === 'home' ? '/' : (item === 'blog' ? '#blog' : `#${item}`);
+    
     return <Link href={href} className="nav-link">{label}</Link>;
   };
 
@@ -25,7 +45,6 @@ export default function SakuraNav({ t, currentLang, setCurrentLang, resumeUrl }:
       {/* TRÁI: Logo */}
       <div className="nav-left">
         <div className="nav-logo-img">
-           {/* Dùng thẻ img thường để tránh lỗi Next/Image nếu config sai */}
            <img src="/pictures/VuTriDung.jpg" alt="Avatar" style={{width:'100%', height:'100%', objectFit:'cover'}} />
         </div>
         <div className="nav-logo-text">
