@@ -1,21 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&family=Quicksand:wght@500;700&display=swap');
+/* 1. Tải 3 Font chữ: Noto Sans (Anh), Noto Serif (Việt), Noto Serif JP (Nhật) */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Noto+Serif:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap');
 
 :root {
-  --bg-pink: #fff0f5;       /* Nền hồng phấn */
-  --primary: #ff69b4;       /* Màu hồng đậm (Chữ nhấn) */
-  --text-main: #5d4037;     /* Màu nâu đất (Chữ chính) */
-  --text-light: #8d6e63;    /* Màu nâu nhạt (Chữ phụ) */
-  --glass: rgba(255, 255, 255, 0.7); /* Hiệu ứng kính */
-  --shadow: 0 8px 32px rgba(255, 105, 180, 0.15); /* Bóng hồng */
+  --primary: #ff69b4;       /* Hồng đậm */
+  --text-main: #4a3b32;     /* Nâu đậm (dễ đọc trên nền sáng) */
+  --text-light: #795548;    /* Nâu nhạt */
+  --glass: rgba(255, 255, 255, 0.85); /* Hiệu ứng kính mờ */
+  --shadow: 0 8px 32px rgba(255, 105, 180, 0.2);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background-color: var(--bg-pink);
   color: var(--text-main);
-  font-family: 'Quicksand', sans-serif; /* Font chữ tròn trịa */
   overflow-x: hidden;
+  
+  /* 2. Cài đặt Hình Nền Full Màn Hình */
+  background-image: url('/pictures/japanese_bg.jpg');
+  background-size: cover;       /* Phủ kín màn hình */
+  background-position: center;  /* Căn giữa */
+  background-attachment: fixed; /* Cố định hình nền khi cuộn chuột */
+  background-repeat: no-repeat;
+}
+
+/* Lớp phủ mờ để chữ dễ đọc hơn trên hình nền */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(255, 240, 245, 0.6); /* Phủ lớp hồng phấn mờ 60% */
+  z-index: -1;
 }
 
 a { text-decoration: none; color: inherit; transition: 0.3s; }
@@ -26,23 +40,50 @@ ul { list-style: none; }
   position: fixed; top: 0; left: 0; width: 100%; height: 80px;
   display: flex; justify-content: space-between; align-items: center;
   padding: 0 50px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px); /* Mờ nền */
-  border-bottom: 2px solid rgba(255, 192, 203, 0.5);
+  background: rgba(255, 255, 255, 0.9); /* Nền trắng mờ đục hơn */
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid rgba(255, 192, 203, 0.8);
   z-index: 1000;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
-/* Phần bên trái: Avatar nhỏ + Tên */
-.nav-left { display: flex; align-items: center; gap: 15px; width: 250px; }
+/* --- 🌸 AVATAR NAVBAR (LAYER CHỒNG ẢNH NHỎ) --- */
+/* Khung chứa avatar nhỏ trên Navbar */
 .nav-logo-img { 
-  width: 45px; height: 45px; border-radius: 50%; 
-  border: 2px solid var(--primary); overflow: hidden; 
+  position: relative;
+  width: 55px; height: 55px; /* Kích thước khung chứa */
+  display: flex; justify-content: center; align-items: center;
+  /* Không dùng overflow: hidden để khung tranh có thể lòi ra ngoài tí xíu nếu cần */
 }
-.nav-logo-text h1 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); line-height: 1; }
-.nav-logo-text span { font-size: 0.75rem; color: var(--primary); font-weight: 600; letter-spacing: 1px; }
 
-/* Phần giữa: Menu Links */
+/* Lớp dưới: Ảnh thật (VuTriDung.jpg) */
+.nav-real-img {
+  position: absolute;
+  width: 80%; height: 80%; /* Nhỏ hơn khung một chút để lọt vào giữa */
+  object-fit: cover;
+  border-radius: 50%;
+  z-index: 1;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%); /* Căn giữa tuyệt đối */
+}
+
+/* Lớp trên: Khung Sakura (sakura_avatar.png) */
+.nav-frame-img {
+  position: absolute;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  z-index: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+/* Avatar nhỏ + Tên */
+.nav-left { display: flex; align-items: center; gap: 15px; width: 250px; }
+
+.nav-logo-text h1 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); line-height: 1; }
+.nav-logo-text span { font-size: 0.75rem; color: var(--primary); font-weight: 700; letter-spacing: 1px; }
+
+/* Menu */
 .nav-center { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
 .nav-row { display: flex; gap: 20px; }
 .nav-link { 
@@ -51,7 +92,7 @@ ul { list-style: none; }
 }
 .nav-link:hover { color: var(--primary); background: rgba(255, 105, 180, 0.1); }
 
-/* Phần phải: Nút ngôn ngữ + CV */
+/* Nút bên phải */
 .nav-right { display: flex; gap: 10px; width: 250px; justify-content: flex-end; align-items: center; }
 .btn-lang { 
   border: 1px solid #ffc1e3; background: white; padding: 5px 10px; 
@@ -64,11 +105,11 @@ ul { list-style: none; }
 }
 .btn-cv:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 105, 180, 0.6); }
 
-/* --- 🌸 HERO SECTION (TRANG CHỦ) --- */
+/* --- HERO SECTION --- */
 .hero-section {
   display: flex; align-items: center; justify-content: center;
   min-height: 100vh; padding: 100px 10% 50px; gap: 60px;
-  background: radial-gradient(circle at top right, #ffe6ee, transparent 60%);
+  /* Xóa màu nền cũ để hiện hình nền body */
 }
 
 .hero-text { flex: 1; max-width: 600px; }
@@ -77,11 +118,11 @@ ul { list-style: none; }
   border-radius: 20px; color: var(--primary); font-weight: bold; 
   box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;
 }
-.hero-name { font-size: 4rem; font-weight: 800; color: var(--text-main); margin-bottom: 10px; line-height: 1.1; }
+.hero-name { font-size: 4rem; font-weight: 800; color: var(--text-main); margin-bottom: 10px; line-height: 1.1; text-shadow: 2px 2px 0px white; }
 .hero-names-box { display: flex; gap: 15px; margin-bottom: 25px; }
-.hero-badge { background: rgba(255,255,255,0.6); border: 1px solid #ffc1e3; padding: 5px 15px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; color: var(--text-light); }
+.hero-badge { background: rgba(255,255,255,0.9); border: 1px solid #ffc1e3; padding: 5px 15px; border-radius: 12px; font-size: 0.9rem; font-weight: 600; color: var(--text-light); }
 
-.hero-desc { font-size: 1.1rem; line-height: 1.8; color: var(--text-main); margin-bottom: 30px; opacity: 0.9; }
+.hero-desc { font-size: 1.15rem; line-height: 1.8; color: var(--text-main); margin-bottom: 30px; font-weight: 500; text-shadow: 1px 1px 0px white; }
 
 .hero-btns { display: flex; gap: 15px; }
 .btn-big { padding: 12px 30px; border-radius: 30px; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; transition: 0.3s; }
@@ -90,30 +131,93 @@ ul { list-style: none; }
 .btn-white { background: white; color: var(--primary); border: 2px solid #ffc1e3; }
 .btn-white:hover { border-color: var(--primary); background: #fff0f5; }
 
-/* --- 🌸 AVATAR HERO (FIX LỖI MẤT HÌNH) --- */
+/* --- 🌸 AVATAR HERO (LAYER CHỒNG ẢNH LỚN) --- */
 .hero-image-container {
-  position: relative; width: 400px; height: 400px; 
+  position: relative; 
+  width: 450px; height: 450px; 
   display: flex; justify-content: center; align-items: center;
 }
-.blob-bg {
-  position: absolute; width: 100%; height: 100%;
-  background: #ffc1e3; border-radius: 50%; filter: blur(50px);
-  opacity: 0.6; z-index: 0; animation: float 6s infinite ease-in-out;
-}
-.avatar-frame {
-  width: 360px; height: 360px; border-radius: 50%;
-  border: 8px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  overflow: hidden; position: relative; z-index: 1; background: white; /* Thêm nền trắng để tránh trong suốt */
-}
-.avatar-img { width: 100%; height: 100%; object-fit: cover; }
 
-/* Animation */
+/* Lớp 1: Hiệu ứng nền hồng bay bay (Dưới cùng) */
+.blob-bg {
+  position: absolute; width: 80%; height: 80%;
+  background: radial-gradient(circle, #ffc1e3 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%; animation: float 6s infinite ease-in-out;
+  z-index: 0;
+}
+
+/* Lớp 2: Ảnh thật của bạn (Nằm ở giữa) */
+.avatar-real {
+  position: absolute;
+  width: 80%; height: 80%; /* Nhỏ hơn khung một chút để lọt vào giữa */
+  object-fit: cover;
+  border-radius: 50%; /* Bo tròn ảnh thật */
+  z-index: 1;
+  /* Căn chỉnh để khớp vào lỗ tròn của khung (bạn có thể chỉnh top/left nếu bị lệch) */
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Lớp 3: Khung Sakura (Nằm trên cùng) */
+.avatar-frame-overlay {
+  position: absolute;
+  width: 100%; height: 100%;
+  object-fit: contain; /* Giữ nguyên tỉ lệ khung */
+  z-index: 2; /* Đè lên ảnh thật */
+  pointer-events: none; /* Để chuột không bị cản bởi phần trong suốt */
+  filter: drop-shadow(0 10px 20px rgba(255,105,180,0.3)); /* Đổ bóng cho khung */
+}
+
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+/* --- CSS CHUNG CHO CÁC SECTION --- */
+.section-title {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--primary);
+  margin-bottom: 40px;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.section-title span { 
+  background: white; 
+  padding: 5px 20px; 
+  border-radius: 20px; 
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+  position: relative; z-index: 1;
+}
+
+/* Hiệu ứng hộp kính mờ */
+.glass-box { 
+  background: var(--glass); 
+  padding: 40px; 
+  border-radius: 30px; 
+  box-shadow: var(--shadow); 
+  border: 1px solid rgba(255,255,255,0.5); 
+  backdrop-filter: blur(5px); 
+}
+
+/* Hiệu ứng thẻ Project (dùng chung) */
+.project-card {
+  background: var(--glass);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  display: block;
+  transition: 0.3s;
+  border: 1px solid rgba(255,255,255,0.5);
+}
+.project-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(255,105,180,0.2); }
+
+/* --- KEYFRAMES CHO HOA ANH ĐÀO --- */
+.petal { position: fixed; background: #ffc0cb; border-radius: 100% 0 100% 0; opacity: 0.6; z-index: -1; top: -20px; pointer-events: none; }
+
 @media (max-width: 768px) {
   .navbar { padding: 10px 20px; height: auto; flex-direction: column; gap: 15px; }
   .nav-left, .nav-right { width: 100%; justify-content: center; }
   .hero-section { flex-direction: column-reverse; padding-top: 140px; text-align: center; }
   .hero-names-box, .hero-btns { justify-content: center; }
   .hero-image-container { width: 300px; height: 300px; }
-  .avatar-frame { width: 280px; height: 280px; }
 }
