@@ -138,7 +138,7 @@ ul { list-style: none; }
   display: flex; justify-content: center; align-items: center;
 }
 
-/* Lớp 1: Hiệu ứng nền hồng bay bay (Dưới cùng) */
+/* Lớp 1: Hiệu ứng nền hồng bay bay */
 .blob-bg {
   position: absolute; width: 80%; height: 80%;
   background: radial-gradient(circle, #ffc1e3 0%, rgba(255,255,255,0) 70%);
@@ -146,26 +146,26 @@ ul { list-style: none; }
   z-index: 0;
 }
 
-/* Lớp 2: Ảnh thật của bạn (Nằm ở giữa) */
+/* [FIX QUAN TRỌNG] Lớp 2: Ảnh thật - Ép thành hình tròn */
 .avatar-real {
   position: absolute;
-  width: 80%; height: 80%; /* Nhỏ hơn khung một chút để lọt vào giữa */
-  object-fit: cover;
-  border-radius: 50%; /* Bo tròn ảnh thật */
+  width: 80%; height: 80%; /* Kích thước vừa vặn lọt vào khung */
+  object-fit: cover; /* Cắt ảnh dư thừa */
+  border-radius: 50%; /* QUAN TRỌNG: Biến ảnh chữ nhật thành hình tròn */
   z-index: 1;
-  /* Căn chỉnh để khớp vào lỗ tròn của khung (bạn có thể chỉnh top/left nếu bị lệch) */
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
+  box-shadow: 0 0 20px rgba(0,0,0,0.1); /* Thêm chút bóng cho đẹp */
 }
 
-/* Lớp 3: Khung Sakura (Nằm trên cùng) */
+/* Lớp 3: Khung Sakura đè lên */
 .avatar-frame-overlay {
   position: absolute;
   width: 100%; height: 100%;
-  object-fit: contain; /* Giữ nguyên tỉ lệ khung */
-  z-index: 2; /* Đè lên ảnh thật */
-  pointer-events: none; /* Để chuột không bị cản bởi phần trong suốt */
-  filter: drop-shadow(0 10px 20px rgba(255,105,180,0.3)); /* Đổ bóng cho khung */
+  object-fit: contain;
+  z-index: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 20px rgba(255,105,180,0.3));
 }
 
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
