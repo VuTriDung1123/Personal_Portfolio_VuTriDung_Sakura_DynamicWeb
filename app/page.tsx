@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react";
 import Link from "next/link"; 
+import SakuraCursorTrail from "@/components/SakuraCursorTrail";
 
 import SakuraFalling from "@/components/SakuraFalling"; 
 import SakuraNav from "@/components/SakuraNav";
@@ -148,8 +149,9 @@ export default function SakuraHome() {
   return (
     <main style={{ fontFamily: getFontFamily(currentLang) }}>
         <SakuraFalling />
+        <SakuraCursorTrail />
         <SakuraNav t={t} currentLang={currentLang} setCurrentLang={handleSetLanguage} resumeUrl={globalConfig?.resumeUrl} />
-
+        
         {isLoading ? (
             <div style={{
                 position: 'fixed', inset: 0, zIndex: 9999, background: '#fff0f5',

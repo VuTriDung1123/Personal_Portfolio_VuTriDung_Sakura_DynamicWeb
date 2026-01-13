@@ -221,3 +221,84 @@ ul { list-style: none; }
   .hero-names-box, .hero-btns { justify-content: center; }
   .hero-image-container { width: 300px; height: 300px; }
 }
+
+
+/* =========================================
+   🌸 START: CUSTOM CURSOR (FULL BỘ) 🌸
+========================================= */
+
+/* 1. Trạng thái Mặc định (Mũi tên Sakura) */
+html, body {
+  cursor: url('/cursors/Sakura_Arrow.cur'), auto; 
+}
+
+/* 2. Trạng thái Link/Nút bấm (Bàn tay hoặc Hoa nở) */
+a, button, .btn, .nav-link, .project-card, .glass-box, .hero-badge, select, label {
+  cursor: url('/cursors/Sakura_Link.cur'), pointer;
+}
+
+/* 3. Trạng thái Nhập văn bản (Thanh I-beam) 
+   Dùng khi di chuột vào đoạn văn, tiêu đề hoặc ô input */
+p, h1, h2, h3, h4, h5, span, input[type="text"], textarea, .nav-logo-text {
+  cursor: url('/cursors/Sakura_TextSel.cur'), text;
+}
+
+/* 4. Trạng thái Chờ/Loading (Hoa xoay .ani) 
+   Dùng khi web đang tải */
+.loading, body[data-loading="true"] {
+  cursor: url('/cursors/Sakura_Busy.ani'), wait;
+}
+
+/* 5. Trạng thái Không khả dụng (Disabled) */
+button:disabled, .disabled {
+  cursor: url('/cursors/Sakura_Unavailable.cur'), not-allowed;
+}
+
+/* 6. Trạng thái Di chuyển (Mũi tên 4 chiều) */
+.draggable, .hero-image-container {
+  cursor: url('/cursors/Sakura_Move.cur'), move;
+}
+
+/* 7. Trạng thái Kéo dãn (Resize) - Dùng cho các cạnh cửa sổ hoặc textarea */
+.resize-h { cursor: url('/cursors/Sakura_ResizeHorizontal.cur'), col-resize; }
+.resize-v { cursor: url('/cursors/Sakura_ResizeVertical.cur'), row-resize; }
+.resize-d1 { cursor: url('/cursors/Sakura_ResizeDiagonalLeft.cur'), nwse-resize; } /* Góc Trái trên - Phải dưới */
+.resize-d2 { cursor: url('/cursors/Sakura_ResizeDiagonalRight.cur'), nesw-resize; } /* Góc Phải trên - Trái dưới */
+
+/* 8. Trạng thái Trợ giúp (Dấu hỏi) */
+.help, [title] {
+  cursor: url('/cursors/Sakura_Help.cur'), help;
+}
+
+/* =========================================
+   🌸 END: CUSTOM CURSOR 🌸
+========================================= */
+
+
+/* --- HIỆU ỨNG ĐUÔI CHUỘT (Vẽ bằng CSS, không cần ảnh) --- */
+.cursor-trail-petal {
+  position: absolute;
+  pointer-events: none;
+  z-index: 9999;
+  
+  /* Vẽ hình cánh hoa bằng CSS */
+  width: 15px;
+  height: 15px;
+  background-color: #ffb7b2; /* Màu hồng phấn */
+  border-radius: 100% 0 100% 0; /* Bo tròn góc để tạo hình cánh hoa */
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  
+  opacity: 0.8;
+  animation: cursorFall 1s linear forwards;
+}
+
+@keyframes cursorFall {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, 50px) rotate(180deg) scale(0.5); /* Rơi xuống và nhỏ lại */
+    opacity: 0;
+  }
+}
