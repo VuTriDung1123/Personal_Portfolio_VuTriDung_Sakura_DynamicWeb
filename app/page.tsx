@@ -44,7 +44,7 @@ type HeroData = { fullName: string; nickName1: string; nickName2: string; avatar
 interface ExpItem { id: string; time: string; role: string; details: string[]; }
 interface ExpGroup { id: string; title: string; items: ExpItem[]; }
 
-// --- [FIX 1] ĐƯA COMPONENT NÀY RA NGOÀI (Không để trong SakuraHome) ---
+// Component EmptyState
 const EmptyState = ({ message, lang }: { message?: string, lang?: Lang }) => (
     <div className="glass-box" style={{textAlign: 'center', padding: '40px', color: '#8d6e63', fontStyle: 'italic', background: 'rgba(255,255,255,0.6)'}}>
         <div style={{fontSize: '2rem', marginBottom: '10px'}}>🍃</div>
@@ -68,17 +68,18 @@ export default function SakuraHome() {
   const [dynamicSections, setDynamicSections] = useState<Record<string, SectionData>>({});
   const [globalConfig, setGlobalConfig] = useState<{ resumeUrl: string; isOpenForWork: boolean } | null>(null);
 
+  // --- [MỚI] STATE CHO BỘ LỌC DỰ ÁN ---
+  const [projLang, setProjLang] = useState<string>("ALL");
+  const [projSort, setProjSort] = useState<"newest" | "oldest">("newest");
+
   const t = translations[currentLang]; 
 
-  // Hàm đổi ngôn ngữ & Lưu lại
   const handleSetLanguage = (lang: Lang) => {
       setCurrentLang(lang);
       localStorage.setItem("sakura_lang", lang);
   };
 
-  // --- [FIX 2] TÁCH RIÊNG USE EFFECT ĐỂ TRÁNH LỖI SETSTATE ---
   useEffect(() => {
-    // Chỉ chạy 1 lần khi web vừa mở lên (Mount)
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
     if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) {
         setCurrentLang(savedLang);
@@ -90,7 +91,6 @@ export default function SakuraHome() {
         jp: LOADING_POEMS.jp[Math.floor(Math.random() * LOADING_POEMS.jp.length)]
     });
 
-    // Gọi API lấy dữ liệu
     Promise.all([
         getPostsByTag("uni_projects").then(d => setDbUniProjects(d as unknown as Post[])),
         getPostsByTag("personal_projects").then(d => setDbPersonalProjects(d as unknown as Post[])),
@@ -112,7 +112,7 @@ export default function SakuraHome() {
     ]).finally(() => {
         setTimeout(() => setIsLoading(false), 2000);
     });
-  }, []); // [] Rỗng -> Đảm bảo chỉ chạy 1 lần
+  }, []);
 
   // Helpers
   const getTxt = (key: string) => { const d = dynamicSections[key]; if(!d) return null; return (currentLang==='en'?d.contentEn:(currentLang==='vi'?d.contentVi:d.contentJp)) || null; };
@@ -130,8 +130,6 @@ export default function SakuraHome() {
       { lang: 'jp', label: 'JP', val: MY_NAMES.jp }
   ].filter(n => n.val !== currentMainName);
 
-  // [FIX 3] Đã xóa biến avatarSrc thừa thãi gây warning
-
   const getCover = (json: string) => { 
       try { const arr = JSON.parse(json); return (arr.length > 0 && arr[0]) ? arr[0] : "https://placehold.co/600x400/ffc0cb/ffffff?text=Sakura"; } catch { return "https://placehold.co/600x400/ffc0cb/ffffff?text=Sakura"; } 
   };
@@ -144,6 +142,22 @@ export default function SakuraHome() {
       if (lang === 'vi') return "'Noto Serif', serif";
       if (lang === 'jp') return "'Noto Serif JP', serif";
       return "'Noto Sans', sans-serif";
+  };
+
+  // --- [MỚI] HÀM LỌC & SẮP XẾP DỰ ÁN ---
+  const filterProjects = (projects: Post[]) => {
+      let res = [...projects];
+      // 1. Lọc ngôn ngữ
+      if (projLang !== "ALL") {
+          res = res.filter(p => p.language?.toLowerCase() === projLang.toLowerCase());
+      }
+      // 2. Sắp xếp thời gian
+      res.sort((a, b) => {
+          const tA = new Date(a.createdAt).getTime();
+          const tB = new Date(b.createdAt).getTime();
+          return projSort === "newest" ? tB - tA : tA - tB;
+      });
+      return res;
   };
 
   return (
@@ -318,38 +332,109 @@ export default function SakuraHome() {
                         ) : <EmptyState lang={currentLang} />}
                     </section>
 
-                    {/* 08. PROJECTS */}
+                    {/* 08. PROJECTS (ĐÃ NÂNG CẤP BỘ LỌC) */}
                     <section id="projects" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <h2 className="section-title"><span>✿ {t.sec_proj} ✿</span></h2>
+                        
+                        {/* --- [MỚI] BỘ ĐIỀU KHIỂN LỌC & SẮP XẾP --- */}
+                        <div className="glass-box" style={{
+                            marginBottom: '40px', padding: '15px 25px', 
+                            background: 'rgba(255,255,255,0.9)', borderRadius: '50px',
+                            display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'space-between', alignItems: 'center',
+                            boxShadow: '0 4px 15px rgba(255, 105, 180, 0.15)'
+                        }}>
+                            {/* Nút Lọc Ngôn ngữ (Pills) */}
+                            <div style={{display: 'flex', gap: '10px'}}>
+                                {[
+                                    {v: "ALL", l: "✨ All"},
+                                    {v: "vi", l: "🇻🇳 VI"},
+                                    {v: "en", l: "🇬🇧 EN"},
+                                    {v: "jp", l: "🇯🇵 JP"}
+                                ].map(langOpt => (
+                                    <button
+                                        key={langOpt.v}
+                                        onClick={() => setProjLang(langOpt.v)}
+                                        style={{
+                                            padding: '8px 16px', borderRadius: '20px', border: 'none',
+                                            cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold',
+                                            transition: 'all 0.3s',
+                                            background: projLang === langOpt.v ? '#ff69b4' : '#ffe4e1',
+                                            color: projLang === langOpt.v ? 'white' : '#8d6e63',
+                                            boxShadow: projLang === langOpt.v ? '0 2px 8px rgba(255,105,180,0.4)' : 'none',
+                                            transform: projLang === langOpt.v ? 'scale(1.05)' : 'scale(1)'
+                                        }}
+                                    >
+                                        {langOpt.l}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Nút Sắp xếp */}
+                            <button 
+                                onClick={() => setProjSort(prev => prev === "newest" ? "oldest" : "newest")}
+                                style={{
+                                    padding: '8px 16px', borderRadius: '20px',
+                                    background: 'white', border: '2px solid #ffb7b2',
+                                    color: '#ff69b4', fontWeight: 'bold', cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem'
+                                }}
+                            >
+                                {projSort === "newest" ? "⌚ Newest First" : "⌛ Oldest First"}
+                            </button>
+                        </div>
+
+                        {/* HIỂN THỊ DANH SÁCH DỰ ÁN */}
                         {[
                             { title: t.cat_uni_proj, data: dbUniProjects },
                             { title: t.cat_personal_proj, data: dbPersonalProjects }
-                        ].map((cat, idx) => (
-                            <div key={idx} style={{marginBottom: '60px'}}>
-                                <h3 style={{fontSize: '1.5rem', color: '#4a3b32', marginBottom: '20px', borderLeft: '5px solid #ff69b4', paddingLeft: '15px', fontWeight: 'bold'}}>{cat.title}</h3>
-                                {cat.data.length > 0 ? (
-                                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
-                                        {cat.data.map(p => (
-                                            <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
-                                                <div style={{height: '200px', overflow: 'hidden'}}>
-                                                    <img src={getCover(p.images)} alt={p.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-                                                </div>
-                                                <div style={{padding: '20px'}}>
-                                                    <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h4>
-                                                    <span style={{fontSize: '0.8rem', color: '#ff69b4', fontWeight: 'bold', textTransform: 'uppercase'}}>View Details →</span>
-                                                </div>
-                                            </Link>
-                                        ))}
-                                    </div>
-                                ) : <EmptyState lang={currentLang} />}
-                            </div>
-                        ))}
+                        ].map((cat, idx) => {
+                            // Áp dụng bộ lọc cho từng danh mục
+                            const filteredData = filterProjects(cat.data);
+                            
+                            return (
+                                <div key={idx} style={{marginBottom: '60px'}}>
+                                    <h3 style={{fontSize: '1.5rem', color: '#4a3b32', marginBottom: '20px', borderLeft: '5px solid #ff69b4', paddingLeft: '15px', fontWeight: 'bold'}}>
+                                        {cat.title} <span style={{fontSize: '0.9rem', color: '#aaa', fontWeight: 'normal'}}>({filteredData.length})</span>
+                                    </h3>
+                                    
+                                    {filteredData.length > 0 ? (
+                                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
+                                            {filteredData.map(p => (
+                                                <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
+                                                    <div style={{height: '200px', overflow: 'hidden', position: 'relative'}}>
+                                                        <img src={getCover(p.images)} alt={p.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                                                        {/* Nhãn ngôn ngữ trên ảnh */}
+                                                        {p.language && (
+                                                            <div style={{position: 'absolute', top: 10, right: 10, background: 'rgba(255, 105, 180, 0.9)', color: 'white', padding: '4px 8px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold'}}>
+                                                                {p.language.toUpperCase()}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div style={{padding: '20px'}}>
+                                                        <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h4>
+                                                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                                            <span style={{fontSize: '0.75rem', color: '#aaa'}}>
+                                                                {new Date(p.createdAt).toLocaleDateString()}
+                                                            </span>
+                                                            <span style={{fontSize: '0.8rem', color: '#ff69b4', fontWeight: 'bold', textTransform: 'uppercase'}}>Details →</span>
+                                                        </div>
+                                                    </div>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div style={{textAlign: 'center', padding: '30px', background: 'rgba(255,255,255,0.5)', borderRadius: '20px', border: '2px dashed #ffc1e3', color: '#8d6e63'}}>
+                                            🍃 Không có dự án nào (Bộ lọc: {projLang})
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </section>
 
                     {/* 09. BLOG */}
                     <section id="blog" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40}}>
-                            {/* Đã thêm số 09 */}
                             <h2 className="section-title" style={{marginBottom: 0, width: 'auto'}}>
                                 <span>✿ 09. {currentLang === 'vi' ? 'BLOG & CÂU CHUYỆN' : (currentLang === 'jp' ? 'ブログ・物語' : 'BLOG & STORIES')} ✿</span>
                             </h2>
@@ -375,7 +460,6 @@ export default function SakuraHome() {
                     {/* 10. GALLERY */}
                     <section id="gallery" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <h2 className="section-title">
-                            {/* Fix cứng để không bị tiếng Anh khi đang ở tiếng Nhật */}
                             <span>✿ 10. {currentLang === 'vi' ? 'THƯ VIỆN ẢNH' : (currentLang === 'jp' ? 'ギャラリー' : 'GALLERY')} ✿</span>
                         </h2>
                         <h3 style={{fontSize: '1.2rem', marginBottom: 20, color: '#4a3b32', fontWeight: 'bold'}}>✿ {t.cat_it_event}</h3>
@@ -397,7 +481,6 @@ export default function SakuraHome() {
                             <h2 className="section-title" style={{marginBottom: '20px'}}>
                                 <span>✿ 11. {currentLang === 'vi' ? 'LIÊN HỆ' : (currentLang === 'jp' ? 'お問い合わせ' : 'CONTACT')} ✿</span>
                             </h2>
-                            
                             <p style={{fontSize: '1.2rem', color: '#4a3b32', marginBottom: '30px'}}>
                                 {currentLang === 'vi' ? 'Hãy cùng tạo ra những điều tuyệt vời! ✨' : (currentLang === 'jp' ? '一緒に素晴らしいものを作りましょう！✨' : 'Let\'s create something beautiful together! ✨')}
                             </p>
