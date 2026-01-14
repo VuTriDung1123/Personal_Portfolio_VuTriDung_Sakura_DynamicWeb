@@ -477,21 +477,78 @@ export default function SakuraHome() {
 
                     {/* 11. CONTACT */}
                     <section id="contact" style={{padding: '80px 0', marginBottom: '50px', scrollMarginTop: '100px'}}>
-                        <div className="glass-box" style={{textAlign: 'center'}}>
+                        <div style={{textAlign: 'center', maxWidth: '1000px', margin: '0 auto'}}>
                             <h2 className="section-title" style={{marginBottom: '20px'}}>
                                 <span>✿ 11. {currentLang === 'vi' ? 'LIÊN HỆ' : (currentLang === 'jp' ? 'お問い合わせ' : 'CONTACT')} ✿</span>
                             </h2>
-                            <p style={{fontSize: '1.2rem', color: '#4a3b32', marginBottom: '30px'}}>
+                            <p style={{fontSize: '1.2rem', color: '#4a3b32', marginBottom: '40px'}}>
                                 {currentLang === 'vi' ? 'Hãy cùng tạo ra những điều tuyệt vời! ✨' : (currentLang === 'jp' ? '一緒に素晴らしいものを作りましょう！✨' : 'Let\'s create something beautiful together! ✨')}
                             </p>
+
+                            {/* LOGIC HIỂN THỊ BOXES */}
                             {contactBoxes && contactBoxes.length > 0 ? (
-                                <div style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px'}}>
-                                    {contactBoxes.map(box => box.items.map((it, i) => (
-                                        <div key={i} style={{background: 'white', padding: '15px 30px', borderRadius: '15px', boxShadow: '0 5px 15px rgba(255,105,180,0.15)'}}>
-                                            <span style={{display: 'block', fontSize: '0.75rem', color: '#aaa', fontWeight: 'bold', textTransform: 'uppercase'}}>{it.label}</span>
-                                            <span style={{fontWeight: 'bold', color: '#5d4037'}}>{it.value}</span>
+                                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px', textAlign: 'left'}}>
+                                    {contactBoxes.map((box) => (
+                                        <div key={box.id} className="glass-box" style={{padding: '30px', background: 'rgba(255,255,255,0.95)', height: '100%'}}>
+                                            {/* Tiêu đề Box (Ví dụ: Main Contact) */}
+                                            <h3 style={{
+                                                color: '#ff69b4', 
+                                                borderBottom: '2px dashed #ffc1e3', 
+                                                paddingBottom: '10px', 
+                                                marginBottom: '20px',
+                                                fontSize: '1.3rem',
+                                                fontWeight: 'bold'
+                                            }}>
+                                                ✿ {box.title}
+                                            </h3>
+
+                                            {/* Danh sách items trong Box */}
+                                            <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
+                                                {box.items.map((item, idx) => {
+                                                    // XỬ LÝ LINK THÔNG MINH
+                                                    let content;
+                                                    const val = item.value;
+
+                                                    if (val.includes('@')) {
+                                                        // 1. Xử lý Email -> Bấm là gửi mail
+                                                        content = (
+                                                            <a href={`mailto:${val}`} style={{color: '#5d4037', fontWeight: 'bold', textDecoration: 'none', transition: '0.3s'}} className="hover:text-[#ff69b4]">
+                                                                {val} ✉
+                                                            </a>
+                                                        );
+                                                    } else if (val.startsWith('http')) {
+                                                        // 2. Xử lý Link Web -> Bấm là mở tab mới
+                                                        content = (
+                                                            <a href={val} target="_blank" rel="noopener noreferrer" style={{color: '#007bff', fontWeight: 'bold', textDecoration: 'none', wordBreak: 'break-all'}} className="hover:underline">
+                                                                {val} ↗
+                                                            </a>
+                                                        );
+                                                    } else if (val.match(/^[0-9+ ]+$/) && val.length > 8) {
+                                                        // 3. Xử lý Số điện thoại -> Bấm là gọi
+                                                        content = (
+                                                            <a href={`tel:${val.replace(/\s/g, '')}`} style={{color: '#28a745', fontWeight: 'bold', textDecoration: 'none'}}>
+                                                                {val} 📞
+                                                            </a>
+                                                        );
+                                                    } else {
+                                                        // 4. Text thường
+                                                        content = <span style={{color: '#5d4037', fontWeight: 'bold'}}>{val}</span>;
+                                                    }
+
+                                                    return (
+                                                        <div key={idx} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #fff0f5', paddingBottom: '8px'}}>
+                                                            <span style={{fontSize: '0.85rem', color: '#aaa', fontWeight: 'bold', textTransform: 'uppercase', marginRight: '10px'}}>
+                                                                {item.label}
+                                                            </span>
+                                                            <div style={{textAlign: 'right'}}>
+                                                                {content}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
-                                    )))}
+                                    ))}
                                 </div>
                             ) : <EmptyState lang={currentLang} />}
                         </div>
