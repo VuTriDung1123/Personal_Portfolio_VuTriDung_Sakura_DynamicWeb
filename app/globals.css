@@ -302,3 +302,30 @@ button:disabled, .disabled {
     opacity: 0;
   }
 }
+
+/* --- NÚT CHUYỂN VERSION --- */
+.btn-switch-theme {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #333; /* Màu đen của Hacker */
+  color: #00ff41;   /* Màu xanh của Hacker */
+  border: 1px solid #00ff41;
+  padding: 6px 15px;
+  border-radius: 20px;
+  font-family: 'Courier New', monospace; /* Font code */
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-decoration: none;
+  transition: 0.3s;
+  box-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
+}
+
+.btn-switch-theme:hover {
+  background: #00ff41;
+  color: black;
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
+  transform: translateY(-2px);
+}
