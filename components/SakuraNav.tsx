@@ -44,7 +44,18 @@ export default function SakuraNav({ t, currentLang, setCurrentLang, resumeUrl }:
           <div className="nav-row" style={{borderTop: '1px dashed #ffc1e3', paddingTop: '2px'}}>{row2.map(i => <NavLink key={i} item={i} />)}</div>
       </div>
 
-      <div className="nav-right">
+      <div className="nav-right" style={{gap: '15px'}}> {/* Tăng khoảng cách chút cho đẹp */}
+        
+        {/* NÚT CHUYỂN SANG HACKER VER */}
+        <a 
+          href="https://personal-portfolio-vu-tri-dung-dyna.vercel.app" 
+          className="btn-switch-theme"
+          target="_blank" // Mở tab mới để họ so sánh 2 bên
+        >
+           👾 HACKER VER
+        </a>
+
+        {/* Các nút ngôn ngữ cũ */}
         {(['en', 'vi', 'jp'] as const).map(l => (
             <button key={l} onClick={() => setCurrentLang(l)} className={`btn-lang ${currentLang===l ? 'active' : ''}`}>
                 {l.toUpperCase()}
@@ -55,3 +66,5 @@ export default function SakuraNav({ t, currentLang, setCurrentLang, resumeUrl }:
     </nav>
   );
 }
+
+
