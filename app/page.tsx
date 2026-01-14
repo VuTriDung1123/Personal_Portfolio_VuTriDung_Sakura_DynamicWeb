@@ -349,8 +349,13 @@ export default function SakuraHome() {
                     {/* 09. BLOG */}
                     <section id="blog" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40}}>
-                            <h2 className="section-title" style={{marginBottom: 0, width: 'auto'}}><span>✿ {t.nav_blog} ✿</span></h2>
-                            <Link href="/blog" style={{background: 'white', border: '2px solid #ffb7b2', padding: '10px 20px', borderRadius: '30px', color: '#ff69b4', fontWeight: 'bold'}}>View All →</Link>
+                            {/* Đã thêm số 09 */}
+                            <h2 className="section-title" style={{marginBottom: 0, width: 'auto'}}>
+                                <span>✿ 09. {currentLang === 'vi' ? 'BLOG & CÂU CHUYỆN' : (currentLang === 'jp' ? 'ブログ・物語' : 'BLOG & STORIES')} ✿</span>
+                            </h2>
+                            <Link href="/blog" style={{background: 'white', border: '2px solid #ffb7b2', padding: '10px 20px', borderRadius: '30px', color: '#ff69b4', fontWeight: 'bold'}}>
+                                {currentLang === 'vi' ? 'Xem tất cả →' : (currentLang === 'jp' ? 'すべて見る →' : 'View All →')}
+                            </Link>
                         </div>
                         {latestPosts.length > 0 ? (
                             <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
@@ -369,7 +374,10 @@ export default function SakuraHome() {
 
                     {/* 10. GALLERY */}
                     <section id="gallery" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
-                        <h2 className="section-title"><span>✿ 10. GALLERY ✿</span></h2>
+                        <h2 className="section-title">
+                            {/* Fix cứng để không bị tiếng Anh khi đang ở tiếng Nhật */}
+                            <span>✿ 10. {currentLang === 'vi' ? 'THƯ VIỆN ẢNH' : (currentLang === 'jp' ? 'ギャラリー' : 'GALLERY')} ✿</span>
+                        </h2>
                         <h3 style={{fontSize: '1.2rem', marginBottom: 20, color: '#4a3b32', fontWeight: 'bold'}}>✿ {t.cat_it_event}</h3>
                         {dbItEvents.length > 0 ? (
                             <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
@@ -386,8 +394,13 @@ export default function SakuraHome() {
                     {/* 11. CONTACT */}
                     <section id="contact" style={{padding: '80px 0', marginBottom: '50px', scrollMarginTop: '100px'}}>
                         <div className="glass-box" style={{textAlign: 'center'}}>
-                            <h2 style={{fontSize: '2.5rem', color: '#ff69b4', marginBottom: '20px'}}>{t.sec_contact || "Contact"}</h2>
-                            <p style={{fontSize: '1.2rem', color: '#4a3b32', marginBottom: '30px'}}>Let&apos;s create something beautiful together! ✨</p>
+                            <h2 className="section-title" style={{marginBottom: '20px'}}>
+                                <span>✿ 11. {currentLang === 'vi' ? 'LIÊN HỆ' : (currentLang === 'jp' ? 'お問い合わせ' : 'CONTACT')} ✿</span>
+                            </h2>
+                            
+                            <p style={{fontSize: '1.2rem', color: '#4a3b32', marginBottom: '30px'}}>
+                                {currentLang === 'vi' ? 'Hãy cùng tạo ra những điều tuyệt vời! ✨' : (currentLang === 'jp' ? '一緒に素晴らしいものを作りましょう！✨' : 'Let\'s create something beautiful together! ✨')}
+                            </p>
                             {contactBoxes && contactBoxes.length > 0 ? (
                                 <div style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px'}}>
                                     {contactBoxes.map(box => box.items.map((it, i) => (
