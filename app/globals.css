@@ -1,5 +1,7 @@
 /* 1. Tải 3 Font chữ: Noto Sans (Anh), Noto Serif (Việt), Noto Serif JP (Nhật) */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Noto+Serif:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Zen+Kurenaido&display=swap');
+
 
 :root {
   --primary: #ff69b4;       /* Hồng đậm */
@@ -328,4 +330,30 @@ button:disabled, .disabled {
   color: black;
   box-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
   transform: translateY(-2px);
+}
+
+/* --- THÊM VÀO CUỐI FILE: HIỆU ỨNG VẼ SVG --- */
+.svg-text-draw {
+  fill: transparent; /* Ban đầu rỗng ruột */
+  stroke-width: 1.5px; /* Độ dày nét bút */
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* Hiệu ứng vẽ */
+  stroke-dasharray: 3000; /* Độ dài nét vẽ ảo */
+  stroke-dashoffset: 3000; /* Ẩn nét vẽ đi */
+  animation: drawStroke 4s ease-out forwards, fillIn 1s ease-in forwards 3s; 
+  /* drawStroke chạy 4s, sau đó fillIn chạy để tô màu dần */
+}
+
+@keyframes drawStroke {
+  to {
+    stroke-dashoffset: 0; /* Hiện nét vẽ */
+  }
+}
+
+@keyframes fillIn {
+  to {
+    fill: currentColor; /* Tô màu chữ sau khi vẽ xong */
+    stroke: transparent; /* Xóa viền để chữ mượt hơn */
+  }
 }

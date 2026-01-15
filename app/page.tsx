@@ -28,7 +28,10 @@ const LOADING_POEMS = {
         "Every bug is just a feature waiting to be understood...",
         "In the middle of difficulty lies opportunity...",
         "Software is a great combination between artistry and engineering...",
-        "First, solve the problem. Then, write the code..."
+        "First, solve the problem. Then, write the code...",
+        "The best error message is the one that never shows up...",
+        "Learning never exhausts the mind...",
+        "Quietly building the future, one line at a time..."
     ],
     vi: [
         "Dệt mộng kỹ thuật số...",
@@ -39,37 +42,51 @@ const LOADING_POEMS = {
         "Hạnh phúc là khi chương trình chạy không lỗi...",
         "Kiên nhẫn là chìa khóa của mọi thành công...",
         "Mỗi dòng code là một nốt nhạc trong bản giao hưởng số...",
-        "Đừng chỉ viết code, hãy viết nên câu chuyện..."
+        "Đừng chỉ viết code, hãy viết nên câu chuyện...",
+        "Đường dài mới biết ngựa hay...",
+        "Kiến thức là kho báu, hành động là chìa khóa...",
+        "Hãy code bằng cả trái tim..."
     ],
     jp: [
         "デジタルな夢を紡ぐ...",
         "桜散る、コードに残る、夢の跡...",
         "待てば海路の日和あり...",
-        "七転び八起き (Thất điên bát khởi)...",
-        "継続は力なり (Tiếp tục là sức mạnh)...",
-        "一期一会 (Nhất kỳ nhất hội)...",
-        "初心忘るべからず (Đừng quên tâm nguyện ban đầu)...",
-        "千里の道も一歩から (Đường ngàn dặm bắt đầu từ một bước)...",
-        "猿も木から落ちる (Khỉ cũng có lúc ngã cây - Ai cũng có lúc sai)..."
+        "七転び八起き...",
+        "継続は力なり...",
+        "一期一会...",
+        "初心忘るべからず...",
+        "千里の道も一歩から...",
+        "猿も木から落ちる...",
+        "雲外蒼天...",
+        "日進月歩...",
+        "温故知新..."
     ]
 };
 
-// --- COMPONENT HIỆU ỨNG GÕ CHỮ ---
-const TypewriterText = ({ text, delay = 50, style }: { text: string, delay?: number, style?: React.CSSProperties }) => {
-    const [currentText, setCurrentText] = useState('');
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    useEffect(() => {
-        if (currentIndex < text.length) {
-            const timeout = setTimeout(() => {
-                setCurrentText(prev => prev + text[currentIndex]);
-                setCurrentIndex(prev => prev + 1);
-            }, delay);
-            return () => clearTimeout(timeout);
-        }
-    }, [currentIndex, delay, text]);
-
-    return <span style={style}>{currentText}<span className="animate-pulse">|</span></span>;
+// --- [MỚI] COMPONENT HIỆU ỨNG VIẾT TAY SVG ---
+const HandwritingText = ({ text, color, fontClass }: { text: string, color: string, fontClass: string }) => {
+    // Tách text dài thành các dòng ngắn hơn nếu cần (đơn giản hóa cho SVG)
+    // Ở đây ta dùng viewBox để scale text tự động
+    return (
+        <div style={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
+            <svg viewBox="0 0 1000 150" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
+                <text 
+                    x="50%" 
+                    y="50%" 
+                    textAnchor="middle" 
+                    dominantBaseline="middle"
+                    className={`svg-text-draw ${fontClass}`}
+                    style={{ 
+                        stroke: color, 
+                        fontSize: '40px', // Size gốc của SVG
+                        letterSpacing: '2px'
+                    }}
+                >
+                    {text}
+                </text>
+            </svg>
+        </div>
+    );
 };
 
 // --- TYPES ---
@@ -118,12 +135,10 @@ export default function SakuraHome() {
   useEffect(() => {
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
     if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) {
-        // [FIX LỖI ESLINT]: Báo cho linter biết ta cố tình làm vậy để sync dữ liệu
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentLang(savedLang);
     }
 
-    // [FIX LỖI ESLINT]: Tương tự cho quotes
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingQuotes({
         en: LOADING_POEMS.en[Math.floor(Math.random() * LOADING_POEMS.en.length)],
@@ -150,7 +165,8 @@ export default function SakuraHome() {
             if (secs.global_config) try { setGlobalConfig(JSON.parse(secs.global_config.contentEn)); } catch {}
         })
     ]).finally(() => {
-        setTimeout(() => setIsLoading(false), 3500);
+        // Thời gian loading 4s để khớp với animation vẽ chữ
+        setTimeout(() => setIsLoading(false), 4000);
     });
   }, []);
 
@@ -203,48 +219,64 @@ export default function SakuraHome() {
         <SakuraCursorTrail />
         <SakuraNav t={t} currentLang={currentLang} setCurrentLang={handleSetLanguage} resumeUrl={globalConfig?.resumeUrl} />
         
-        {/* --- [FIX VIDEO] Video chỉ xuất hiện khi Loading --- */}
+        {/* --- [LOADING SCREEN VỚI VIDEO + CHỮ VIẾT TAY] --- */}
         {isLoading ? (
             <div style={{
                 position: 'fixed', inset: 0, zIndex: 9999,
                 display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
                 textAlign: 'center', padding: '20px'
             }}>
-                {/* 1. Video nền cho Loading (Nằm trong này để chỉ hiện khi Loading) */}
+                {/* 1. Video nền (Chỉ hiện khi Loading) */}
                 <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1}}>
                     <video 
                         autoPlay loop muted playsInline 
                         style={{width: '100%', height: '100%', objectFit: 'cover'}}
                     >
-                        {/* Ưu tiên file local, nếu không có thì fallback */}
                         <source src="/videos/sakura_bg.mp4" type="video/mp4" />
                     </video>
-                    {/* Lớp phủ mờ để chữ dễ đọc hơn */}
-                    <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255, 240, 245, 0.7)', backdropFilter: 'blur(3px)'}}></div>
+                    {/* Lớp phủ mờ */}
+                    <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255, 240, 245, 0.75)', backdropFilter: 'blur(4px)'}}></div>
                 </div>
 
-                {/* 2. Nội dung Loading */}
-                <div style={{fontSize: '4rem', animation: 'spin-slow 3s linear infinite', marginBottom: '30px'}}>🌸</div>
+                {/* 2. Icon Loading */}
+                <div style={{fontSize: '4rem', animation: 'spin-slow 3s linear infinite', marginBottom: '10px'}}>🌸</div>
                 
-                <div style={{display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '800px', zIndex: 10}}>
-                    <h2 style={{fontSize: '1.2rem', color: '#5d4037', fontFamily: "'Noto Sans', sans-serif", fontStyle: 'italic', minHeight: '30px'}}>
-                        &quot;<TypewriterText text={loadingQuotes.en} delay={30} />&quot;
-                    </h2>
-                    <h2 style={{fontSize: '1.3rem', color: '#ff69b4', fontFamily: "'Noto Serif', serif", fontStyle: 'italic', fontWeight: 'bold', minHeight: '30px'}}>
-                        &quot;<TypewriterText text={loadingQuotes.vi} delay={40} />&quot;
-                    </h2>
-                    <h2 style={{fontSize: '1.4rem', color: '#8d6e63', fontFamily: "'Noto Serif JP', serif", minHeight: '30px'}}>
-                        <TypewriterText text={loadingQuotes.jp} delay={50} />
-                    </h2>
+                {/* 3. Hiệu ứng chữ viết tay SVG (Thay thế Typewriter) */}
+                <div style={{display: 'flex', flexDirection: 'column', gap: '5px', width: '100%', maxWidth: '900px', zIndex: 10}}>
+                    
+                    {/* Tiếng Anh - Font Dancing Script */}
+                    <HandwritingText 
+                        text={`"${loadingQuotes.en}"`} 
+                        color="#5d4037" 
+                        fontClass="font-dancing" // Class này sẽ dùng font Dancing Script định nghĩa trong CSS (hoặc inline style)
+                    />
+                    <style jsx global>{`
+                        .font-dancing { font-family: 'Dancing Script', cursive; font-weight: 700; }
+                        .font-jp-hand { font-family: 'Zen Kurenaido', sans-serif; font-weight: 400; }
+                    `}</style>
+
+                    {/* Tiếng Việt - Font Dancing Script (Màu hồng) */}
+                    <HandwritingText 
+                        text={`"${loadingQuotes.vi}"`} 
+                        color="#ff69b4" 
+                        fontClass="font-dancing"
+                    />
+
+                    {/* Tiếng Nhật - Font Zen Kurenaido (Nét cọ) */}
+                    <HandwritingText 
+                        text={loadingQuotes.jp} 
+                        color="#8d6e63" 
+                        fontClass="font-jp-hand"
+                    />
                 </div>
 
-                <p style={{marginTop: '50px', color: '#ff69b4', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '3px', animation: 'pulse 1s infinite', zIndex: 10}}>
+                <p style={{marginTop: '30px', color: '#ff69b4', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '3px', animation: 'pulse 1s infinite', zIndex: 10}}>
                     INITIALIZING SAKURA WORLD...
                 </p>
             </div>
         ) : (
             <div>
-                {/* Khi hết Loading, phần này sẽ hiện ra và dùng background của body (file ảnh trong CSS) */}
+                {/* --- TRANG CHÍNH (Hiện ra sau khi load xong) --- */}
                 
                 {/* 00. HERO SECTION */}
                 <section id="home" className="hero-section">
