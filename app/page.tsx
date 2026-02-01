@@ -9,7 +9,7 @@ import SakuraFalling from "@/components/SakuraFalling";
 import SakuraNav from "@/components/SakuraNav";
 import { translations, Lang } from "@/lib/data"; 
 import { getAllPosts, getPostsByTag, getSectionContent } from "@/lib/actions";
-import AiChatBox from "@/components/AiChatBox";
+import SakuraAiChatBox from "@/components/SakuraAiChatBox";
 
 // --- DỮ LIỆU TÊN ---
 const MY_NAMES = {
@@ -251,10 +251,7 @@ export default function SakuraHome() {
                         color="#5d4037" 
                         fontClass="font-dancing" // Class này sẽ dùng font Dancing Script định nghĩa trong CSS (hoặc inline style)
                     />
-                    <style jsx global>{`
-                        .font-dancing { font-family: 'Dancing Script', cursive; font-weight: 700; }
-                        .font-jp-hand { font-family: 'Zen Kurenaido', sans-serif; font-weight: 400; }
-                    `}</style>
+                    
 
                     {/* Tiếng Việt - Font Dancing Script (Màu hồng) */}
                     <HandwritingText 
@@ -658,7 +655,7 @@ export default function SakuraHome() {
                 </div>
             </div>
         )}
-        <AiChatBox />
+        <SakuraAiChatBox currentLang={currentLang}/>
     </main>
   );
 }
