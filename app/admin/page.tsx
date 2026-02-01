@@ -14,11 +14,13 @@ interface HeroData { fullName: string; nickName1: string; nickName2: string; ava
 interface ConfigData { resumeUrl: string; isOpenForWork: boolean; }
 interface ExpItem { id: string; time: string; role: string; details: string[]; }
 interface ExpGroup { id: string; title: string; items: ExpItem[]; }
+// [MỚI] Type cho FAQ
+interface FaqItem { q: string; a: string; }
 
 // --- CONSTANTS ---
 const DEFAULT_HERO: HeroData = { fullName: "Vũ Trí Dũng", nickName1: "David Miller", nickName2: "Akina Aoi", avatarUrl: "", greeting: "Hi, I am", description: "", typewriter: '["Developer", "Student"]' };
 
-// --- STYLES (CSS INLINE CHO ADMIN) ---
+// --- STYLES (CSS INLINE CHO ADMIN - SAKURA STYLE) ---
 const s = {
     container: { minHeight: '100vh', padding: '40px 20px', fontFamily: '"Nunito", sans-serif' },
     card: { background: 'rgba(255, 255, 255, 0.95)', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(255,105,180,0.15)', marginBottom: '30px', border: '1px solid white' },
@@ -107,6 +109,32 @@ const ExpEditor = ({ lang, data, onUpdate }: { lang: string, data: ExpGroup[], o
     );
 };
 
+// --- [MỚI] SUB-COMPONENT: FAQ EDITOR ---
+const FaqEditor = ({ lang, data, onUpdate }: { lang: string, data: FaqItem[], onUpdate: (d: FaqItem[]) => void }) => {
+    const addItem = () => onUpdate([...data, { q: "", a: "" }]);
+    const updateItem = (idx: number, f: keyof FaqItem, v: string) => { const n = [...data]; n[idx][f] = v; onUpdate(n); };
+    const removeItem = (idx: number) => { const n = [...data]; n.splice(idx, 1); onUpdate(n); };
+
+    return (
+        <div style={s.card}>
+            <h3 style={s.subTitle}>FAQ / HELP ({lang.toUpperCase()})</h3>
+            {data.map((item, idx) => (
+                <div key={idx} style={s.itemBox}>
+                    <div style={{display:'flex', justifyContent:'space-between', marginBottom:'5px'}}>
+                        <label style={s.label}>QUESTION</label>
+                        <button type="button" onClick={()=>removeItem(idx)} style={s.btnDelete}>×</button>
+                    </div>
+                    <input value={item.q} onChange={e=>updateItem(idx, 'q', e.target.value)} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} placeholder="Câu hỏi..." />
+                    
+                    <label style={s.label}>ANSWER</label>
+                    <textarea value={item.a} onChange={e=>updateItem(idx, 'a', e.target.value)} style={{...s.input, height:'80px'}} placeholder="Trả lời..." />
+                </div>
+            ))}
+            <button type="button" onClick={addItem} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ ADD QUESTION</button>
+        </div>
+    );
+};
+
 // --- SUB-COMPONENT: HERO EDITOR ---
 const HeroEditor = ({ lang, data, onUpdate }: { lang: string, data: HeroData, onUpdate: (f: keyof HeroData, v: string) => void }) => (
     <div style={s.card}>
@@ -156,10 +184,16 @@ export default function AdminPage() {
   const [expVi, setExpVi] = useState<ExpGroup[]>([]);
   const [expJp, setExpJp] = useState<ExpGroup[]>([]);
 
+  // [MỚI] FAQ States
+  const [faqEn, setFaqEn] = useState<FaqItem[]>([]);
+  const [faqVi, setFaqVi] = useState<FaqItem[]>([]);
+  const [faqJp, setFaqJp] = useState<FaqItem[]>([]);
+
   const isBoxSection = ['profile', 'contact'].includes(sectionKey);
   const isExpSection = sectionKey === 'experience'; 
   const isHeroSection = sectionKey === 'hero';
   const isConfigSection = sectionKey === 'global_config';
+  const isFaqSection = sectionKey === 'faq_data'; // [MỚI]
 
   useEffect(() => { getAllPosts().then((data) => setPosts(data as unknown as Post[])); }, []);
 
@@ -186,6 +220,10 @@ export default function AdminPage() {
                         try { setHeroJp({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentJp) }); } catch { setHeroJp(DEFAULT_HERO); }
                     } else if (isConfigSection) {
                         try { const p = JSON.parse(typedData.contentEn); setConfig({ resumeUrl: p.resumeUrl || "", isOpenForWork: p.isOpenForWork ?? true }); } catch { setConfig({ resumeUrl: "", isOpenForWork: true }); }
+                    } else if (isFaqSection) { // [MỚI] Load FAQ
+                        try { setFaqEn(JSON.parse(typedData.contentEn)); } catch { setFaqEn([]); }
+                        try { setFaqVi(JSON.parse(typedData.contentVi)); } catch { setFaqVi([]); }
+                        try { setFaqJp(JSON.parse(typedData.contentJp)); } catch { setFaqJp([]); }
                     } else { 
                         setSecEn(typedData.contentEn || ""); setSecVi(typedData.contentVi || ""); setSecJp(typedData.contentJp || "");
                     }
@@ -193,6 +231,7 @@ export default function AdminPage() {
                     setSecEn(""); setSecVi(""); setSecJp("");
                     setBoxesEn([]); setBoxesVi([]); setBoxesJp([]);
                     setExpEn([]); setExpVi([]); setExpJp([]);
+                    setFaqEn([]); setFaqVi([]); setFaqJp([]); // [MỚI]
                     setHeroEn(DEFAULT_HERO); setHeroVi(DEFAULT_HERO); setHeroJp(DEFAULT_HERO);
                     setConfig({ resumeUrl: "", isOpenForWork: true });
                 }
@@ -201,7 +240,7 @@ export default function AdminPage() {
         };
         fetchSection();
     }
-  }, [sectionKey, activeTab, isBoxSection, isHeroSection, isConfigSection, isExpSection]);
+  }, [sectionKey, activeTab, isBoxSection, isHeroSection, isConfigSection, isExpSection, isFaqSection]);
 
   async function handleLogin(formData: FormData) { const res = await checkAdmin(formData); if (res.success) setIsAuth(true); else alert("Wrong Password! 🌸"); }
   const addLinkField = () => setImages([...images, ""]);
@@ -226,6 +265,7 @@ export default function AdminPage() {
     else if (isBoxSection) { formData.set("contentEn", JSON.stringify(boxesEn)); formData.set("contentVi", JSON.stringify(boxesVi)); formData.set("contentJp", JSON.stringify(boxesJp)); } 
     else if (isHeroSection) { formData.set("contentEn", JSON.stringify(heroEn)); formData.set("contentVi", JSON.stringify(heroVi)); formData.set("contentJp", JSON.stringify(heroJp)); } 
     else if (isConfigSection) { formData.set("contentEn", JSON.stringify(config)); formData.set("contentVi", ""); formData.set("contentJp", ""); } 
+    else if (isFaqSection) { formData.set("contentEn", JSON.stringify(faqEn)); formData.set("contentVi", JSON.stringify(faqVi)); formData.set("contentJp", JSON.stringify(faqJp)); } // [MỚI]
     else { formData.set("contentEn", secEn); formData.set("contentVi", secVi); formData.set("contentJp", secJp); }
     const res = await saveSectionContent(formData);
     setIsSaving(false); if (res.success) { setMsg("Saved! 🌸"); setTimeout(() => setMsg(""), 3000); } else setMsg("Failed!");
@@ -298,6 +338,7 @@ export default function AdminPage() {
                             <option value="skills">06. SKILLS (Text)</option>
                             <option value="experience">07. EXPERIENCE (CV Style)</option>
                             <option value="contact">11. CONTACT (Boxes)</option>
+                            <option value="faq_data">12. FAQ (Q&A)</option>
                         </select>
                     </div>
 
@@ -327,6 +368,12 @@ export default function AdminPage() {
                             <BoxEditor lang="en" data={boxesEn} onUpdate={setBoxesEn} />
                             <BoxEditor lang="vi" data={boxesVi} onUpdate={setBoxesVi} />
                             <BoxEditor lang="jp" data={boxesJp} onUpdate={setBoxesJp} />
+                        </div>
+                    ) : isFaqSection ? ( /* [MỚI] Hiển thị FaqEditor */
+                        <div style={s.grid3}>
+                            <FaqEditor lang="en" data={faqEn} onUpdate={setFaqEn} />
+                            <FaqEditor lang="vi" data={faqVi} onUpdate={setFaqVi} />
+                            <FaqEditor lang="jp" data={faqJp} onUpdate={setFaqJp} />
                         </div>
                     ) : (
                         <div style={s.grid3}>

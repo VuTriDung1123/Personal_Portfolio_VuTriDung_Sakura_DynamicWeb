@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { Lang } from "@/lib/data";
-import { usePathname } from "next/navigation"; // Import thêm cái này để check trang
+import { usePathname } from "next/navigation"; 
 
 const NAMES = {
     vi: "Vũ Trí Dũng",
@@ -25,31 +25,43 @@ interface TopNavProps {
 }
 
 export default function SakuraNav({ t, currentLang, setCurrentLang, resumeUrl }: TopNavProps) {
-  const pathname = usePathname(); // Lấy đường dẫn hiện tại
-  const navItems = ['home', 'about', 'profile', 'certificates', 'career', 'achievements', 'skills', 'experience', 'projects', 'blog', 'gallery', 'contact'];
+  const pathname = usePathname(); 
   
-  const row1 = navItems.slice(0, 6);
-  const row2 = navItems.slice(6, 12);
+  // [CẬP NHẬT] Thêm 'faq' vào danh sách
+  const navItems = ['home', 'about', 'profile', 'certificates', 'career', 'achievements', 'skills', 'experience', 'projects', 'blog', 'gallery', 'faq', 'contact'];
+  
+  // Chia lại menu cho cân đối (7 trên - 6 dưới)
+  const row1 = navItems.slice(0, 7);
+  const row2 = navItems.slice(7, 13);
 
   const NavLink = ({ item }: { item: string }) => {
+    // Label mặc định
     let label = t[`nav_${item}`] || item.toUpperCase();
-    // Fix label tiếng Anh nếu file dịch thiếu
+    
+    // Custom Label cho các mục đặc biệt
     if(item === 'certificates') label = t.nav_cert || "CERTIFICATES"; 
     if(item === 'experience') label = t.nav_exp || "EXPERIENCE"; 
     if(item === 'projects') label = t.nav_proj || "PROJECTS";
+    if(item === 'faq') label = "FAQ / HELP"; // Label cho FAQ
 
-    // LOGIC LINK THÔNG MINH:
-    // 1. Nếu là Home -> Về trang chủ
-    // 2. Nếu là Blog -> Sang trang /blog
-    // 3. Nếu là các mục khác:
-    //    - Đang ở trang chủ: Cuộn xuống (#id)
-    //    - Đang ở trang khác (vd trang blog): Về trang chủ rồi cuộn (/#id)
     let href = "";
     if (item === 'home') href = "/";
     else if (item === 'blog') href = "/blog";
+    else if (item === 'faq') href = "/faq"; // Link sang trang FAQ
     else href = pathname === '/' ? `#${item}` : `/#${item}`;
 
-    return <Link href={href} className="nav-link">{label}</Link>;
+    // Active state
+    const isActive = (pathname === href) || (item === 'faq' && pathname === '/faq');
+
+    return (
+        <Link 
+            href={href} 
+            className="nav-link"
+            style={isActive ? {color: '#ff69b4', fontWeight: 'bold', borderBottom: '2px solid #ffc1e3'} : {}}
+        >
+            {label}
+        </Link>
+    );
   };
 
   return (
@@ -67,7 +79,7 @@ export default function SakuraNav({ t, currentLang, setCurrentLang, resumeUrl }:
                 fontWeight: 'bold',
                 color: '#5d4037',
                 lineHeight: '1.2',
-                whiteSpace: 'nowrap' // Giữ tên trên 1 dòng
+                whiteSpace: 'nowrap'
             }}>
                 {NAMES[currentLang]}
             </span>
