@@ -7,20 +7,27 @@ import { checkAdmin, createPost, deletePost, getAllPosts, updatePost, getSection
 
 // --- TYPES ---
 interface Post { id: string; title: string; tag: string; language: string; content: string; images: string; }
-interface BoxItem { label: string; value: string; }
-interface SectionBox { id: string; title: string; items: BoxItem[]; }
+interface SectionBox { id: string; title: string; items: { label: string; value: string }[]; }
 interface SectionData { contentEn: string; contentVi: string; contentJp: string; }
 interface HeroData { fullName: string; nickName1: string; nickName2: string; avatarUrl: string; greeting: string; description: string; typewriter: string; }
 interface ConfigData { resumeUrl: string; isOpenForWork: boolean; }
 interface ExpItem { id: string; time: string; role: string; details: string[]; }
 interface ExpGroup { id: string; title: string; items: ExpItem[]; }
-// [MỚI] Type cho FAQ
 interface FaqItem { q: string; a: string; }
+
+// [MỚI] Type cho Cấu hình AI
+interface AiConfigData {
+    roleName: string;       // VD: "Trợ lý ảo", "Hacker", "Hầu gái"
+    tone: string;           // VD: "Ngầu", "Dễ thương", "Cục súc"
+    customStory: string;    // Những bí mật chỉ AI biết
+    systemPromptOverride: string; // Câu lệnh tối thượng ghi đè
+}
 
 // --- CONSTANTS ---
 const DEFAULT_HERO: HeroData = { fullName: "Vũ Trí Dũng", nickName1: "David Miller", nickName2: "Akina Aoi", avatarUrl: "", greeting: "Hi, I am", description: "", typewriter: '["Developer", "Student"]' };
+const DEFAULT_AI_CONFIG: AiConfigData = { roleName: "Virtual Assistant", tone: "Professional & Helpful", customStory: "", systemPromptOverride: "" };
 
-// --- STYLES (CSS INLINE CHO ADMIN - SAKURA STYLE) ---
+// --- STYLES (SAKURA STYLE) ---
 const s = {
     container: { minHeight: '100vh', padding: '40px 20px', fontFamily: '"Nunito", sans-serif' },
     card: { background: 'rgba(255, 255, 255, 0.95)', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(255,105,180,0.15)', marginBottom: '30px', border: '1px solid white' },
@@ -37,7 +44,8 @@ const s = {
     itemBox: { background: '#fff0f5', padding: '15px', borderRadius: '15px', marginBottom: '15px', border: '1px dashed #ffc1e3' }
 };
 
-// --- SUB-COMPONENT: BOX EDITOR ---
+// ... (Giữ nguyên BoxEditor, ExpEditor, FaqEditor, HeroEditor cũ nếu muốn, hoặc dùng code dưới đây tích hợp sẵn) ...
+
 const BoxEditor = ({ lang, data, onUpdate }: { lang: string, data: SectionBox[], onUpdate: (d: SectionBox[]) => void }) => {
     const addBox = () => onUpdate([...data, { id: Date.now().toString(), title: "New Group", items: [] }]);
     const updateTitle = (idx: number, v: string) => { const n = [...data]; n[idx].title = v; onUpdate(n); };
@@ -45,109 +53,86 @@ const BoxEditor = ({ lang, data, onUpdate }: { lang: string, data: SectionBox[],
     const updateItem = (bIdx: number, iIdx: number, f: 'label'|'value', v: string) => { const n = [...data]; n[bIdx].items[iIdx][f] = v; onUpdate(n); };
     const remove = (idx: number) => { const n = [...data]; n.splice(idx, 1); onUpdate(n); };
     const removeItem = (bIdx: number, iIdx: number) => { const n = [...data]; n[bIdx].items.splice(iIdx, 1); onUpdate(n); };
-
     return (
-        <div style={s.card}>
-            <h3 style={s.subTitle}>PROFILE / CONTACT ({lang.toUpperCase()})</h3>
-            {data.map((box, bIdx) => (
-                <div key={box.id} style={s.itemBox}>
-                    <div style={{display:'flex', gap:'10px', marginBottom:'10px'}}>
-                        <input value={box.title} onChange={e=>updateTitle(bIdx, e.target.value)} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} placeholder="Group Title" />
-                        <button type="button" onClick={()=>remove(bIdx)} style={s.btnDelete}>X</button>
-                    </div>
-                    {box.items.map((it, iIdx) => (
-                        <div key={iIdx} style={{display:'flex', gap:'10px'}}>
-                            <input value={it.label} onChange={e=>updateItem(bIdx,iIdx,'label',e.target.value)} style={{...s.input, flex:1}} placeholder="Label" />
-                            <input value={it.value} onChange={e=>updateItem(bIdx,iIdx,'value',e.target.value)} style={{...s.input, flex:2}} placeholder="Value" />
-                            <button type="button" onClick={()=>removeItem(bIdx,iIdx)} style={{...s.btnDelete, height:'42px'}}>×</button>
-                        </div>
-                    ))}
-                    <button type="button" onClick={()=>addItem(bIdx)} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Add Item</button>
-                </div>
-            ))}
-            <button type="button" onClick={addBox} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ ADD NEW GROUP</button>
-        </div>
+        <div style={s.card}><h3 style={s.subTitle}>PROFILE / CONTACT ({lang})</h3>{data.map((box, bIdx) => (<div key={box.id} style={s.itemBox}><div style={{display:'flex', gap:'10px', marginBottom:'10px'}}><input value={box.title} onChange={e=>updateTitle(bIdx, e.target.value)} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} placeholder="Group Title" /><button type="button" onClick={()=>remove(bIdx)} style={s.btnDelete}>X</button></div>{box.items.map((it, iIdx) => (<div key={iIdx} style={{display:'flex', gap:'10px'}}><input value={it.label} onChange={e=>updateItem(bIdx,iIdx,'label',e.target.value)} style={{...s.input, flex:1}} placeholder="Label" /><input value={it.value} onChange={e=>updateItem(bIdx,iIdx,'value',e.target.value)} style={{...s.input, flex:2}} placeholder="Value" /><button type="button" onClick={()=>removeItem(bIdx,iIdx)} style={{...s.btnDelete, height:'42px'}}>×</button></div>))}<button type="button" onClick={()=>addItem(bIdx)} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Add Item</button></div>))}<button type="button" onClick={addBox} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ ADD GROUP</button></div>
     );
 };
 
-// --- SUB-COMPONENT: EXPERIENCE EDITOR ---
 const ExpEditor = ({ lang, data, onUpdate }: { lang: string, data: ExpGroup[], onUpdate: (d: ExpGroup[]) => void }) => {
-    const addGroup = () => onUpdate([...data, { id: Date.now().toString(), title: "New Category", items: [] }]);
+    const addGroup = () => onUpdate([...data, { id: Date.now().toString(), title: "New Cat", items: [] }]);
     const updateTitle = (idx: number, v: string) => { const n = [...data]; n[idx].title = v; onUpdate(n); };
     const addItem = (gIdx: number) => { const n = [...data]; n[gIdx].items.push({ id: Date.now().toString(), time: "", role: "", details: [] }); onUpdate(n); };
     const updateItem = (gIdx: number, iIdx: number, f: keyof ExpItem, v: string) => { const n = [...data]; (n[gIdx].items[iIdx] as any)[f] = v; onUpdate(n); };
     const updateDetails = (gIdx: number, iIdx: number, txt: string) => { const n = [...data]; n[gIdx].items[iIdx].details = txt.split('\n'); onUpdate(n); };
     const remove = (idx: number) => { const n = [...data]; n.splice(idx, 1); onUpdate(n); };
     const removeItem = (gIdx: number, iIdx: number) => { const n = [...data]; n[gIdx].items.splice(iIdx, 1); onUpdate(n); };
-
     return (
-        <div style={s.card}>
-            <h3 style={s.subTitle}>EXPERIENCE ({lang.toUpperCase()})</h3>
-            {data.map((group, gIdx) => (
-                <div key={group.id} style={{marginBottom:'20px', borderLeft:'4px solid #ff69b4', paddingLeft:'15px'}}>
-                    <div style={{display:'flex', gap:'10px', marginBottom:'10px'}}>
-                        <input value={group.title} onChange={e=>updateTitle(gIdx, e.target.value)} style={{...s.input, fontSize:'1.1rem', fontWeight:'bold', color:'#5d4037'}} placeholder="Category Name" />
-                        <button type="button" onClick={()=>remove(gIdx)} style={s.btnDelete}>DEL CAT</button>
-                    </div>
-                    {group.items.map((item, iIdx) => (
-                        <div key={item.id} style={{background:'white', padding:'15px', borderRadius:'10px', marginBottom:'10px', boxShadow:'0 2px 5px rgba(0,0,0,0.05)'}}>
-                            <div style={{display:'grid', gridTemplateColumns:'1fr 2fr', gap:'10px'}}>
-                                <input value={item.time} onChange={e=>updateItem(gIdx,iIdx,'time',e.target.value)} style={s.input} placeholder="Time (e.g 2023-2024)" />
-                                <div style={{display:'flex', gap:'5px'}}>
-                                    <input value={item.role} onChange={e=>updateItem(gIdx,iIdx,'role',e.target.value)} style={{...s.input, fontWeight:'bold'}} placeholder="Role / Company" />
-                                    <button type="button" onClick={()=>removeItem(gIdx,iIdx)} style={s.btnDelete}>×</button>
-                                </div>
-                            </div>
-                            <textarea value={item.details.join('\n')} onChange={e=>updateDetails(gIdx,iIdx,e.target.value)} style={{...s.input, height:'80px', fontFamily:'monospace', fontSize:'0.85rem'}} placeholder="- Detail 1&#10;- Detail 2" />
-                        </div>
-                    ))}
-                    <button type="button" onClick={()=>addItem(gIdx)} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Add Job</button>
-                </div>
-            ))}
-            <button type="button" onClick={addGroup} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ ADD CATEGORY</button>
-        </div>
+        <div style={s.card}><h3 style={s.subTitle}>EXPERIENCE ({lang})</h3>{data.map((group, gIdx) => (<div key={group.id} style={{marginBottom:'20px', borderLeft:'4px solid #ff69b4', paddingLeft:'15px'}}><div style={{display:'flex', gap:'10px', marginBottom:'10px'}}><input value={group.title} onChange={e=>updateTitle(gIdx, e.target.value)} style={{...s.input, fontSize:'1.1rem', fontWeight:'bold'}} placeholder="Category" /><button type="button" onClick={()=>remove(gIdx)} style={s.btnDelete}>DEL</button></div>{group.items.map((item, iIdx) => (<div key={item.id} style={{background:'white', padding:'15px', borderRadius:'10px', marginBottom:'10px', boxShadow:'0 2px 5px rgba(0,0,0,0.05)'}}><div style={{display:'grid', gridTemplateColumns:'1fr 2fr', gap:'10px'}}><input value={item.time} onChange={e=>updateItem(gIdx,iIdx,'time',e.target.value)} style={s.input} placeholder="Time" /><div style={{display:'flex', gap:'5px'}}><input value={item.role} onChange={e=>updateItem(gIdx,iIdx,'role',e.target.value)} style={{...s.input, fontWeight:'bold'}} placeholder="Role" /><button type="button" onClick={()=>removeItem(gIdx,iIdx)} style={s.btnDelete}>×</button></div></div><textarea value={item.details.join('\n')} onChange={e=>updateDetails(gIdx,iIdx,e.target.value)} style={{...s.input, height:'80px', fontFamily:'monospace', fontSize:'0.85rem'}} placeholder="- Detail" /></div>))}<button type="button" onClick={()=>addItem(gIdx)} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Job</button></div>))}<button type="button" onClick={addGroup} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ CAT</button></div>
     );
 };
 
-// --- [MỚI] SUB-COMPONENT: FAQ EDITOR ---
 const FaqEditor = ({ lang, data, onUpdate }: { lang: string, data: FaqItem[], onUpdate: (d: FaqItem[]) => void }) => {
     const addItem = () => onUpdate([...data, { q: "", a: "" }]);
     const updateItem = (idx: number, f: keyof FaqItem, v: string) => { const n = [...data]; n[idx][f] = v; onUpdate(n); };
     const removeItem = (idx: number) => { const n = [...data]; n.splice(idx, 1); onUpdate(n); };
-
-    return (
-        <div style={s.card}>
-            <h3 style={s.subTitle}>FAQ / HELP ({lang.toUpperCase()})</h3>
-            {data.map((item, idx) => (
-                <div key={idx} style={s.itemBox}>
-                    <div style={{display:'flex', justifyContent:'space-between', marginBottom:'5px'}}>
-                        <label style={s.label}>QUESTION</label>
-                        <button type="button" onClick={()=>removeItem(idx)} style={s.btnDelete}>×</button>
-                    </div>
-                    <input value={item.q} onChange={e=>updateItem(idx, 'q', e.target.value)} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} placeholder="Câu hỏi..." />
-                    
-                    <label style={s.label}>ANSWER</label>
-                    <textarea value={item.a} onChange={e=>updateItem(idx, 'a', e.target.value)} style={{...s.input, height:'80px'}} placeholder="Trả lời..." />
-                </div>
-            ))}
-            <button type="button" onClick={addItem} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ ADD QUESTION</button>
-        </div>
-    );
+    return (<div style={s.card}><h3 style={s.subTitle}>FAQ ({lang})</h3>{data.map((item, idx) => (<div key={idx} style={s.itemBox}><div style={{display:'flex', justifyContent:'space-between', marginBottom:'5px'}}><label style={s.label}>Q</label><button type="button" onClick={()=>removeItem(idx)} style={s.btnDelete}>×</button></div><input value={item.q} onChange={e=>updateItem(idx, 'q', e.target.value)} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} /><label style={s.label}>A</label><textarea value={item.a} onChange={e=>updateItem(idx, 'a', e.target.value)} style={{...s.input, height:'80px'}} /></div>))}<button type="button" onClick={addItem} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ QUESTION</button></div>);
 };
 
-// --- SUB-COMPONENT: HERO EDITOR ---
 const HeroEditor = ({ lang, data, onUpdate }: { lang: string, data: HeroData, onUpdate: (f: keyof HeroData, v: string) => void }) => (
+    <div style={s.card}><h3 style={s.subTitle}>HERO ({lang})</h3><div><label style={s.label}>Greeting</label><input value={data.greeting} onChange={e=>onUpdate('greeting', e.target.value)} style={s.input} /></div><div><label style={s.label}>Full Name</label><input value={data.fullName} onChange={e=>onUpdate('fullName', e.target.value)} style={s.input} /></div><div style={{display:'flex', gap:'10px'}}><div style={{flex:1}}><label style={s.label}>Nick 1</label><input value={data.nickName1} onChange={e=>onUpdate('nickName1', e.target.value)} style={s.input} /></div><div style={{flex:1}}><label style={s.label}>Nick 2</label><input value={data.nickName2} onChange={e=>onUpdate('nickName2', e.target.value)} style={s.input} /></div></div><div><label style={s.label}>Typewriter</label><input value={data.typewriter} onChange={e=>onUpdate('typewriter', e.target.value)} style={s.input} /></div><div><label style={s.label}>Description</label><textarea value={data.description} onChange={e=>onUpdate('description', e.target.value)} style={{...s.input, height:'80px'}} /></div><div><label style={s.label}>Avatar</label><input value={data.avatarUrl} onChange={e=>onUpdate('avatarUrl', e.target.value)} style={s.input} /></div></div>
+);
+
+// --- [MỚI] SUB-COMPONENT: AI CONFIG EDITOR ---
+// Nơi bạn dạy dỗ con AI của mình
+const AiConfigEditor = ({ data, onUpdate }: { data: AiConfigData, onUpdate: (f: keyof AiConfigData, v: string) => void }) => (
     <div style={s.card}>
-        <h3 style={s.subTitle}>HERO INFO ({lang.toUpperCase()})</h3>
-        <div><label style={s.label}>Greeting</label><input value={data.greeting} onChange={e=>onUpdate('greeting', e.target.value)} style={s.input} /></div>
-        <div><label style={s.label}>Full Name</label><input value={data.fullName} onChange={e=>onUpdate('fullName', e.target.value)} style={s.input} /></div>
-        <div style={{display:'flex', gap:'10px'}}>
-            <div style={{flex:1}}><label style={s.label}>Nick 1</label><input value={data.nickName1} onChange={e=>onUpdate('nickName1', e.target.value)} style={s.input} /></div>
-            <div style={{flex:1}}><label style={s.label}>Nick 2</label><input value={data.nickName2} onChange={e=>onUpdate('nickName2', e.target.value)} style={s.input} /></div>
+        <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'20px'}}>
+            <span style={{fontSize:'2rem'}}>🧠</span>
+            <h3 style={{...s.subTitle, margin:0, border: 'none'}}>AI BRAIN CONFIGURATION</h3>
         </div>
-        <div><label style={s.label}>Typewriter (JSON)</label><input value={data.typewriter} onChange={e=>onUpdate('typewriter', e.target.value)} style={s.input} /></div>
-        <div><label style={s.label}>Description</label><textarea value={data.description} onChange={e=>onUpdate('description', e.target.value)} style={{...s.input, height:'80px'}} /></div>
-        <div><label style={s.label}>Avatar URL</label><input value={data.avatarUrl} onChange={e=>onUpdate('avatarUrl', e.target.value)} style={s.input} /></div>
+        
+        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'15px'}}>
+            <div>
+                <label style={s.label}>AI ROLE NAME (Tên vai diễn)</label>
+                <input 
+                    value={data.roleName} 
+                    onChange={e => onUpdate('roleName', e.target.value)} 
+                    style={s.input} 
+                    placeholder="VD: Trợ lý ảo, Hacker, Cô hầu gái..." 
+                />
+            </div>
+            <div>
+                <label style={s.label}>TONE & STYLE (Giọng điệu)</label>
+                <input 
+                    value={data.tone} 
+                    onChange={e => onUpdate('tone', e.target.value)} 
+                    style={s.input} 
+                    placeholder="VD: Chuyên nghiệp, Hài hước, Lạnh lùng..." 
+                />
+            </div>
+        </div>
+
+        <div style={{marginBottom:'15px'}}>
+            <label style={s.label}>SECRET KNOWLEDGE / BACKSTORY (Câu chuyện bí mật)</label>
+            <p style={{fontSize:'0.8rem', color:'#aaa', marginBottom:'5px'}}>Những thông tin này không hiện trên web nhưng AI sẽ biết để chém gió.</p>
+            <textarea 
+                value={data.customStory} 
+                onChange={e => onUpdate('customStory', e.target.value)} 
+                style={{...s.input, height:'100px'}} 
+                placeholder="VD: Dũng thích ăn bún đậu mắm tôm. Hồi nhỏ từng hack facebook crush..." 
+            />
+        </div>
+
+        <div>
+            <label style={s.label}>SYSTEM PROMPT OVERRIDE (Dành cho Advanced User)</label>
+            <p style={{fontSize:'0.8rem', color:'#aaa', marginBottom:'5px'}}>Ghi đè hoặc bổ sung lệnh tối thượng cho AI. Để trống nếu không dùng.</p>
+            <textarea 
+                value={data.systemPromptOverride} 
+                onChange={e => onUpdate('systemPromptOverride', e.target.value)} 
+                style={{...s.input, height:'80px', fontFamily:'monospace', background:'#f5f5f5'}} 
+                placeholder="VD: Always end sentences with 'uwu'." 
+            />
+        </div>
     </div>
 );
 
@@ -166,34 +151,22 @@ export default function AdminPage() {
   const [msg, setMsg] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   
-  const [secEn, setSecEn] = useState("");
-  const [secVi, setSecVi] = useState("");
-  const [secJp, setSecJp] = useState("");
-
-  const [boxesEn, setBoxesEn] = useState<SectionBox[]>([]);
-  const [boxesVi, setBoxesVi] = useState<SectionBox[]>([]);
-  const [boxesJp, setBoxesJp] = useState<SectionBox[]>([]);
-
-  const [heroEn, setHeroEn] = useState<HeroData>(DEFAULT_HERO);
-  const [heroVi, setHeroVi] = useState<HeroData>(DEFAULT_HERO);
-  const [heroJp, setHeroJp] = useState<HeroData>(DEFAULT_HERO);
-
+  const [secEn, setSecEn] = useState(""); const [secVi, setSecVi] = useState(""); const [secJp, setSecJp] = useState("");
+  const [boxesEn, setBoxesEn] = useState<SectionBox[]>([]); const [boxesVi, setBoxesVi] = useState<SectionBox[]>([]); const [boxesJp, setBoxesJp] = useState<SectionBox[]>([]);
+  const [heroEn, setHeroEn] = useState<HeroData>(DEFAULT_HERO); const [heroVi, setHeroVi] = useState<HeroData>(DEFAULT_HERO); const [heroJp, setHeroJp] = useState<HeroData>(DEFAULT_HERO);
   const [config, setConfig] = useState<ConfigData>({ resumeUrl: "", isOpenForWork: true });
-
-  const [expEn, setExpEn] = useState<ExpGroup[]>([]);
-  const [expVi, setExpVi] = useState<ExpGroup[]>([]);
-  const [expJp, setExpJp] = useState<ExpGroup[]>([]);
-
-  // [MỚI] FAQ States
-  const [faqEn, setFaqEn] = useState<FaqItem[]>([]);
-  const [faqVi, setFaqVi] = useState<FaqItem[]>([]);
-  const [faqJp, setFaqJp] = useState<FaqItem[]>([]);
+  const [expEn, setExpEn] = useState<ExpGroup[]>([]); const [expVi, setExpVi] = useState<ExpGroup[]>([]); const [expJp, setExpJp] = useState<ExpGroup[]>([]);
+  const [faqEn, setFaqEn] = useState<FaqItem[]>([]); const [faqVi, setFaqVi] = useState<FaqItem[]>([]); const [faqJp, setFaqJp] = useState<FaqItem[]>([]);
+  
+  // [MỚI] AI Config State
+  const [aiConfig, setAiConfig] = useState<AiConfigData>(DEFAULT_AI_CONFIG);
 
   const isBoxSection = ['profile', 'contact'].includes(sectionKey);
   const isExpSection = sectionKey === 'experience'; 
   const isHeroSection = sectionKey === 'hero';
   const isConfigSection = sectionKey === 'global_config';
-  const isFaqSection = sectionKey === 'faq_data'; // [MỚI]
+  const isFaqSection = sectionKey === 'faq_data';
+  const isAiConfigSection = sectionKey === 'ai_config'; // [MỚI]
 
   useEffect(() => { getAllPosts().then((data) => setPosts(data as unknown as Post[])); }, []);
 
@@ -220,27 +193,31 @@ export default function AdminPage() {
                         try { setHeroJp({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentJp) }); } catch { setHeroJp(DEFAULT_HERO); }
                     } else if (isConfigSection) {
                         try { const p = JSON.parse(typedData.contentEn); setConfig({ resumeUrl: p.resumeUrl || "", isOpenForWork: p.isOpenForWork ?? true }); } catch { setConfig({ resumeUrl: "", isOpenForWork: true }); }
-                    } else if (isFaqSection) { // [MỚI] Load FAQ
+                    } else if (isFaqSection) {
                         try { setFaqEn(JSON.parse(typedData.contentEn)); } catch { setFaqEn([]); }
                         try { setFaqVi(JSON.parse(typedData.contentVi)); } catch { setFaqVi([]); }
                         try { setFaqJp(JSON.parse(typedData.contentJp)); } catch { setFaqJp([]); }
+                    } else if (isAiConfigSection) { // [MỚI] Load AI Config
+                        try { setAiConfig({ ...DEFAULT_AI_CONFIG, ...JSON.parse(typedData.contentEn) }); } catch { setAiConfig(DEFAULT_AI_CONFIG); }
                     } else { 
                         setSecEn(typedData.contentEn || ""); setSecVi(typedData.contentVi || ""); setSecJp(typedData.contentJp || "");
                     }
                 } else {
+                    // Reset all
                     setSecEn(""); setSecVi(""); setSecJp("");
                     setBoxesEn([]); setBoxesVi([]); setBoxesJp([]);
                     setExpEn([]); setExpVi([]); setExpJp([]);
-                    setFaqEn([]); setFaqVi([]); setFaqJp([]); // [MỚI]
+                    setFaqEn([]); setFaqVi([]); setFaqJp([]);
                     setHeroEn(DEFAULT_HERO); setHeroVi(DEFAULT_HERO); setHeroJp(DEFAULT_HERO);
                     setConfig({ resumeUrl: "", isOpenForWork: true });
+                    setAiConfig(DEFAULT_AI_CONFIG); // [MỚI]
                 }
                 setMsg("");
             } catch (error) { console.error(error); setMsg("Error loading!"); }
         };
         fetchSection();
     }
-  }, [sectionKey, activeTab, isBoxSection, isHeroSection, isConfigSection, isExpSection, isFaqSection]);
+  }, [sectionKey, activeTab, isBoxSection, isHeroSection, isConfigSection, isExpSection, isFaqSection, isAiConfigSection]);
 
   async function handleLogin(formData: FormData) { const res = await checkAdmin(formData); if (res.success) setIsAuth(true); else alert("Wrong Password! 🌸"); }
   const addLinkField = () => setImages([...images, ""]);
@@ -254,19 +231,26 @@ export default function AdminPage() {
   function startEdit(post: Post) { setEditingPost(post); setTag(post.tag); try { setImages(JSON.parse(post.images)); } catch { setImages([]); } window.scrollTo({ top: 0, behavior: 'smooth' }); }
   async function handleDelete(id: string) { if(!confirm("Delete this?")) return; await deletePost(id); setPosts(await getAllPosts() as unknown as Post[]); }
 
-  const updateHero = (lang: 'en'|'vi'|'jp', field: keyof HeroData, val: string) => {
-      const setter = lang === 'en' ? setHeroEn : (lang === 'vi' ? setHeroVi : setHeroJp);
-      setter(prev => ({ ...prev, [field]: val }));
-  };
+  const updateHero = (lang: 'en'|'vi'|'jp', field: keyof HeroData, val: string) => { const setter = lang === 'en' ? setHeroEn : (lang === 'vi' ? setHeroVi : setHeroJp); setter(prev => ({ ...prev, [field]: val })); };
+  
+  // [MỚI] Hàm cập nhật AI Config
+  const updateAiConfig = (field: keyof AiConfigData, val: string) => { setAiConfig(prev => ({ ...prev, [field]: val })); };
 
   async function handleSectionSubmit(formData: FormData) {
     if (isSaving) return; setIsSaving(true); setMsg("Saving...");
+    
     if (isExpSection) { formData.set("contentEn", JSON.stringify(expEn)); formData.set("contentVi", JSON.stringify(expVi)); formData.set("contentJp", JSON.stringify(expJp)); } 
     else if (isBoxSection) { formData.set("contentEn", JSON.stringify(boxesEn)); formData.set("contentVi", JSON.stringify(boxesVi)); formData.set("contentJp", JSON.stringify(boxesJp)); } 
     else if (isHeroSection) { formData.set("contentEn", JSON.stringify(heroEn)); formData.set("contentVi", JSON.stringify(heroVi)); formData.set("contentJp", JSON.stringify(heroJp)); } 
     else if (isConfigSection) { formData.set("contentEn", JSON.stringify(config)); formData.set("contentVi", ""); formData.set("contentJp", ""); } 
-    else if (isFaqSection) { formData.set("contentEn", JSON.stringify(faqEn)); formData.set("contentVi", JSON.stringify(faqVi)); formData.set("contentJp", JSON.stringify(faqJp)); } // [MỚI]
+    else if (isFaqSection) { formData.set("contentEn", JSON.stringify(faqEn)); formData.set("contentVi", JSON.stringify(faqVi)); formData.set("contentJp", JSON.stringify(faqJp)); } 
+    else if (isAiConfigSection) { 
+        // [MỚI] Lưu AI Config vào cột contentEn (dùng chung cho mọi ngôn ngữ vì AI tự dịch được)
+        formData.set("contentEn", JSON.stringify(aiConfig)); 
+        formData.set("contentVi", ""); formData.set("contentJp", ""); 
+    }
     else { formData.set("contentEn", secEn); formData.set("contentVi", secVi); formData.set("contentJp", secJp); }
+    
     const res = await saveSectionContent(formData);
     setIsSaving(false); if (res.success) { setMsg("Saved! 🌸"); setTimeout(() => setMsg(""), 3000); } else setMsg("Failed!");
   }
@@ -331,6 +315,7 @@ export default function AdminPage() {
                         <label style={s.label}>SELECT SECTION</label>
                         <select name="sectionKey" value={sectionKey} onChange={(e) => setSectionKey(e.target.value)} style={{...s.input, fontSize:'1.1rem', padding:'15px'}}>
                             <option value="global_config">★ GLOBAL CONFIG (Resume, Status)</option>
+                            <option value="ai_config">★ AI BRAIN CONFIG (Tính cách Chatbot)</option>
                             <option value="hero">★ HERO SECTION (Main Info)</option>
                             <option value="about">01. ABOUT ME (Text)</option>
                             <option value="profile">02. PROFILE (Boxes)</option>
@@ -357,6 +342,8 @@ export default function AdminPage() {
                                 <input type="checkbox" checked={!!config.isOpenForWork} onChange={e => setConfig({...config, isOpenForWork: e.target.checked})} style={{width:'20px', height:'20px'}} />
                             </div>
                         </div>
+                    ) : isAiConfigSection ? ( /* [MỚI] Hiển thị AI Editor */
+                        <AiConfigEditor data={aiConfig} onUpdate={updateAiConfig} />
                     ) : isExpSection ? (
                         <div style={s.grid3}>
                             <ExpEditor lang="en" data={expEn} onUpdate={setExpEn} />
@@ -369,7 +356,7 @@ export default function AdminPage() {
                             <BoxEditor lang="vi" data={boxesVi} onUpdate={setBoxesVi} />
                             <BoxEditor lang="jp" data={boxesJp} onUpdate={setBoxesJp} />
                         </div>
-                    ) : isFaqSection ? ( /* [MỚI] Hiển thị FaqEditor */
+                    ) : isFaqSection ? (
                         <div style={s.grid3}>
                             <FaqEditor lang="en" data={faqEn} onUpdate={setFaqEn} />
                             <FaqEditor lang="vi" data={faqVi} onUpdate={setFaqVi} />

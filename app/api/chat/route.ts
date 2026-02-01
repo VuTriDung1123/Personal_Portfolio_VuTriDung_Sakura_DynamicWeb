@@ -6,26 +6,20 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
   try {
-    // [MỚI] Nhận thêm biến 'language' từ Client
     const { messages, language } = await req.json(); 
-    
     const lastMessage = messages[messages.length - 1].content;
 
-    // Mapping mã ngôn ngữ sang tên đầy đủ để AI hiểu rõ hơn
-    const langMap: Record<string, string> = {
-        'vi': 'Vietnamese',
-        'en': 'English',
-        'jp': 'Japanese'
-    };
+    const langMap: Record<string, string> = { 'vi': 'Vietnamese', 'en': 'English', 'jp': 'Japanese' };
     const targetLang = langMap[language] || 'English';
 
-    // Tải dữ liệu Admin
-    const [heroData, aboutData, skillsData, expData, faqData, projects] = await Promise.all([
+    // TẢI DỮ LIỆU TỪ ADMIN (BAO GỒM AI_CONFIG)
+    const [heroData, aboutData, skillsData, expData, faqData, aiConfigData, projects] = await Promise.all([
       getSectionContent('hero'),
       getSectionContent('about'),
       getSectionContent('skills'),
       getSectionContent('experience'),
       getSectionContent('faq_data'),
+      getSectionContent('ai_config'), // [MỚI] Lấy cấu hình AI
       getAllPosts()
     ]);
 
@@ -38,15 +32,25 @@ export async function POST(req: Request) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const faq = parse((faqData as any)?.contentEn || "[]");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const aiConfig = parse((aiConfigData as any)?.contentEn || "{}"); // [MỚI] Parse AI Config
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const skillText = (skillsData as any)?.contentEn || "";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const aboutText = (aboutData as any)?.contentEn || "";
 
-    // SYSTEM PROMPT [CẬP NHẬT PHẦN LANGUAGE]
+    // SYSTEM PROMPT (ĐỘNG)
     const systemPrompt = `
-      ROLE: You are the AI Assistant/Virtual Secretary for the Portfolio of "${hero.fullName || "Vu Tri Dung"}".
+      ROLE: You are the ${aiConfig.roleName || "AI Assistant"} for the Portfolio of "${hero.fullName || "Vu Tri Dung"}".
       
-      --- KNOWLEDGE BASE ---
+      --- PERSONALITY & TONE (CONFIGURED BY OWNER) ---
+      - Tone: ${aiConfig.tone || "Professional & Helpful"}
+      - Special Instructions: ${aiConfig.systemPromptOverride || "Be polite and concise."}
+      
+      --- SECRET KNOWLEDGE (ONLY YOU KNOW) ---
+      ${aiConfig.customStory || "No secret info provided."}
+
+      --- PUBLIC KNOWLEDGE BASE ---
       1. PROFILE: ${hero.greeting}, ${hero.description}
       2. ABOUT: ${aboutText}
       3. SKILLS: ${skillText}
@@ -54,15 +58,14 @@ export async function POST(req: Request) {
       5. FAQ: ${JSON.stringify(faq)}
       6. PROJECTS: User has ${projects?.length || 0} projects.
 
-      --- INSTRUCTIONS ---
-      1. Answer based ONLY on the data above.
-      2. TONE: Professional, Helpful, slightly "Cool/Tech".
-      3. **IMPORTANT: The user is currently viewing the website in ${targetLang}. YOU MUST ANSWER IN ${targetLang}.**
-      4. Keep answers concise (under 3-4 sentences).
+      --- FINAL INSTRUCTIONS ---
+      1. Answer based on the data above. Use "Secret Knowledge" to make conversation more natural if relevant.
+      2. **IMPORTANT: The user is speaking ${targetLang}. ANSWER IN ${targetLang}.**
+      3. Keep answers concise.
     `;
 
     const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.5-flash", // Hoặc gemini-1.5-flash nếu key chưa hỗ trợ 2.5
+        model: "gemini-2.5-flash", 
         systemInstruction: systemPrompt,
     });
 
