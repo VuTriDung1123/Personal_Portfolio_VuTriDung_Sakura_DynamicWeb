@@ -295,9 +295,14 @@ export default function SakuraHome() {
                             </div>
                         )}
                         <p className="hero-desc">{hero.description}</p>
+                        
+                        {/* [CẬP NHẬT] Thêm nút FAQ vào đây */}
                         <div className="hero-btns">
                             <a href="#projects" className="btn-big btn-pink">{t.btn_view_project}</a>
                             <a href="#contact" className="btn-big btn-white">{t.btn_contact}</a>
+                            <Link href="/faq" className="btn-big" style={{background: 'white', border: '2px dashed #ff69b4', color: '#ff69b4'}}>
+                                ❓ FAQ
+                            </Link>
                         </div>
                     </div>
                     
@@ -307,7 +312,6 @@ export default function SakuraHome() {
                         <img src="/pictures/sakura_avatar.png" alt="Frame" className="avatar-frame-overlay" />
                     </div>
                 </section>
-
                 <div style={{maxWidth: '1200px', margin: '0 auto', padding: '0 20px'}}>
                     
                     {/* 01. ABOUT ME */}
