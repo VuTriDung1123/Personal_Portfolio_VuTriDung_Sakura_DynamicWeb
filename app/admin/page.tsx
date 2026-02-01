@@ -15,17 +15,26 @@ interface ExpItem { id: string; time: string; role: string; details: string[]; }
 interface ExpGroup { id: string; title: string; items: ExpItem[]; }
 interface FaqItem { q: string; a: string; }
 
-// [MỚI] Type cho Cấu hình AI
+// AI Config Type
+interface AiProfile {
+    roleName: string;
+    tone: string;
+    customStory: string;
+    systemPromptOverride: string;
+}
+
 interface AiConfigData {
-    roleName: string;       // VD: "Trợ lý ảo", "Hacker", "Hầu gái"
-    tone: string;           // VD: "Ngầu", "Dễ thương", "Cục súc"
-    customStory: string;    // Những bí mật chỉ AI biết
-    systemPromptOverride: string; // Câu lệnh tối thượng ghi đè
+    hacker: AiProfile;
+    sakura: AiProfile;
 }
 
 // --- CONSTANTS ---
 const DEFAULT_HERO: HeroData = { fullName: "Vũ Trí Dũng", nickName1: "David Miller", nickName2: "Akina Aoi", avatarUrl: "", greeting: "Hi, I am", description: "", typewriter: '["Developer", "Student"]' };
-const DEFAULT_AI_CONFIG: AiConfigData = { roleName: "Virtual Assistant", tone: "Professional & Helpful", customStory: "", systemPromptOverride: "" };
+
+const DEFAULT_AI_CONFIG: AiConfigData = { 
+    hacker: { roleName: "System Administrator", tone: "Logical, Cool, Concise", customStory: "", systemPromptOverride: "" },
+    sakura: { roleName: "Sakura Assistant", tone: "Friendly, Cute, Helpful", customStory: "", systemPromptOverride: "" }
+};
 
 // --- STYLES (SAKURA STYLE) ---
 const s = {
@@ -44,94 +53,47 @@ const s = {
     itemBox: { background: '#fff0f5', padding: '15px', borderRadius: '15px', marginBottom: '15px', border: '1px dashed #ffc1e3' }
 };
 
-// ... (Giữ nguyên BoxEditor, ExpEditor, FaqEditor, HeroEditor cũ nếu muốn, hoặc dùng code dưới đây tích hợp sẵn) ...
+// --- SUB-COMPONENTS ---
+const BoxEditor = ({ lang, data, onUpdate }: any) => { return <div style={s.card}><h3 style={s.subTitle}>PROFILE / CONTACT ({lang})</h3>{data.map((box:any, bIdx:any) => (<div key={box.id} style={s.itemBox}><div style={{display:'flex', gap:'10px', marginBottom:'10px'}}><input value={box.title} onChange={(e:any) => {const n=[...data];n[bIdx].title=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} placeholder="Group Title" /><button type="button" onClick={() => {const n=[...data];n.splice(bIdx,1);onUpdate(n)}} style={s.btnDelete}>X</button></div>{box.items.map((it:any, iIdx:any) => (<div key={iIdx} style={{display:'flex', gap:'10px'}}><input value={it.label} onChange={(e:any) => {const n=[...data];n[bIdx].items[iIdx].label=e.target.value;onUpdate(n)}} style={{...s.input, flex:1}} placeholder="Label" /><input value={it.value} onChange={(e:any) => {const n=[...data];n[bIdx].items[iIdx].value=e.target.value;onUpdate(n)}} style={{...s.input, flex:2}} placeholder="Value" /><button type="button" onClick={() => {const n=[...data];n[bIdx].items.splice(iIdx,1);onUpdate(n)}} style={{...s.btnDelete, height:'42px'}}>×</button></div>))}<button onClick={() => {const n=[...data];n[bIdx].items.push({label:"",value:""});onUpdate(n)}} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Add Item</button></div>))}<button onClick={() => onUpdate([...data, {id:Date.now().toString(), title:"New", items:[]}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ GROUP</button></div> };
+const ExpEditor = ({ lang, data, onUpdate }: any) => { return <div style={s.card}><h3 style={s.subTitle}>EXPERIENCE ({lang})</h3>{data.map((g:any, gIdx:any) => (<div key={g.id} style={{marginBottom:'20px', borderLeft:'4px solid #ff69b4', paddingLeft:'15px'}}><div style={{display:'flex', gap:'10px', marginBottom:'10px'}}><input value={g.title} onChange={(e:any)=>{const n=[...data];n[gIdx].title=e.target.value;onUpdate(n)}} style={{...s.input, fontSize:'1.1rem', fontWeight:'bold'}} placeholder="Category"/><button onClick={()=>{const n=[...data];n.splice(gIdx,1);onUpdate(n)}} style={s.btnDelete}>DEL</button></div>{g.items.map((it:any, iIdx:any)=>(<div key={it.id} style={{background:'white', padding:'15px', borderRadius:'10px', marginBottom:'10px', boxShadow:'0 2px 5px rgba(0,0,0,0.05)'}}><div style={{display:'grid', gridTemplateColumns:'1fr 2fr', gap:'10px'}}><input value={it.time} onChange={(e:any)=>{const n=[...data];n[gIdx].items[iIdx].time=e.target.value;onUpdate(n)}} style={s.input} placeholder="Time"/><div style={{display:'flex', gap:'5px'}}><input value={it.role} onChange={(e:any)=>{const n=[...data];n[gIdx].items[iIdx].role=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold'}} placeholder="Role"/><button onClick={()=>{const n=[...data];n[gIdx].items.splice(iIdx,1);onUpdate(n)}} style={s.btnDelete}>×</button></div></div><textarea value={it.details.join('\n')} onChange={(e:any)=>{const n=[...data];n[gIdx].items[iIdx].details=e.target.value.split('\n');onUpdate(n)}} style={{...s.input, height:'80px', fontFamily:'monospace', fontSize:'0.85rem'}} placeholder="- Detail"/></div>))}<button onClick={()=>{const n=[...data];n[gIdx].items.push({id:Date.now().toString(),time:"",role:"",details:[]});onUpdate(n)}} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Job</button></div>))}<button onClick={()=>onUpdate([...data,{id:Date.now().toString(),title:"New",items:[]}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ CAT</button></div> };
+const FaqEditor = ({ lang, data, onUpdate }: any) => { return <div style={s.card}><h3 style={s.subTitle}>FAQ ({lang})</h3>{data.map((it:any, idx:any)=>(<div key={idx} style={s.itemBox}><div style={{display:'flex', justifyContent:'space-between', marginBottom:'5px'}}><label style={s.label}>Q</label><button onClick={()=>{const n=[...data];n.splice(idx,1);onUpdate(n)}} style={s.btnDelete}>×</button></div><input value={it.q} onChange={(e:any)=>{const n=[...data];n[idx].q=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} /><label style={s.label}>A</label><textarea value={it.a} onChange={(e:any)=>{const n=[...data];n[idx].a=e.target.value;onUpdate(n)}} style={{...s.input, height:'80px'}} /></div>))}<button onClick={()=>onUpdate([...data,{q:"",a:""}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ QUESTION</button></div> };
+const HeroEditor = ({ lang, data, onUpdate }: any) => ( <div style={s.card}><h3 style={s.subTitle}>HERO ({lang})</h3><div><label style={s.label}>Greeting</label><input value={data.greeting} onChange={(e:any)=>onUpdate('greeting',e.target.value)} style={s.input} /></div><div><label style={s.label}>Full Name</label><input value={data.fullName} onChange={(e:any)=>onUpdate('fullName',e.target.value)} style={s.input} /></div><div style={{display:'flex', gap:'10px'}}><div style={{flex:1}}><label style={s.label}>Nick 1</label><input value={data.nickName1} onChange={e=>onUpdate('nickName1', e.target.value)} style={s.input} /></div><div style={{flex:1}}><label style={s.label}>Nick 2</label><input value={data.nickName2} onChange={e=>onUpdate('nickName2', e.target.value)} style={s.input} /></div></div><div><label style={s.label}>Typewriter</label><input value={data.typewriter} onChange={e=>onUpdate('typewriter', e.target.value)} style={s.input} /></div><div><label style={s.label}>Description</label><textarea value={data.description} onChange={e=>onUpdate('description', e.target.value)} style={{...s.input, height:'80px'}} /></div><div><label style={s.label}>Avatar</label><input value={data.avatarUrl} onChange={e=>onUpdate('avatarUrl', e.target.value)} style={s.input} /></div></div> );
 
-const BoxEditor = ({ lang, data, onUpdate }: { lang: string, data: SectionBox[], onUpdate: (d: SectionBox[]) => void }) => {
-    const addBox = () => onUpdate([...data, { id: Date.now().toString(), title: "New Group", items: [] }]);
-    const updateTitle = (idx: number, v: string) => { const n = [...data]; n[idx].title = v; onUpdate(n); };
-    const addItem = (idx: number) => { const n = [...data]; n[idx].items.push({ label: "", value: "" }); onUpdate(n); };
-    const updateItem = (bIdx: number, iIdx: number, f: 'label'|'value', v: string) => { const n = [...data]; n[bIdx].items[iIdx][f] = v; onUpdate(n); };
-    const remove = (idx: number) => { const n = [...data]; n.splice(idx, 1); onUpdate(n); };
-    const removeItem = (bIdx: number, iIdx: number) => { const n = [...data]; n[bIdx].items.splice(iIdx, 1); onUpdate(n); };
-    return (
-        <div style={s.card}><h3 style={s.subTitle}>PROFILE / CONTACT ({lang})</h3>{data.map((box, bIdx) => (<div key={box.id} style={s.itemBox}><div style={{display:'flex', gap:'10px', marginBottom:'10px'}}><input value={box.title} onChange={e=>updateTitle(bIdx, e.target.value)} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} placeholder="Group Title" /><button type="button" onClick={()=>remove(bIdx)} style={s.btnDelete}>X</button></div>{box.items.map((it, iIdx) => (<div key={iIdx} style={{display:'flex', gap:'10px'}}><input value={it.label} onChange={e=>updateItem(bIdx,iIdx,'label',e.target.value)} style={{...s.input, flex:1}} placeholder="Label" /><input value={it.value} onChange={e=>updateItem(bIdx,iIdx,'value',e.target.value)} style={{...s.input, flex:2}} placeholder="Value" /><button type="button" onClick={()=>removeItem(bIdx,iIdx)} style={{...s.btnDelete, height:'42px'}}>×</button></div>))}<button type="button" onClick={()=>addItem(bIdx)} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Add Item</button></div>))}<button type="button" onClick={addBox} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ ADD GROUP</button></div>
-    );
-};
-
-const ExpEditor = ({ lang, data, onUpdate }: { lang: string, data: ExpGroup[], onUpdate: (d: ExpGroup[]) => void }) => {
-    const addGroup = () => onUpdate([...data, { id: Date.now().toString(), title: "New Cat", items: [] }]);
-    const updateTitle = (idx: number, v: string) => { const n = [...data]; n[idx].title = v; onUpdate(n); };
-    const addItem = (gIdx: number) => { const n = [...data]; n[gIdx].items.push({ id: Date.now().toString(), time: "", role: "", details: [] }); onUpdate(n); };
-    const updateItem = (gIdx: number, iIdx: number, f: keyof ExpItem, v: string) => { const n = [...data]; (n[gIdx].items[iIdx] as any)[f] = v; onUpdate(n); };
-    const updateDetails = (gIdx: number, iIdx: number, txt: string) => { const n = [...data]; n[gIdx].items[iIdx].details = txt.split('\n'); onUpdate(n); };
-    const remove = (idx: number) => { const n = [...data]; n.splice(idx, 1); onUpdate(n); };
-    const removeItem = (gIdx: number, iIdx: number) => { const n = [...data]; n[gIdx].items.splice(iIdx, 1); onUpdate(n); };
-    return (
-        <div style={s.card}><h3 style={s.subTitle}>EXPERIENCE ({lang})</h3>{data.map((group, gIdx) => (<div key={group.id} style={{marginBottom:'20px', borderLeft:'4px solid #ff69b4', paddingLeft:'15px'}}><div style={{display:'flex', gap:'10px', marginBottom:'10px'}}><input value={group.title} onChange={e=>updateTitle(gIdx, e.target.value)} style={{...s.input, fontSize:'1.1rem', fontWeight:'bold'}} placeholder="Category" /><button type="button" onClick={()=>remove(gIdx)} style={s.btnDelete}>DEL</button></div>{group.items.map((item, iIdx) => (<div key={item.id} style={{background:'white', padding:'15px', borderRadius:'10px', marginBottom:'10px', boxShadow:'0 2px 5px rgba(0,0,0,0.05)'}}><div style={{display:'grid', gridTemplateColumns:'1fr 2fr', gap:'10px'}}><input value={item.time} onChange={e=>updateItem(gIdx,iIdx,'time',e.target.value)} style={s.input} placeholder="Time" /><div style={{display:'flex', gap:'5px'}}><input value={item.role} onChange={e=>updateItem(gIdx,iIdx,'role',e.target.value)} style={{...s.input, fontWeight:'bold'}} placeholder="Role" /><button type="button" onClick={()=>removeItem(gIdx,iIdx)} style={s.btnDelete}>×</button></div></div><textarea value={item.details.join('\n')} onChange={e=>updateDetails(gIdx,iIdx,e.target.value)} style={{...s.input, height:'80px', fontFamily:'monospace', fontSize:'0.85rem'}} placeholder="- Detail" /></div>))}<button type="button" onClick={()=>addItem(gIdx)} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Job</button></div>))}<button type="button" onClick={addGroup} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ CAT</button></div>
-    );
-};
-
-const FaqEditor = ({ lang, data, onUpdate }: { lang: string, data: FaqItem[], onUpdate: (d: FaqItem[]) => void }) => {
-    const addItem = () => onUpdate([...data, { q: "", a: "" }]);
-    const updateItem = (idx: number, f: keyof FaqItem, v: string) => { const n = [...data]; n[idx][f] = v; onUpdate(n); };
-    const removeItem = (idx: number) => { const n = [...data]; n.splice(idx, 1); onUpdate(n); };
-    return (<div style={s.card}><h3 style={s.subTitle}>FAQ ({lang})</h3>{data.map((item, idx) => (<div key={idx} style={s.itemBox}><div style={{display:'flex', justifyContent:'space-between', marginBottom:'5px'}}><label style={s.label}>Q</label><button type="button" onClick={()=>removeItem(idx)} style={s.btnDelete}>×</button></div><input value={item.q} onChange={e=>updateItem(idx, 'q', e.target.value)} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} /><label style={s.label}>A</label><textarea value={item.a} onChange={e=>updateItem(idx, 'a', e.target.value)} style={{...s.input, height:'80px'}} /></div>))}<button type="button" onClick={addItem} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ QUESTION</button></div>);
-};
-
-const HeroEditor = ({ lang, data, onUpdate }: { lang: string, data: HeroData, onUpdate: (f: keyof HeroData, v: string) => void }) => (
-    <div style={s.card}><h3 style={s.subTitle}>HERO ({lang})</h3><div><label style={s.label}>Greeting</label><input value={data.greeting} onChange={e=>onUpdate('greeting', e.target.value)} style={s.input} /></div><div><label style={s.label}>Full Name</label><input value={data.fullName} onChange={e=>onUpdate('fullName', e.target.value)} style={s.input} /></div><div style={{display:'flex', gap:'10px'}}><div style={{flex:1}}><label style={s.label}>Nick 1</label><input value={data.nickName1} onChange={e=>onUpdate('nickName1', e.target.value)} style={s.input} /></div><div style={{flex:1}}><label style={s.label}>Nick 2</label><input value={data.nickName2} onChange={e=>onUpdate('nickName2', e.target.value)} style={s.input} /></div></div><div><label style={s.label}>Typewriter</label><input value={data.typewriter} onChange={e=>onUpdate('typewriter', e.target.value)} style={s.input} /></div><div><label style={s.label}>Description</label><textarea value={data.description} onChange={e=>onUpdate('description', e.target.value)} style={{...s.input, height:'80px'}} /></div><div><label style={s.label}>Avatar</label><input value={data.avatarUrl} onChange={e=>onUpdate('avatarUrl', e.target.value)} style={s.input} /></div></div>
-);
-
-// --- [MỚI] SUB-COMPONENT: AI CONFIG EDITOR ---
-// Nơi bạn dạy dỗ con AI của mình
-const AiConfigEditor = ({ data, onUpdate }: { data: AiConfigData, onUpdate: (f: keyof AiConfigData, v: string) => void }) => (
+// --- [ĐÃ SỬA] AI CONFIG EDITOR (DEFENSIVE CODING) ---
+// Thêm dấu ? để tránh crash khi dữ liệu chưa có (undefined)
+const AiConfigEditor = ({ data, onUpdate }: { data: AiConfigData, onUpdate: (theme: 'hacker'|'sakura', f: keyof AiProfile, v: string) => void }) => (
     <div style={s.card}>
-        <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'20px'}}>
+        <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'20px', borderBottom: '2px solid #ffe4e1', paddingBottom: '10px'}}>
             <span style={{fontSize:'2rem'}}>🧠</span>
-            <h3 style={{...s.subTitle, margin:0, border: 'none'}}>AI BRAIN CONFIGURATION</h3>
+            <h3 style={{...s.title, fontSize: '1.5rem'}}>DUAL CORE AI CONFIGURATION</h3>
         </div>
         
-        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'15px'}}>
-            <div>
-                <label style={s.label}>AI ROLE NAME (Tên vai diễn)</label>
-                <input 
-                    value={data.roleName} 
-                    onChange={e => onUpdate('roleName', e.target.value)} 
-                    style={s.input} 
-                    placeholder="VD: Trợ lý ảo, Hacker, Cô hầu gái..." 
-                />
+        <div style={s.grid2}>
+            {/* CỘT HACKER */}
+            <div style={{borderRight: '1px dashed #ffc1e3', paddingRight: '20px'}}>
+                <h4 style={{...s.subTitle, color: '#333', borderLeft: '5px solid #333'}}>[ HACKER_MODE ]</h4>
+                <div style={{marginBottom: '15px'}}><label style={s.label}>ROLE NAME</label><input value={data?.hacker?.roleName || ''} onChange={e => onUpdate('hacker', 'roleName', e.target.value)} style={s.input} placeholder="e.g. Cyber Security AI" /></div>
+                <div style={{marginBottom: '15px'}}><label style={s.label}>TONE</label><input value={data?.hacker?.tone || ''} onChange={e => onUpdate('hacker', 'tone', e.target.value)} style={s.input} placeholder="e.g. Cold, Logical" /></div>
+                <div style={{marginBottom: '15px'}}><label style={s.label}>SECRET</label><textarea value={data?.hacker?.customStory || ''} onChange={e => onUpdate('hacker', 'customStory', e.target.value)} style={{...s.input, height:'80px'}} placeholder="Hacker secrets..." /></div>
+                
+                <div style={{marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #eee'}}>
+                    <label style={{...s.label, color: 'red'}}>⚠ OVERRIDE</label>
+                    <textarea value={data?.hacker?.systemPromptOverride || ''} onChange={e => onUpdate('hacker', 'systemPromptOverride', e.target.value)} style={{...s.input, height:'60px', borderColor: 'red', background: '#fffafa'}} placeholder="Force command..." />
+                </div>
             </div>
-            <div>
-                <label style={s.label}>TONE & STYLE (Giọng điệu)</label>
-                <input 
-                    value={data.tone} 
-                    onChange={e => onUpdate('tone', e.target.value)} 
-                    style={s.input} 
-                    placeholder="VD: Chuyên nghiệp, Hài hước, Lạnh lùng..." 
-                />
+
+            {/* CỘT SAKURA */}
+            <div style={{paddingLeft: '10px'}}>
+                <h4 style={s.subTitle}>✿ SAKURA_MODE ✿</h4>
+                <div style={{marginBottom: '15px'}}><label style={s.label}>ROLE NAME</label><input value={data?.sakura?.roleName || ''} onChange={e => onUpdate('sakura', 'roleName', e.target.value)} style={s.input} placeholder="e.g. Sakura Assistant" /></div>
+                <div style={{marginBottom: '15px'}}><label style={s.label}>TONE</label><input value={data?.sakura?.tone || ''} onChange={e => onUpdate('sakura', 'tone', e.target.value)} style={s.input} placeholder="e.g. Cute, Friendly" /></div>
+                <div style={{marginBottom: '15px'}}><label style={s.label}>SECRET</label><textarea value={data?.sakura?.customStory || ''} onChange={e => onUpdate('sakura', 'customStory', e.target.value)} style={{...s.input, height:'80px'}} placeholder="Cute secrets..." /></div>
+                
+                <div style={{marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #ffe4e1'}}>
+                    <label style={{...s.label, color: '#ff69b4'}}>⚠ OVERRIDE</label>
+                    <textarea value={data?.sakura?.systemPromptOverride || ''} onChange={e => onUpdate('sakura', 'systemPromptOverride', e.target.value)} style={{...s.input, height:'60px', borderColor: '#ff69b4', background: '#fff0f5'}} placeholder="Force command..." />
+                </div>
             </div>
-        </div>
-
-        <div style={{marginBottom:'15px'}}>
-            <label style={s.label}>SECRET KNOWLEDGE / BACKSTORY (Câu chuyện bí mật)</label>
-            <p style={{fontSize:'0.8rem', color:'#aaa', marginBottom:'5px'}}>Những thông tin này không hiện trên web nhưng AI sẽ biết để chém gió.</p>
-            <textarea 
-                value={data.customStory} 
-                onChange={e => onUpdate('customStory', e.target.value)} 
-                style={{...s.input, height:'100px'}} 
-                placeholder="VD: Dũng thích ăn bún đậu mắm tôm. Hồi nhỏ từng hack facebook crush..." 
-            />
-        </div>
-
-        <div>
-            <label style={s.label}>SYSTEM PROMPT OVERRIDE (Dành cho Advanced User)</label>
-            <p style={{fontSize:'0.8rem', color:'#aaa', marginBottom:'5px'}}>Ghi đè hoặc bổ sung lệnh tối thượng cho AI. Để trống nếu không dùng.</p>
-            <textarea 
-                value={data.systemPromptOverride} 
-                onChange={e => onUpdate('systemPromptOverride', e.target.value)} 
-                style={{...s.input, height:'80px', fontFamily:'monospace', background:'#f5f5f5'}} 
-                placeholder="VD: Always end sentences with 'uwu'." 
-            />
         </div>
     </div>
 );
@@ -158,7 +120,7 @@ export default function AdminPage() {
   const [expEn, setExpEn] = useState<ExpGroup[]>([]); const [expVi, setExpVi] = useState<ExpGroup[]>([]); const [expJp, setExpJp] = useState<ExpGroup[]>([]);
   const [faqEn, setFaqEn] = useState<FaqItem[]>([]); const [faqVi, setFaqVi] = useState<FaqItem[]>([]); const [faqJp, setFaqJp] = useState<FaqItem[]>([]);
   
-  // [MỚI] AI Config State
+  // AI Config State (Khởi tạo với Default để không bao giờ bị undefined)
   const [aiConfig, setAiConfig] = useState<AiConfigData>(DEFAULT_AI_CONFIG);
 
   const isBoxSection = ['profile', 'contact'].includes(sectionKey);
@@ -166,7 +128,7 @@ export default function AdminPage() {
   const isHeroSection = sectionKey === 'hero';
   const isConfigSection = sectionKey === 'global_config';
   const isFaqSection = sectionKey === 'faq_data';
-  const isAiConfigSection = sectionKey === 'ai_config'; // [MỚI]
+  const isAiConfigSection = sectionKey === 'ai_config';
 
   useEffect(() => { getAllPosts().then((data) => setPosts(data as unknown as Post[])); }, []);
 
@@ -179,38 +141,27 @@ export default function AdminPage() {
                 const data = await getSectionContent(sectionKey);
                 if (data) {
                     const typedData = data as unknown as SectionData;
-                    if (isExpSection) {
-                        try { setExpEn(JSON.parse(typedData.contentEn)); } catch { setExpEn([]); }
-                        try { setExpVi(JSON.parse(typedData.contentVi)); } catch { setExpVi([]); }
-                        try { setExpJp(JSON.parse(typedData.contentJp)); } catch { setExpJp([]); }
-                    } else if (isBoxSection) {
-                        try { setBoxesEn(JSON.parse(typedData.contentEn)); } catch { setBoxesEn([]); }
-                        try { setBoxesVi(JSON.parse(typedData.contentVi)); } catch { setBoxesVi([]); }
-                        try { setBoxesJp(JSON.parse(typedData.contentJp)); } catch { setBoxesJp([]); }
-                    } else if (isHeroSection) {
-                        try { setHeroEn({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentEn) }); } catch { setHeroEn(DEFAULT_HERO); }
-                        try { setHeroVi({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentVi) }); } catch { setHeroVi(DEFAULT_HERO); }
-                        try { setHeroJp({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentJp) }); } catch { setHeroJp(DEFAULT_HERO); }
-                    } else if (isConfigSection) {
-                        try { const p = JSON.parse(typedData.contentEn); setConfig({ resumeUrl: p.resumeUrl || "", isOpenForWork: p.isOpenForWork ?? true }); } catch { setConfig({ resumeUrl: "", isOpenForWork: true }); }
-                    } else if (isFaqSection) {
-                        try { setFaqEn(JSON.parse(typedData.contentEn)); } catch { setFaqEn([]); }
-                        try { setFaqVi(JSON.parse(typedData.contentVi)); } catch { setFaqVi([]); }
-                        try { setFaqJp(JSON.parse(typedData.contentJp)); } catch { setFaqJp([]); }
-                    } else if (isAiConfigSection) { // [MỚI] Load AI Config
-                        try { setAiConfig({ ...DEFAULT_AI_CONFIG, ...JSON.parse(typedData.contentEn) }); } catch { setAiConfig(DEFAULT_AI_CONFIG); }
-                    } else { 
-                        setSecEn(typedData.contentEn || ""); setSecVi(typedData.contentVi || ""); setSecJp(typedData.contentJp || "");
-                    }
+                    if (isExpSection) { try { setExpEn(JSON.parse(typedData.contentEn)); } catch { setExpEn([]); } try { setExpVi(JSON.parse(typedData.contentVi)); } catch { setExpVi([]); } try { setExpJp(JSON.parse(typedData.contentJp)); } catch { setExpJp([]); } }
+                    else if (isBoxSection) { try { setBoxesEn(JSON.parse(typedData.contentEn)); } catch { setBoxesEn([]); } try { setBoxesVi(JSON.parse(typedData.contentVi)); } catch { setBoxesVi([]); } try { setBoxesJp(JSON.parse(typedData.contentJp)); } catch { setBoxesJp([]); } } 
+                    else if (isHeroSection) { try { setHeroEn({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentEn) }); } catch { setHeroEn(DEFAULT_HERO); } try { setHeroVi({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentVi) }); } catch { setHeroVi(DEFAULT_HERO); } try { setHeroJp({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentJp) }); } catch { setHeroJp(DEFAULT_HERO); } }
+                    else if (isConfigSection) { try { const p = JSON.parse(typedData.contentEn); setConfig({ resumeUrl: p.resumeUrl || "", isOpenForWork: p.isOpenForWork ?? true }); } catch { setConfig({ resumeUrl: "", isOpenForWork: true }); } }
+                    else if (isFaqSection) { try { setFaqEn(JSON.parse(typedData.contentEn)); } catch { setFaqEn([]); } try { setFaqVi(JSON.parse(typedData.contentVi)); } catch { setFaqVi([]); } try { setFaqJp(JSON.parse(typedData.contentJp)); } catch { setFaqJp([]); } }
+                    else if (isAiConfigSection) { 
+                        // [ĐÃ SỬA] Logic an toàn khi load data cũ
+                        try { 
+                            const parsed = JSON.parse(typedData.contentEn);
+                            // Nếu data cũ không có key hacker/sakura, dùng default đắp vào
+                            setAiConfig({
+                                hacker: parsed.hacker || DEFAULT_AI_CONFIG.hacker,
+                                sakura: parsed.sakura || DEFAULT_AI_CONFIG.sakura
+                            }); 
+                        } catch { 
+                            setAiConfig(DEFAULT_AI_CONFIG); 
+                        }
+                    } 
+                    else { setSecEn(typedData.contentEn || ""); setSecVi(typedData.contentVi || ""); setSecJp(typedData.contentJp || ""); }
                 } else {
-                    // Reset all
-                    setSecEn(""); setSecVi(""); setSecJp("");
-                    setBoxesEn([]); setBoxesVi([]); setBoxesJp([]);
-                    setExpEn([]); setExpVi([]); setExpJp([]);
-                    setFaqEn([]); setFaqVi([]); setFaqJp([]);
-                    setHeroEn(DEFAULT_HERO); setHeroVi(DEFAULT_HERO); setHeroJp(DEFAULT_HERO);
-                    setConfig({ resumeUrl: "", isOpenForWork: true });
-                    setAiConfig(DEFAULT_AI_CONFIG); // [MỚI]
+                    setSecEn(""); setSecVi(""); setSecJp(""); setBoxesEn([]); setBoxesVi([]); setBoxesJp([]); setExpEn([]); setExpVi([]); setExpJp([]); setFaqEn([]); setFaqVi([]); setFaqJp([]); setHeroEn(DEFAULT_HERO); setHeroVi(DEFAULT_HERO); setHeroJp(DEFAULT_HERO); setConfig({ resumeUrl: "", isOpenForWork: true }); setAiConfig(DEFAULT_AI_CONFIG);
                 }
                 setMsg("");
             } catch (error) { console.error(error); setMsg("Error loading!"); }
@@ -233,26 +184,24 @@ export default function AdminPage() {
 
   const updateHero = (lang: 'en'|'vi'|'jp', field: keyof HeroData, val: string) => { const setter = lang === 'en' ? setHeroEn : (lang === 'vi' ? setHeroVi : setHeroJp); setter(prev => ({ ...prev, [field]: val })); };
   
-  // [MỚI] Hàm cập nhật AI Config
-  const updateAiConfig = (field: keyof AiConfigData, val: string) => { setAiConfig(prev => ({ ...prev, [field]: val })); };
+  // Update AI Config (Deep update)
+  const updateAiConfig = (theme: 'hacker'|'sakura', field: keyof AiProfile, val: string) => { 
+      setAiConfig(prev => ({ 
+          ...prev, 
+          [theme]: { ...prev[theme], [field]: val } 
+      })); 
+  };
 
   async function handleSectionSubmit(formData: FormData) {
     if (isSaving) return; setIsSaving(true); setMsg("Saving...");
-    
     if (isExpSection) { formData.set("contentEn", JSON.stringify(expEn)); formData.set("contentVi", JSON.stringify(expVi)); formData.set("contentJp", JSON.stringify(expJp)); } 
     else if (isBoxSection) { formData.set("contentEn", JSON.stringify(boxesEn)); formData.set("contentVi", JSON.stringify(boxesVi)); formData.set("contentJp", JSON.stringify(boxesJp)); } 
     else if (isHeroSection) { formData.set("contentEn", JSON.stringify(heroEn)); formData.set("contentVi", JSON.stringify(heroVi)); formData.set("contentJp", JSON.stringify(heroJp)); } 
     else if (isConfigSection) { formData.set("contentEn", JSON.stringify(config)); formData.set("contentVi", ""); formData.set("contentJp", ""); } 
     else if (isFaqSection) { formData.set("contentEn", JSON.stringify(faqEn)); formData.set("contentVi", JSON.stringify(faqVi)); formData.set("contentJp", JSON.stringify(faqJp)); } 
-    else if (isAiConfigSection) { 
-        // [MỚI] Lưu AI Config vào cột contentEn (dùng chung cho mọi ngôn ngữ vì AI tự dịch được)
-        formData.set("contentEn", JSON.stringify(aiConfig)); 
-        formData.set("contentVi", ""); formData.set("contentJp", ""); 
-    }
+    else if (isAiConfigSection) { formData.set("contentEn", JSON.stringify(aiConfig)); formData.set("contentVi", ""); formData.set("contentJp", ""); }
     else { formData.set("contentEn", secEn); formData.set("contentVi", secVi); formData.set("contentJp", secJp); }
-    
-    const res = await saveSectionContent(formData);
-    setIsSaving(false); if (res.success) { setMsg("Saved! 🌸"); setTimeout(() => setMsg(""), 3000); } else setMsg("Failed!");
+    const res = await saveSectionContent(formData); setIsSaving(false); if (res.success) { setMsg("Saved! 🌸"); setTimeout(() => setMsg(""), 3000); } else setMsg("Failed!");
   }
 
   if (!isAuth) return ( <div style={{display:'flex', height:'100vh', justifyContent:'center', alignItems:'center'}}><form action={handleLogin} style={{...s.card, width:'400px', textAlign:'center'}}><h1 style={{...s.title, marginBottom:'20px'}}>🌸 ADMIN LOGIN</h1><input name="username" placeholder="Username" style={s.input} /><input name="password" type="password" placeholder="Password" style={s.input} /><button style={{...s.btnPrimary, width:'100%', marginTop:'10px'}}>LOGIN</button></form></div> );
@@ -315,7 +264,7 @@ export default function AdminPage() {
                         <label style={s.label}>SELECT SECTION</label>
                         <select name="sectionKey" value={sectionKey} onChange={(e) => setSectionKey(e.target.value)} style={{...s.input, fontSize:'1.1rem', padding:'15px'}}>
                             <option value="global_config">★ GLOBAL CONFIG (Resume, Status)</option>
-                            <option value="ai_config">★ AI BRAIN CONFIG (Tính cách Chatbot)</option>
+                            <option value="ai_config">★ AI BRAIN CONFIG (Dual Core)</option>
                             <option value="hero">★ HERO SECTION (Main Info)</option>
                             <option value="about">01. ABOUT ME (Text)</option>
                             <option value="profile">02. PROFILE (Boxes)</option>
@@ -342,7 +291,7 @@ export default function AdminPage() {
                                 <input type="checkbox" checked={!!config.isOpenForWork} onChange={e => setConfig({...config, isOpenForWork: e.target.checked})} style={{width:'20px', height:'20px'}} />
                             </div>
                         </div>
-                    ) : isAiConfigSection ? ( /* [MỚI] Hiển thị AI Editor */
+                    ) : isAiConfigSection ? (
                         <AiConfigEditor data={aiConfig} onUpdate={updateAiConfig} />
                     ) : isExpSection ? (
                         <div style={s.grid3}>

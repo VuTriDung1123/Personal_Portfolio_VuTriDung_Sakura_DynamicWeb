@@ -6,20 +6,23 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
   try {
-    const { messages, language } = await req.json(); 
+    // [MỚI] Nhận thêm biến 'theme' từ Frontend
+    const { messages, language, theme } = await req.json(); 
+    
     const lastMessage = messages[messages.length - 1].content;
 
+    // Map ngôn ngữ
     const langMap: Record<string, string> = { 'vi': 'Vietnamese', 'en': 'English', 'jp': 'Japanese' };
     const targetLang = langMap[language] || 'English';
 
-    // TẢI DỮ LIỆU TỪ ADMIN (BAO GỒM AI_CONFIG)
+    // Tải dữ liệu Admin
     const [heroData, aboutData, skillsData, expData, faqData, aiConfigData, projects] = await Promise.all([
       getSectionContent('hero'),
       getSectionContent('about'),
       getSectionContent('skills'),
       getSectionContent('experience'),
       getSectionContent('faq_data'),
-      getSectionContent('ai_config'), // [MỚI] Lấy cấu hình AI
+      getSectionContent('ai_config'),
       getAllPosts()
     ]);
 
@@ -31,24 +34,31 @@ export async function POST(req: Request) {
     const exp = parse((expData as any)?.contentEn || "[]");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const faq = parse((faqData as any)?.contentEn || "[]");
+    
+    // [MỚI] Parse AI Config và chọn đúng profile dựa trên 'theme'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const aiConfig = parse((aiConfigData as any)?.contentEn || "{}"); // [MỚI] Parse AI Config
+    const fullAiConfig = parse((aiConfigData as any)?.contentEn || "{}");
+    
+    // Mặc định chọn Hacker nếu không có theme
+    const activeProfile = (theme === 'sakura') 
+        ? (fullAiConfig.sakura || { roleName: "Sakura Assistant", tone: "Cute, Friendly", customStory: "" })
+        : (fullAiConfig.hacker || { roleName: "System Admin", tone: "Cool, Logical", customStory: "" });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const skillText = (skillsData as any)?.contentEn || "";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const aboutText = (aboutData as any)?.contentEn || "";
 
-    // SYSTEM PROMPT (ĐỘNG)
+    // SYSTEM PROMPT (Dùng activeProfile để nạp vai)
     const systemPrompt = `
-      ROLE: You are the ${aiConfig.roleName || "AI Assistant"} for the Portfolio of "${hero.fullName || "Vu Tri Dung"}".
+      ROLE: You are the "${activeProfile.roleName}" for the Portfolio of "${hero.fullName || "Vu Tri Dung"}".
       
-      --- PERSONALITY & TONE (CONFIGURED BY OWNER) ---
-      - Tone: ${aiConfig.tone || "Professional & Helpful"}
-      - Special Instructions: ${aiConfig.systemPromptOverride || "Be polite and concise."}
+      --- PERSONALITY & TONE ---
+      - Tone: ${activeProfile.tone}
+      - Style: ${theme === 'sakura' ? 'Use emojis like 🌸✨, be warm and polite.' : 'Use technical terms, be concise and cool.'}
       
       --- SECRET KNOWLEDGE (ONLY YOU KNOW) ---
-      ${aiConfig.customStory || "No secret info provided."}
+      ${activeProfile.customStory || "No secret info."}
 
       --- PUBLIC KNOWLEDGE BASE ---
       1. PROFILE: ${hero.greeting}, ${hero.description}
@@ -58,14 +68,14 @@ export async function POST(req: Request) {
       5. FAQ: ${JSON.stringify(faq)}
       6. PROJECTS: User has ${projects?.length || 0} projects.
 
-      --- FINAL INSTRUCTIONS ---
-      1. Answer based on the data above. Use "Secret Knowledge" to make conversation more natural if relevant.
+      --- INSTRUCTIONS ---
+      1. Answer based on the data above.
       2. **IMPORTANT: The user is speaking ${targetLang}. ANSWER IN ${targetLang}.**
       3. Keep answers concise.
     `;
 
     const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.5-flash", 
+        model: "gemini-2.5-flash", // Hoặc gemini-1.5-flash
         systemInstruction: systemPrompt,
     });
 
