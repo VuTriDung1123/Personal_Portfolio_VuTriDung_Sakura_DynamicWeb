@@ -8,7 +8,8 @@ import SakuraCursorTrail from "@/components/SakuraCursorTrail";
 import SakuraFalling from "@/components/SakuraFalling"; 
 import SakuraNav from "@/components/SakuraNav";
 import { translations, Lang } from "@/lib/data"; 
-import { getAllPosts, getPostsByTag, getSectionContent } from "@/lib/actions"; 
+import { getAllPosts, getPostsByTag, getSectionContent } from "@/lib/actions";
+import AiChatBox from "@/components/AiChatBox";
 
 // --- DỮ LIỆU TÊN ---
 const MY_NAMES = {
@@ -657,6 +658,7 @@ export default function SakuraHome() {
                 </div>
             </div>
         )}
+        <AiChatBox />
     </main>
   );
 }
