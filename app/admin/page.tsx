@@ -53,14 +53,33 @@ const s = {
     itemBox: { background: '#fff0f5', padding: '15px', borderRadius: '15px', marginBottom: '15px', border: '1px dashed #ffc1e3' }
 };
 
-// --- SUB-COMPONENTS ---
-const BoxEditor = ({ lang, data, onUpdate }: any) => { return <div style={s.card}><h3 style={s.subTitle}>PROFILE / CONTACT ({lang})</h3>{data.map((box:any, bIdx:any) => (<div key={box.id} style={s.itemBox}><div style={{display:'flex', gap:'10px', marginBottom:'10px'}}><input value={box.title} onChange={(e:any) => {const n=[...data];n[bIdx].title=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} placeholder="Group Title" /><button type="button" onClick={() => {const n=[...data];n.splice(bIdx,1);onUpdate(n)}} style={s.btnDelete}>X</button></div>{box.items.map((it:any, iIdx:any) => (<div key={iIdx} style={{display:'flex', gap:'10px'}}><input value={it.label} onChange={(e:any) => {const n=[...data];n[bIdx].items[iIdx].label=e.target.value;onUpdate(n)}} style={{...s.input, flex:1}} placeholder="Label" /><input value={it.value} onChange={(e:any) => {const n=[...data];n[bIdx].items[iIdx].value=e.target.value;onUpdate(n)}} style={{...s.input, flex:2}} placeholder="Value" /><button type="button" onClick={() => {const n=[...data];n[bIdx].items.splice(iIdx,1);onUpdate(n)}} style={{...s.btnDelete, height:'42px'}}>×</button></div>))}<button onClick={() => {const n=[...data];n[bIdx].items.push({label:"",value:""});onUpdate(n)}} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Add Item</button></div>))}<button onClick={() => onUpdate([...data, {id:Date.now().toString(), title:"New", items:[]}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ GROUP</button></div> };
-const ExpEditor = ({ lang, data, onUpdate }: any) => { return <div style={s.card}><h3 style={s.subTitle}>EXPERIENCE ({lang})</h3>{data.map((g:any, gIdx:any) => (<div key={g.id} style={{marginBottom:'20px', borderLeft:'4px solid #ff69b4', paddingLeft:'15px'}}><div style={{display:'flex', gap:'10px', marginBottom:'10px'}}><input value={g.title} onChange={(e:any)=>{const n=[...data];n[gIdx].title=e.target.value;onUpdate(n)}} style={{...s.input, fontSize:'1.1rem', fontWeight:'bold'}} placeholder="Category"/><button onClick={()=>{const n=[...data];n.splice(gIdx,1);onUpdate(n)}} style={s.btnDelete}>DEL</button></div>{g.items.map((it:any, iIdx:any)=>(<div key={it.id} style={{background:'white', padding:'15px', borderRadius:'10px', marginBottom:'10px', boxShadow:'0 2px 5px rgba(0,0,0,0.05)'}}><div style={{display:'grid', gridTemplateColumns:'1fr 2fr', gap:'10px'}}><input value={it.time} onChange={(e:any)=>{const n=[...data];n[gIdx].items[iIdx].time=e.target.value;onUpdate(n)}} style={s.input} placeholder="Time"/><div style={{display:'flex', gap:'5px'}}><input value={it.role} onChange={(e:any)=>{const n=[...data];n[gIdx].items[iIdx].role=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold'}} placeholder="Role"/><button onClick={()=>{const n=[...data];n[gIdx].items.splice(iIdx,1);onUpdate(n)}} style={s.btnDelete}>×</button></div></div><textarea value={it.details.join('\n')} onChange={(e:any)=>{const n=[...data];n[gIdx].items[iIdx].details=e.target.value.split('\n');onUpdate(n)}} style={{...s.input, height:'80px', fontFamily:'monospace', fontSize:'0.85rem'}} placeholder="- Detail"/></div>))}<button onClick={()=>{const n=[...data];n[gIdx].items.push({id:Date.now().toString(),time:"",role:"",details:[]});onUpdate(n)}} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Job</button></div>))}<button onClick={()=>onUpdate([...data,{id:Date.now().toString(),title:"New",items:[]}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ CAT</button></div> };
-const FaqEditor = ({ lang, data, onUpdate }: any) => { return <div style={s.card}><h3 style={s.subTitle}>FAQ ({lang})</h3>{data.map((it:any, idx:any)=>(<div key={idx} style={s.itemBox}><div style={{display:'flex', justifyContent:'space-between', marginBottom:'5px'}}><label style={s.label}>Q</label><button onClick={()=>{const n=[...data];n.splice(idx,1);onUpdate(n)}} style={s.btnDelete}>×</button></div><input value={it.q} onChange={(e:any)=>{const n=[...data];n[idx].q=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} /><label style={s.label}>A</label><textarea value={it.a} onChange={(e:any)=>{const n=[...data];n[idx].a=e.target.value;onUpdate(n)}} style={{...s.input, height:'80px'}} /></div>))}<button onClick={()=>onUpdate([...data,{q:"",a:""}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ QUESTION</button></div> };
-const HeroEditor = ({ lang, data, onUpdate }: any) => ( <div style={s.card}><h3 style={s.subTitle}>HERO ({lang})</h3><div><label style={s.label}>Greeting</label><input value={data.greeting} onChange={(e:any)=>onUpdate('greeting',e.target.value)} style={s.input} /></div><div><label style={s.label}>Full Name</label><input value={data.fullName} onChange={(e:any)=>onUpdate('fullName',e.target.value)} style={s.input} /></div><div style={{display:'flex', gap:'10px'}}><div style={{flex:1}}><label style={s.label}>Nick 1</label><input value={data.nickName1} onChange={e=>onUpdate('nickName1', e.target.value)} style={s.input} /></div><div style={{flex:1}}><label style={s.label}>Nick 2</label><input value={data.nickName2} onChange={e=>onUpdate('nickName2', e.target.value)} style={s.input} /></div></div><div><label style={s.label}>Typewriter</label><input value={data.typewriter} onChange={e=>onUpdate('typewriter', e.target.value)} style={s.input} /></div><div><label style={s.label}>Description</label><textarea value={data.description} onChange={e=>onUpdate('description', e.target.value)} style={{...s.input, height:'80px'}} /></div><div><label style={s.label}>Avatar</label><input value={data.avatarUrl} onChange={e=>onUpdate('avatarUrl', e.target.value)} style={s.input} /></div></div> );
+// --- SUB-COMPONENTS (FIXED TYPES FOR BUILD) ---
 
-// --- [ĐÃ SỬA] AI CONFIG EDITOR (DEFENSIVE CODING) ---
-// Thêm dấu ? để tránh crash khi dữ liệu chưa có (undefined)
+// 1. BoxEditor
+const BoxEditor = ({ lang, data, onUpdate }: { lang: string, data: SectionBox[], onUpdate: (d: SectionBox[]) => void }) => { 
+    return <div style={s.card}><h3 style={s.subTitle}>PROFILE / CONTACT ({lang})</h3>{data.map((box, bIdx) => (<div key={box.id} style={s.itemBox}><div style={{display:'flex', gap:'10px', marginBottom:'10px'}}><input value={box.title} onChange={(e) => {const n=[...data];n[bIdx].title=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} placeholder="Group Title" /><button type="button" onClick={() => {const n=[...data];n.splice(bIdx,1);onUpdate(n)}} style={s.btnDelete}>X</button></div>{box.items.map((it, iIdx) => (<div key={iIdx} style={{display:'flex', gap:'10px'}}><input value={it.label} onChange={(e) => {const n=[...data];n[bIdx].items[iIdx].label=e.target.value;onUpdate(n)}} style={{...s.input, flex:1}} placeholder="Label" /><input value={it.value} onChange={(e) => {const n=[...data];n[bIdx].items[iIdx].value=e.target.value;onUpdate(n)}} style={{...s.input, flex:2}} placeholder="Value" /><button type="button" onClick={() => {const n=[...data];n[bIdx].items.splice(iIdx,1);onUpdate(n)}} style={{...s.btnDelete, height:'42px'}}>×</button></div>))}<button onClick={() => {const n=[...data];n[bIdx].items.push({label:"",value:""});onUpdate(n)}} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Add Item</button></div>))}<button onClick={() => onUpdate([...data, {id:Date.now().toString(), title:"New", items:[]}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ GROUP</button></div> 
+};
+
+// 2. ExpEditor
+const ExpEditor = ({ lang, data, onUpdate }: { lang: string, data: ExpGroup[], onUpdate: (d: ExpGroup[]) => void }) => { 
+    return <div style={s.card}><h3 style={s.subTitle}>EXPERIENCE ({lang})</h3>{data.map((g, gIdx) => (<div key={g.id} style={{marginBottom:'20px', borderLeft:'4px solid #ff69b4', paddingLeft:'15px'}}><div style={{display:'flex', gap:'10px', marginBottom:'10px'}}><input value={g.title} onChange={(e)=>{const n=[...data];n[gIdx].title=e.target.value;onUpdate(n)}} style={{...s.input, fontSize:'1.1rem', fontWeight:'bold'}} placeholder="Category"/><button onClick={()=>{const n=[...data];n.splice(gIdx,1);onUpdate(n)}} style={s.btnDelete}>DEL</button></div>{g.items.map((it, iIdx)=>(<div key={it.id} style={{background:'white', padding:'15px', borderRadius:'10px', marginBottom:'10px', boxShadow:'0 2px 5px rgba(0,0,0,0.05)'}}><div style={{display:'grid', gridTemplateColumns:'1fr 2fr', gap:'10px'}}><input value={it.time} onChange={(e)=>{const n=[...data];n[gIdx].items[iIdx].time=e.target.value;onUpdate(n)}} style={s.input} placeholder="Time"/><div style={{display:'flex', gap:'5px'}}><input value={it.role} onChange={(e)=>{const n=[...data];n[gIdx].items[iIdx].role=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold'}} placeholder="Role"/><button onClick={()=>{const n=[...data];n[gIdx].items.splice(iIdx,1);onUpdate(n)}} style={s.btnDelete}>×</button></div></div><textarea value={it.details.join('\n')} onChange={(e)=>{const n=[...data];n[gIdx].items[iIdx].details=e.target.value.split('\n');onUpdate(n)}} style={{...s.input, height:'80px', fontFamily:'monospace', fontSize:'0.85rem'}} placeholder="- Detail"/></div>))}<button onClick={()=>{const n=[...data];n[gIdx].items.push({id:Date.now().toString(),time:"",role:"",details:[]});onUpdate(n)}} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Job</button></div>))}<button onClick={()=>onUpdate([...data,{id:Date.now().toString(),title:"New",items:[]}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ CAT</button></div> 
+};
+
+// 3. FaqEditor
+const FaqEditor = ({ lang, data, onUpdate }: { lang: string, data: FaqItem[], onUpdate: (d: FaqItem[]) => void }) => { 
+    return <div style={s.card}><h3 style={s.subTitle}>FAQ ({lang})</h3>{data.map((it, idx)=>(<div key={idx} style={s.itemBox}><div style={{display:'flex', justifyContent:'space-between', marginBottom:'5px'}}><label style={s.label}>Q</label><button onClick={()=>{const n=[...data];n.splice(idx,1);onUpdate(n)}} style={s.btnDelete}>×</button></div><input value={it.q} onChange={(e)=>{const n=[...data];n[idx].q=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} /><label style={s.label}>A</label><textarea value={it.a} onChange={(e)=>{const n=[...data];n[idx].a=e.target.value;onUpdate(n)}} style={{...s.input, height:'80px'}} /></div>))}<button onClick={()=>onUpdate([...data,{q:"",a:""}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ QUESTION</button></div> 
+};
+
+// 4. HeroEditor (Định nghĩa kiểu rõ ràng cho onUpdate)
+const HeroEditor = ({ lang, data, onUpdate }: { 
+    lang: string; 
+    data: HeroData; 
+    onUpdate: (field: keyof HeroData, val: string) => void 
+}) => ( 
+    <div style={s.card}><h3 style={s.subTitle}>HERO ({lang})</h3><div><label style={s.label}>Greeting</label><input value={data.greeting} onChange={(e)=>onUpdate('greeting',e.target.value)} style={s.input} /></div><div><label style={s.label}>Full Name</label><input value={data.fullName} onChange={(e)=>onUpdate('fullName',e.target.value)} style={s.input} /></div><div style={{display:'flex', gap:'10px'}}><div style={{flex:1}}><label style={s.label}>Nick 1</label><input value={data.nickName1} onChange={(e)=>onUpdate('nickName1', e.target.value)} style={s.input} /></div><div style={{flex:1}}><label style={s.label}>Nick 2</label><input value={data.nickName2} onChange={(e)=>onUpdate('nickName2', e.target.value)} style={s.input} /></div></div><div><label style={s.label}>Typewriter</label><input value={data.typewriter} onChange={(e)=>onUpdate('typewriter', e.target.value)} style={s.input} /></div><div><label style={s.label}>Description</label><textarea value={data.description} onChange={(e)=>onUpdate('description', e.target.value)} style={{...s.input, height:'80px'}} /></div><div><label style={s.label}>Avatar</label><input value={data.avatarUrl} onChange={(e)=>onUpdate('avatarUrl', e.target.value)} style={s.input} /></div></div> 
+);
+
+// 5. AiConfigEditor
 const AiConfigEditor = ({ data, onUpdate }: { data: AiConfigData, onUpdate: (theme: 'hacker'|'sakura', f: keyof AiProfile, v: string) => void }) => (
     <div style={s.card}>
         <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'20px', borderBottom: '2px solid #ffe4e1', paddingBottom: '10px'}}>
@@ -120,7 +139,7 @@ export default function AdminPage() {
   const [expEn, setExpEn] = useState<ExpGroup[]>([]); const [expVi, setExpVi] = useState<ExpGroup[]>([]); const [expJp, setExpJp] = useState<ExpGroup[]>([]);
   const [faqEn, setFaqEn] = useState<FaqItem[]>([]); const [faqVi, setFaqVi] = useState<FaqItem[]>([]); const [faqJp, setFaqJp] = useState<FaqItem[]>([]);
   
-  // AI Config State (Khởi tạo với Default để không bao giờ bị undefined)
+  // AI Config State (Khởi tạo Default để tránh undefined)
   const [aiConfig, setAiConfig] = useState<AiConfigData>(DEFAULT_AI_CONFIG);
 
   const isBoxSection = ['profile', 'contact'].includes(sectionKey);
@@ -147,18 +166,15 @@ export default function AdminPage() {
                     else if (isConfigSection) { try { const p = JSON.parse(typedData.contentEn); setConfig({ resumeUrl: p.resumeUrl || "", isOpenForWork: p.isOpenForWork ?? true }); } catch { setConfig({ resumeUrl: "", isOpenForWork: true }); } }
                     else if (isFaqSection) { try { setFaqEn(JSON.parse(typedData.contentEn)); } catch { setFaqEn([]); } try { setFaqVi(JSON.parse(typedData.contentVi)); } catch { setFaqVi([]); } try { setFaqJp(JSON.parse(typedData.contentJp)); } catch { setFaqJp([]); } }
                     else if (isAiConfigSection) { 
-                        // [ĐÃ SỬA] Logic an toàn khi load data cũ
                         try { 
                             const parsed = JSON.parse(typedData.contentEn);
-                            // Nếu data cũ không có key hacker/sakura, dùng default đắp vào
+                            // Merge với Default để đảm bảo không bị thiếu key hacker/sakura
                             setAiConfig({
                                 hacker: parsed.hacker || DEFAULT_AI_CONFIG.hacker,
                                 sakura: parsed.sakura || DEFAULT_AI_CONFIG.sakura
-                            }); 
-                        } catch { 
-                            setAiConfig(DEFAULT_AI_CONFIG); 
-                        }
-                    } 
+                            });
+                        } catch { setAiConfig(DEFAULT_AI_CONFIG); } 
+                    }
                     else { setSecEn(typedData.contentEn || ""); setSecVi(typedData.contentVi || ""); setSecJp(typedData.contentJp || ""); }
                 } else {
                     setSecEn(""); setSecVi(""); setSecJp(""); setBoxesEn([]); setBoxesVi([]); setBoxesJp([]); setExpEn([]); setExpVi([]); setExpJp([]); setFaqEn([]); setFaqVi([]); setFaqJp([]); setHeroEn(DEFAULT_HERO); setHeroVi(DEFAULT_HERO); setHeroJp(DEFAULT_HERO); setConfig({ resumeUrl: "", isOpenForWork: true }); setAiConfig(DEFAULT_AI_CONFIG);
@@ -182,14 +198,14 @@ export default function AdminPage() {
   function startEdit(post: Post) { setEditingPost(post); setTag(post.tag); try { setImages(JSON.parse(post.images)); } catch { setImages([]); } window.scrollTo({ top: 0, behavior: 'smooth' }); }
   async function handleDelete(id: string) { if(!confirm("Delete this?")) return; await deletePost(id); setPosts(await getAllPosts() as unknown as Post[]); }
 
-  const updateHero = (lang: 'en'|'vi'|'jp', field: keyof HeroData, val: string) => { const setter = lang === 'en' ? setHeroEn : (lang === 'vi' ? setHeroVi : setHeroJp); setter(prev => ({ ...prev, [field]: val })); };
+  // [UPDATED] Hàm updateHero được định nghĩa kiểu cụ thể để tránh lỗi 'implicitly has any type'
+  const updateHero = (lang: 'en'|'vi'|'jp', field: keyof HeroData, val: string) => { 
+      const setter = lang === 'en' ? setHeroEn : (lang === 'vi' ? setHeroVi : setHeroJp);
+      setter(prev => ({ ...prev, [field]: val }));
+  };
   
-  // Update AI Config (Deep update)
   const updateAiConfig = (theme: 'hacker'|'sakura', field: keyof AiProfile, val: string) => { 
-      setAiConfig(prev => ({ 
-          ...prev, 
-          [theme]: { ...prev[theme], [field]: val } 
-      })); 
+      setAiConfig(prev => ({ ...prev, [theme]: { ...prev[theme], [field]: val } })); 
   };
 
   async function handleSectionSubmit(formData: FormData) {
@@ -278,9 +294,10 @@ export default function AdminPage() {
 
                     {isHeroSection ? (
                         <div style={s.grid3}>
-                            <HeroEditor lang="en" data={heroEn} onUpdate={(f,v) => updateHero('en', f, v)} />
-                            <HeroEditor lang="vi" data={heroVi} onUpdate={(f,v) => updateHero('vi', f, v)} />
-                            <HeroEditor lang="jp" data={heroJp} onUpdate={(f,v) => updateHero('jp', f, v)} />
+                            {/* [FIXED] SỬA LỖI IMPLICIT ANY BẰNG CÁCH DÙNG TYPE CỤ THỂ */}
+                            <HeroEditor lang="en" data={heroEn} onUpdate={(f: keyof HeroData, v: string) => updateHero('en', f, v)} />
+                            <HeroEditor lang="vi" data={heroVi} onUpdate={(f: keyof HeroData, v: string) => updateHero('vi', f, v)} />
+                            <HeroEditor lang="jp" data={heroJp} onUpdate={(f: keyof HeroData, v: string) => updateHero('jp', f, v)} />
                         </div>
                     ) : isConfigSection ? (
                         <div style={s.card}>
@@ -291,7 +308,7 @@ export default function AdminPage() {
                                 <input type="checkbox" checked={!!config.isOpenForWork} onChange={e => setConfig({...config, isOpenForWork: e.target.checked})} style={{width:'20px', height:'20px'}} />
                             </div>
                         </div>
-                    ) : isAiConfigSection ? (
+                    ) : isAiConfigSection ? ( 
                         <AiConfigEditor data={aiConfig} onUpdate={updateAiConfig} />
                     ) : isExpSection ? (
                         <div style={s.grid3}>
