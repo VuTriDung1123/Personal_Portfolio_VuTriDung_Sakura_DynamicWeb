@@ -51,7 +51,8 @@ export default function SakuraAiChatBox({ currentLang }: { currentLang: Lang }) 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
             messages: [...messages, { role: 'user', content: userMsg }],
-            language: currentLang // [MỚI] Gửi kèm ngôn ngữ hiện tại
+            language: currentLang, // [MỚI] Gửi kèm ngôn ngữ hiện tại
+            theme: 'sakura'
         })
       });
 
