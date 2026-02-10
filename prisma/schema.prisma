@@ -29,3 +29,12 @@ model PageSection {
   contentJp   String   @db.Text
   updatedAt   DateTime @updatedAt
 }
+model SectionContent {
+  id        String   @id @default(cuid())
+  sectionKey String  @unique // Ví dụ: "hero", "about", "contact"
+  contentEn String?  @db.Text // Nội dung tiếng Anh (Lưu JSON)
+  contentVi String?  @db.Text // Nội dung tiếng Việt (Lưu JSON)
+  contentJp String?  @db.Text // Nội dung tiếng Nhật (Lưu JSON)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
