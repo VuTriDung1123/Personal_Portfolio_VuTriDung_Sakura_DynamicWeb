@@ -116,6 +116,7 @@ export default function SakuraHome() {
   const [dbItEvents, setDbItEvents] = useState<Post[]>([]);
   const [dbLangCerts, setDbLangCerts] = useState<Post[]>([]);
   const [dbTechCerts, setDbTechCerts] = useState<Post[]>([]);
+  const [dbOtherCerts, setDbOtherCerts] = useState<Post[]>([]);
   const [latestPosts, setLatestPosts] = useState<Post[]>([]);
   const [dbAchievements, setDbAchievements] = useState<Post[]>([]);
   const [dynamicSections, setDynamicSections] = useState<Record<string, SectionData>>({});
@@ -151,6 +152,7 @@ export default function SakuraHome() {
         getPostsByTag("it_events").then(d => setDbItEvents(d as unknown as Post[])),
         getPostsByTag("lang_certs").then(d => setDbLangCerts(d as unknown as Post[])),
         getPostsByTag("tech_certs").then(d => setDbTechCerts(d as unknown as Post[])),
+        getPostsByTag("other_certs").then(d => setDbOtherCerts(d as unknown as Post[])),
         getPostsByTag("achievements").then(d => setDbAchievements(d as unknown as Post[])),
         getAllPosts().then(d => d && setLatestPosts(d.slice(0, 3) as unknown as Post[])),
         
@@ -319,6 +321,16 @@ export default function SakuraHome() {
                           <h3 style={{fontSize: '1.5rem', marginBottom: '20px', color: '#4a3b32', textAlign: 'center', fontWeight: 'bold'}}>❖ {t.cat_tech}</h3>
                           <div className="grid-3" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
                               {dbTechCerts.length > 0 ? dbTechCerts.map(p => (
+                                  <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
+                                      <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                      <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                  </Link>
+                              )) : <EmptyState lang={currentLang} message={currentLang === 'vi' ? "Chưa có chứng chỉ 🍃" : (currentLang === 'jp' ? "証明書が見つかりません 🍃" : "No certificates found 🍃")} />}
+                          </div>
+
+                          <h3 style={{fontSize: '1.5rem', marginTop: '40px', marginBottom: '20px', color: '#4a3b32', textAlign: 'center', fontWeight: 'bold'}}>❖ {currentLang === 'vi' ? 'Các chứng chỉ khác' : (currentLang === 'jp' ? 'その他の証明書' : 'Other Certificates')}</h3>
+                          <div className="grid-3" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
+                              {dbOtherCerts.length > 0 ? dbOtherCerts.map(p => (
                                   <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
                                       <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
                                       <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
