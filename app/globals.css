@@ -216,12 +216,71 @@ ul { list-style: none; }
 /* --- KEYFRAMES CHO HOA ANH ĐÀO --- */
 .petal { position: fixed; background: #ffc0cb; border-radius: 100% 0 100% 0; opacity: 0.6; z-index: -1; top: -20px; pointer-events: none; }
 
+/* =========================================
+   📱 RESPONSIVE MOBILE FIXES (MÀN HÌNH ĐIỆN THOẠI)
+========================================= */
 @media (max-width: 768px) {
-  .navbar { padding: 10px 20px; height: auto; flex-direction: column; gap: 15px; }
-  .nav-left, .nav-right { width: 100%; justify-content: center; }
-  .hero-section { flex-direction: column-reverse; padding-top: 140px; text-align: center; }
-  .hero-names-box, .hero-btns { justify-content: center; }
-  .hero-image-container { width: 300px; height: 300px; }
+  /* 1. Navbar - Menu thành thanh cuộn ngang */
+  .navbar {
+    padding: 10px 15px;
+    height: auto;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .nav-left { width: 100%; justify-content: center; }
+  .nav-center { 
+    width: 100%; 
+    flex-direction: row; 
+    overflow-x: auto; /* Cho phép vuốt ngang */
+    justify-content: flex-start; 
+    padding-bottom: 10px;
+  }
+  .nav-row { display: flex; flex-wrap: nowrap; border: none !important; }
+  .nav-link { white-space: nowrap; font-size: 0.85rem; padding: 5px 10px; background: rgba(255,105,180,0.1); }
+  .nav-right { width: 100%; justify-content: center; flex-wrap: wrap; }
+
+  /* 2. Hero Section - Xếp dọc lại, chữ nhỏ đi */
+  .hero-section {
+    flex-direction: column-reverse;
+    padding: 180px 20px 50px; /* Đẩy xuống vì menu trên mobile cao hơn */
+    text-align: center;
+    gap: 30px;
+  }
+  .hero-name { font-size: 2.8rem; }
+  .hero-desc { font-size: 1.05rem; }
+  .hero-names-box { flex-wrap: wrap; justify-content: center; }
+  .hero-btns { flex-direction: column; width: 100%; }
+  .btn-big { width: 100%; text-align: center; }
+  .hero-image-container { width: 280px !important; height: 280px !important; margin: 0 auto; }
+
+  /* 3. Sections & Glass Box - Căn lề lại */
+  .section-title { font-size: 1.8rem; }
+  .glass-box { padding: 20px !important; border-radius: 20px !important; }
+  
+  /* 4. Mô hình AI 3D - Thu nhỏ và nhét sát góc trái */
+  .ai-model-container {
+    width: 130px !important;
+    height: 180px !important;
+    left: -10px !important;
+    bottom: -10px !important;
+  }
+
+  /* 5. Khung Chatbox - Bóp cho vừa màn hình điện thoại */
+  .chat-window {
+    width: 90vw !important;
+    height: 60vh !important; /* Dùng chiều cao tương đối */
+    right: 5vw !important;
+    bottom: 85px !important; /* Nổi lên trên nút bật chat */
+  }
+
+  /* 6. Nút Nhạc - Dời sang phải, nằm phía trên nút Chat để dễ bấm */
+  .audio-btn {
+    left: auto !important; /* Xóa left cũ */
+    right: 30px !important;
+    bottom: 110px !important; /* Xếp chồng lên nút bật AI */
+    width: 40px !important;
+    height: 40px !important;
+  }
 }
 
 

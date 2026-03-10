@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, OrbitControls, Environment, ContactShadows, Html } from "@react-three/drei";
+import { useGLTF, OrbitControls, Environment, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 
 interface ModelProps {
@@ -111,6 +111,7 @@ export default function AvatarViewer(props: AvatarViewerProps) {
 
 class ErrorBoundary extends React.Component<{ setHasError: (v: boolean) => void, children: React.ReactNode }> {
   static getDerivedStateFromError() { return { hasError: true }; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   componentDidCatch(error: any) { this.props.setHasError(true); }
   render() { return this.props.children; }
 }
