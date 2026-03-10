@@ -24,42 +24,38 @@ interface TopNavProps {
   resumeUrl?: string; 
 }
 
-export default function SakuraNav({ t, currentLang, setCurrentLang, resumeUrl }: TopNavProps) {
+export default function SakuraNav({ t, currentLang, resumeUrl }: TopNavProps) {
   const pathname = usePathname(); 
   
-  // [CẬP NHẬT] Thêm 'faq' vào danh sách
   const navItems = ['home', 'about', 'profile', 'certificates', 'career', 'achievements', 'skills', 'experience', 'projects', 'blog', 'gallery', 'faq', 'contact'];
   
-  // Chia lại menu cho cân đối (7 trên - 6 dưới)
+  // Chia làm 2 hàng cân đối cho PC
   const row1 = navItems.slice(0, 7);
   const row2 = navItems.slice(7, 13);
 
   const NavLink = ({ item }: { item: string }) => {
-    // Label mặc định
     let label = t[`nav_${item}`] || item.toUpperCase();
-    
-    // Custom Label cho các mục đặc biệt
     if(item === 'certificates') label = t.nav_cert || "CERTIFICATES"; 
     if(item === 'experience') label = t.nav_exp || "EXPERIENCE"; 
     if(item === 'projects') label = t.nav_proj || "PROJECTS";
-    if(item === 'faq') label = "FAQ / HELP"; // Label cho FAQ
+    if(item === 'faq') label = "FAQ / HELP"; 
 
     let href = "";
     if (item === 'home') href = "/";
     else if (item === 'blog') href = "/blog";
-    else if (item === 'faq') href = "/faq"; // Link sang trang FAQ
+    else if (item === 'faq') href = "/faq";
     else href = pathname === '/' ? `#${item}` : `/#${item}`;
 
-    // Active state
     const isActive = (pathname === href) || (item === 'faq' && pathname === '/faq');
 
     return (
         <Link 
             href={href} 
             className="nav-link"
-            style={isActive ? {color: '#ff69b4', fontWeight: 'bold', borderBottom: '2px solid #ffc1e3'} : {}}
+            style={isActive ? {color: '#ff69b4', fontWeight: 'bold'} : {}}
         >
             {label}
+            {isActive && <div style={{position: 'absolute', bottom: 0, left: '10%', width: '80%', height: '2px', background: '#ff69b4', borderRadius: '2px'}}></div>}
         </Link>
     );
   };
@@ -90,10 +86,9 @@ export default function SakuraNav({ t, currentLang, setCurrentLang, resumeUrl }:
       </div>
 
       <div className="nav-center">
-          <div className="nav-row">
-             {row1.map(i => <NavLink key={i} item={i} />)}
-             {row2.map(i => <NavLink key={i} item={i} />)}
-          </div>
+          <div className="nav-row">{row1.map(i => <NavLink key={i} item={i} />)}</div>
+          {/* Hàng 2 có viền mờ ở trên cho đẹp */}
+          <div className="nav-row" style={{borderTop: '1px dashed rgba(255, 105, 180, 0.3)', paddingTop: '5px'}}>{row2.map(i => <NavLink key={i} item={i} />)}</div>
       </div>
 
       <div className="nav-right" style={{gap: '15px'}}>
@@ -104,12 +99,6 @@ export default function SakuraNav({ t, currentLang, setCurrentLang, resumeUrl }:
         >
            👾 HACKER VER
         </a>
-
-        {(['en', 'vi', 'jp'] as const).map(l => (
-            <button key={l} onClick={() => setCurrentLang(l)} className={`btn-lang ${currentLang===l ? 'active' : ''}`}>
-                {l.toUpperCase()}
-            </button>
-        ))}
         <a href={resumeUrl || "#"} target="_blank" className="btn-cv">CV ⇩</a>
       </div>
     </nav>

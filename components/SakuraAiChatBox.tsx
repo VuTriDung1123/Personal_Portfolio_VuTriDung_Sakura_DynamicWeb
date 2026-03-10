@@ -57,6 +57,7 @@ export default function SakuraAiChatBox({ currentLang }: { currentLang: Lang }) 
       {/* 1. ROBOT (GÓC TRÁI DƯỚI) - TRONG SUỐT, KHÔNG KHUNG VIỀN           */}
       {/* ------------------------------------------------------------------ */}
       <div 
+        className="ai-model-container"
         style={{
           position: 'fixed',
           bottom: '0px', 
@@ -90,7 +91,7 @@ export default function SakuraAiChatBox({ currentLang }: { currentLang: Lang }) 
       {/* ------------------------------------------------------------------ */}
       {/* 2. CHATBOX (GÓC PHẢI DƯỚI) - UI ĐẸP (SAKURA THEME)                */}
       {/* ------------------------------------------------------------------ */}
-      <div style={{position: 'fixed', bottom: '30px', right: '30px', zIndex: 999999, fontFamily: 'sans-serif'}}>
+      <div style={{position: 'fixed', bottom: '30px', right: '100px', zIndex: 999999, fontFamily: 'sans-serif'}}>
         
         {/* Nút Bật/Tắt Tròn Xoe Đẹp Mắt */}
         {!isOpen && (

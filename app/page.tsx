@@ -1,16 +1,19 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-// [ĐÃ SỬA] Bỏ useRef thừa ở đây
 import { useState, useEffect } from "react"; 
 import Link from "next/link"; 
 import SakuraCursorTrail from "@/components/SakuraCursorTrail";
-
 import SakuraFalling from "@/components/SakuraFalling"; 
 import SakuraNav from "@/components/SakuraNav";
 import { translations, Lang } from "@/lib/data"; 
 import { getAllPosts, getPostsByTag, getSectionContent } from "@/lib/actions";
 import SakuraAiChatBox from "@/components/SakuraAiChatBox";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+
+// --- MỚI THÊM: IMPORT CÁC COMPONENT HIỆU ỨNG ---
+import ScrollReveal from "@/components/ScrollReveal";
+import TypewriterText from "@/components/TypewriterText";
 
 // --- DỮ LIỆU TÊN ---
 const MY_NAMES = {
@@ -136,7 +139,7 @@ export default function SakuraHome() {
   useEffect(() => {
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
     if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) {
-
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentLang(savedLang);
     }
 
@@ -254,6 +257,12 @@ export default function SakuraHome() {
                       <div className="hero-text">
                           <span className="hero-greeting">{hero.greeting}</span>
                           <h1 className="hero-name" style={{fontFamily: getFontFamily(currentLang)}}>{currentMainName}</h1>
+                            
+                            {/* --- TYPEWRITER ĐƯỢC ÁP DỤNG VÀO ĐÂY --- */}
+                            <h2 style={{ fontSize: '1.5rem', color: '#8d6e63', marginBottom: '15px' }}>
+                                {t.hero_iam} <TypewriterText words={JSON.parse(hero.typewriter || '[]')} />
+                            </h2>
+
                           <div className="hero-names-box">
                               {subNames.map((sub, idx) => (
                                   <span key={idx} className="hero-badge"><strong style={{color: '#ff69b4', marginRight: '5px'}}>{sub.label}</strong>{sub.val}</span>
@@ -282,133 +291,164 @@ export default function SakuraHome() {
                   </section>
 
                   <div style={{maxWidth: '1200px', margin: '0 auto', padding: '0 20px'}}>
+                      
+                      {/* --- BỌC SCROLL REVEAL VÀO CÁC SECTION --- */}
+                      
                       <section id="about" style={{padding: '80px 0', textAlign: 'center', scrollMarginTop: '100px'}}>
+                        <ScrollReveal>
                           <h2 className="section-title"><span>✿ {t.sec_about} ✿</span></h2>
                           {getTxt("about") ? (<div className="glass-box"><p style={{whiteSpace: 'pre-line', lineHeight: '1.8'}}>{getTxt("about")}</p></div>) : <EmptyState lang={currentLang} />}
+                        </ScrollReveal>
                       </section>
 
                       <section id="profile" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <ScrollReveal>
                           <h2 className="section-title"><span>✿ {t.sec_profile} ✿</span></h2>
                           {profileBoxes && profileBoxes.length > 0 ? (
                               <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px'}}>
-                                  {profileBoxes.map(box => (
-                                      <div key={box.id} className="glass-box" style={{padding: '30px', background: 'rgba(255,255,255,0.9)'}}>
-                                          <h3 style={{color: '#ff69b4', borderBottom: '1px dashed #ffc1e3', paddingBottom: '10px', marginBottom: '15px'}}>{box.title}</h3>
-                                          {box.items.map((it, i) => (
-                                              <div key={i} style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
-                                                  <span style={{fontWeight: 'bold', color: '#aaa', fontSize: '0.85rem'}}>{it.label}</span>
-                                                  <span style={{fontWeight: 'bold', color: '#5d4037'}}>{it.value}</span>
-                                              </div>
-                                          ))}
-                                      </div>
+                                  {profileBoxes.map((box, boxIndex) => (
+                                      <ScrollReveal key={box.id} delay={boxIndex * 0.1}>
+                                        <div className="glass-box" style={{padding: '30px', background: 'rgba(255,255,255,0.9)', height: '100%'}}>
+                                            <h3 style={{color: '#ff69b4', borderBottom: '1px dashed #ffc1e3', paddingBottom: '10px', marginBottom: '15px'}}>{box.title}</h3>
+                                            {box.items.map((it, i) => (
+                                                <div key={i} style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px'}}>
+                                                    <span style={{fontWeight: 'bold', color: '#aaa', fontSize: '0.85rem'}}>{it.label}</span>
+                                                    <span style={{fontWeight: 'bold', color: '#5d4037', textAlign: 'right'}}>{it.value}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                      </ScrollReveal>
                                   ))}
                               </div>
                           ) : <EmptyState lang={currentLang} />}
+                        </ScrollReveal>
                       </section>
 
                       <section id="certificates" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <ScrollReveal>
                           <h2 className="section-title"><span>✿ {t.sec_cert} ✿</span></h2>
+                          
                           <h3 style={{fontSize: '1.5rem', marginBottom: '20px', color: '#4a3b32', textAlign: 'center', fontWeight: 'bold'}}>❖ {t.cat_lang}</h3>
                           <div className="grid-3" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px', marginBottom: '50px'}}>
-                              {dbLangCerts.length > 0 ? dbLangCerts.map(p => (
-                                  <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
-                                      <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                      <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
-                                  </Link>
+                              {dbLangCerts.length > 0 ? dbLangCerts.map((p, i) => (
+                                  <ScrollReveal key={p.id} delay={i * 0.1}>
+                                    <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
+                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                        <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                    </Link>
+                                  </ScrollReveal>
                               )) : <EmptyState lang={currentLang} message={currentLang === 'vi' ? "Chưa có chứng chỉ 🍃" : (currentLang === 'jp' ? "証明書が見つかりません 🍃" : "No certificates found 🍃")} />}
                           </div>
                           
                           <h3 style={{fontSize: '1.5rem', marginBottom: '20px', color: '#4a3b32', textAlign: 'center', fontWeight: 'bold'}}>❖ {t.cat_tech}</h3>
                           <div className="grid-3" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
-                              {dbTechCerts.length > 0 ? dbTechCerts.map(p => (
-                                  <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
-                                      <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                      <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
-                                  </Link>
+                              {dbTechCerts.length > 0 ? dbTechCerts.map((p, i) => (
+                                  <ScrollReveal key={p.id} delay={i * 0.1}>
+                                    <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
+                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                        <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                    </Link>
+                                  </ScrollReveal>
                               )) : <EmptyState lang={currentLang} message={currentLang === 'vi' ? "Chưa có chứng chỉ 🍃" : (currentLang === 'jp' ? "証明書が見つかりません 🍃" : "No certificates found 🍃")} />}
                           </div>
 
                           <h3 style={{fontSize: '1.5rem', marginTop: '40px', marginBottom: '20px', color: '#4a3b32', textAlign: 'center', fontWeight: 'bold'}}>❖ {currentLang === 'vi' ? 'Các chứng chỉ khác' : (currentLang === 'jp' ? 'その他の証明書' : 'Other Certificates')}</h3>
                           <div className="grid-3" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
-                              {dbOtherCerts.length > 0 ? dbOtherCerts.map(p => (
-                                  <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
-                                      <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                      <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
-                                  </Link>
+                              {dbOtherCerts.length > 0 ? dbOtherCerts.map((p, i) => (
+                                  <ScrollReveal key={p.id} delay={i * 0.1}>
+                                    <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
+                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                        <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                    </Link>
+                                  </ScrollReveal>
                               )) : <EmptyState lang={currentLang} message={currentLang === 'vi' ? "Chưa có chứng chỉ 🍃" : (currentLang === 'jp' ? "証明書が見つかりません 🍃" : "No certificates found 🍃")} />}
                           </div>
+                        </ScrollReveal>
                       </section>
 
                       <section id="career" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <ScrollReveal>
                           <h2 className="section-title"><span>✿ {t.sec_career} ✿</span></h2>
                           {getTxt("career") ? (
                               <div className="glass-box" style={{borderLeft: '10px solid #ff69b4'}}>
                                   <p style={{whiteSpace: 'pre-line', fontStyle: 'italic', fontSize: '1.2rem', lineHeight: '1.8', color: '#5d4037'}}>&quot;{getTxt("career")}&quot;</p>
                               </div>
                           ) : <EmptyState lang={currentLang} />}
+                        </ScrollReveal>
                       </section>
 
                       <section id="achievements" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <ScrollReveal>
                           <h2 className="section-title"><span>✿ {t.sec_achievements} ✿</span></h2>
                           <p style={{textAlign: 'center', marginBottom: 30, color: '#4a3b32', fontWeight: 'bold'}}>{t.achievements_desc}</p>
                           {dbAchievements.length > 0 ? (
                               <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
-                                  {dbAchievements.map(p => (
-                                      <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                          <div style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                          <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
-                                      </Link>
+                                  {dbAchievements.map((p, i) => (
+                                      <ScrollReveal key={p.id} delay={i * 0.1}>
+                                        <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
+                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                            <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                        </Link>
+                                      </ScrollReveal>
                                   ))}
                               </div>
                           ) : <EmptyState lang={currentLang} />}
+                        </ScrollReveal>
                       </section>
 
                       <section id="skills" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <ScrollReveal>
                           <h2 className="section-title"><span>✿ {t.sec_skills} ✿</span></h2>
                           {getTxt("skills") ? (
                               <div className="glass-box" style={{textAlign: 'center'}}>
                                   <p style={{whiteSpace: 'pre-line', fontSize: '1.2rem', lineHeight: '2'}}>{getTxt("skills")}</p>
                               </div>
                           ) : <EmptyState lang={currentLang} />}
+                        </ScrollReveal>
                       </section>
 
                       <section id="experience" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <ScrollReveal>
                           <h2 className="section-title"><span>✿ {t.sec_exp} ✿</span></h2>
                           {experienceData && experienceData.length > 0 ? (
                               <div style={{borderLeft: '2px solid #ffb7b2', paddingLeft: '30px'}}>
                                   {experienceData.map((group) => (
                                       <div key={group.id} style={{marginBottom: 50}}>
                                           <h3 style={{color: '#ff69b4', marginBottom: 20, fontSize: '1.5rem', background: 'rgba(255,255,255,0.8)', display: 'inline-block', padding: '5px 15px', borderRadius: '10px'}}>{group.title}</h3>
-                                          {group.items.map(item => (
-                                              <div key={item.id} style={{marginBottom: '40px', position: 'relative'}}>
-                                                  <div style={{position: 'absolute', left: '-36px', top: '0', width: '14px', height: '14px', background: '#ff69b4', borderRadius: '50%', border: '3px solid white', boxShadow: '0 0 0 2px #ffb7b2'}}></div>
-                                                  <div className="glass-box" style={{padding: '25px', background: 'rgba(255,255,255,0.95)'}}>
-                                                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap'}}>
-                                                          <span style={{fontSize: '1.2rem', fontWeight: 'bold', color: '#5d4037'}}>{item.role}</span>
-                                                          <span style={{background: '#fff0f5', color: '#ff69b4', padding: '5px 15px', borderRadius: '15px', fontWeight: 'bold', fontSize: '0.9rem'}}>{item.time}</span>
-                                                      </div>
-                                                      <ul style={{paddingLeft: 20}}>
-                                                          {item.details.map((l, i) => <li key={i} style={{listStyle: 'disc', fontSize: '0.95rem', marginBottom: '5px', color: '#666'}}>{l}</li>)}
-                                                      </ul>
-                                                  </div>
-                                              </div>
+                                          {group.items.map((item, i) => (
+                                              <ScrollReveal key={item.id} delay={i * 0.1}>
+                                                <div style={{marginBottom: '40px', position: 'relative'}}>
+                                                    <div style={{position: 'absolute', left: '-36px', top: '0', width: '14px', height: '14px', background: '#ff69b4', borderRadius: '50%', border: '3px solid white', boxShadow: '0 0 0 2px #ffb7b2'}}></div>
+                                                    <div className="glass-box" style={{padding: '25px', background: 'rgba(255,255,255,0.95)'}}>
+                                                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap'}}>
+                                                            <span style={{fontSize: '1.2rem', fontWeight: 'bold', color: '#5d4037'}}>{item.role}</span>
+                                                            <span style={{background: '#fff0f5', color: '#ff69b4', padding: '5px 15px', borderRadius: '15px', fontWeight: 'bold', fontSize: '0.9rem'}}>{item.time}</span>
+                                                        </div>
+                                                        <ul style={{paddingLeft: 20}}>
+                                                            {item.details.map((l, idx) => <li key={idx} style={{listStyle: 'disc', fontSize: '0.95rem', marginBottom: '5px', color: '#666'}}>{l}</li>)}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                              </ScrollReveal>
                                           ))}
                                       </div>
                                   ))}
                               </div>
                           ) : <EmptyState lang={currentLang} />}
+                        </ScrollReveal>
                       </section>
 
                       <section id="projects" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <ScrollReveal>
                           <h2 className="section-title"><span>✿ {t.sec_proj} ✿</span></h2>
                           
                           <div className="glass-box" style={{marginBottom: '40px', padding: '15px 25px', background: 'rgba(255,255,255,0.9)', borderRadius: '50px', display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 15px rgba(255, 105, 180, 0.15)'}}>
-                              <div style={{display: 'flex', gap: '10px'}}>
+                              <div style={{display: 'flex', gap: '10px', overflowX: 'auto'}}>
                                   {[{v: "ALL", l: "✨ All"}, {v: "vi", l: "🇻🇳 VI"}, {v: "en", l: "🇬🇧 EN"}, {v: "jp", l: "🇯🇵 JP"}].map(langOpt => (
-                                      <button key={langOpt.v} onClick={() => setProjLang(langOpt.v)} style={{padding: '8px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.3s', background: projLang === langOpt.v ? '#ff69b4' : '#ffe4e1', color: projLang === langOpt.v ? 'white' : '#8d6e63', boxShadow: projLang === langOpt.v ? '0 2px 8px rgba(255,105,180,0.4)' : 'none', transform: projLang === langOpt.v ? 'scale(1.05)' : 'scale(1)'}}>{langOpt.l}</button>
+                                      <button key={langOpt.v} onClick={() => setProjLang(langOpt.v)} style={{whiteSpace: 'nowrap', padding: '8px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.3s', background: projLang === langOpt.v ? '#ff69b4' : '#ffe4e1', color: projLang === langOpt.v ? 'white' : '#8d6e63', boxShadow: projLang === langOpt.v ? '0 2px 8px rgba(255,105,180,0.4)' : 'none', transform: projLang === langOpt.v ? 'scale(1.05)' : 'scale(1)'}}>{langOpt.l}</button>
                                   ))}
                               </div>
-                              <button onClick={() => setProjSort(prev => prev === "newest" ? "oldest" : "newest")} style={{padding: '8px 16px', borderRadius: '20px', background: 'white', border: '2px solid #ffb7b2', color: '#ff69b4', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem'}}>{projSort === "newest" ? "⌚ Newest First" : "⌛ Oldest First"}</button>
+                              <button onClick={() => setProjSort(prev => prev === "newest" ? "oldest" : "newest")} style={{whiteSpace: 'nowrap', padding: '8px 16px', borderRadius: '20px', background: 'white', border: '2px solid #ffb7b2', color: '#ff69b4', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem'}}>{projSort === "newest" ? "⌚ Newest First" : "⌛ Oldest First"}</button>
                           </div>
 
                           {[{ title: t.cat_uni_proj, data: dbUniProjects }, { title: t.cat_personal_proj, data: dbPersonalProjects }].map((cat, idx) => {
@@ -418,100 +458,118 @@ export default function SakuraHome() {
                                       <h3 style={{fontSize: '1.5rem', color: '#4a3b32', marginBottom: '20px', borderLeft: '5px solid #ff69b4', paddingLeft: '15px', fontWeight: 'bold'}}>{cat.title} <span style={{fontSize: '0.9rem', color: '#aaa', fontWeight: 'normal'}}>({filteredData.length})</span></h3>
                                       {filteredData.length > 0 ? (
                                           <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
-                                              {filteredData.map(p => (
-                                                  <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
-                                                      <div style={{height: '200px', overflow: 'hidden', position: 'relative'}}>
-                                                          <img src={getCover(p.images)} alt={p.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-                                                          {p.language && (<div style={{position: 'absolute', top: 10, right: 10, background: 'rgba(255, 105, 180, 0.9)', color: 'white', padding: '4px 8px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold'}}>{p.language.toUpperCase()}</div>)}
-                                                      </div>
-                                                      <div style={{padding: '20px'}}>
-                                                          <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h4>
-                                                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                                                              <span style={{fontSize: '0.75rem', color: '#aaa'}}>{new Date(p.createdAt).toLocaleDateString()}</span>
-                                                              <span style={{fontSize: '0.8rem', color: '#ff69b4', fontWeight: 'bold', textTransform: 'uppercase'}}>Details →</span>
-                                                          </div>
-                                                      </div>
-                                                  </Link>
+                                              {filteredData.map((p, i) => (
+                                                  <ScrollReveal key={p.id} delay={i * 0.1}>
+                                                    <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', transition: '0.3s', height: '100%', display: 'flex', flexDirection: 'column'}}>
+                                                        <div className="img-wrapper" style={{height: '200px', overflow: 'hidden', position: 'relative'}}>
+                                                            <img src={getCover(p.images)} alt={p.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                                                            {p.language && (<div style={{position: 'absolute', top: 10, right: 10, background: 'rgba(255, 105, 180, 0.9)', color: 'white', padding: '4px 8px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold'}}>{p.language.toUpperCase()}</div>)}
+                                                        </div>
+                                                        <div style={{padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
+                                                            <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '15px'}}>{p.title}</h4>
+                                                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                                                <span style={{fontSize: '0.75rem', color: '#aaa'}}>{new Date(p.createdAt).toLocaleDateString()}</span>
+                                                                <span style={{fontSize: '0.8rem', color: '#ff69b4', fontWeight: 'bold', textTransform: 'uppercase'}}>Details →</span>
+                                                            </div>
+                                                        </div>
+                                                    </Link>
+                                                  </ScrollReveal>
                                               ))}
                                           </div>
                                       ) : (<div style={{textAlign: 'center', padding: '30px', background: 'rgba(255,255,255,0.5)', borderRadius: '20px', border: '2px dashed #ffc1e3', color: '#8d6e63'}}>🍃 Không có dự án nào (Bộ lọc: {projLang})</div>)}
                                   </div>
                               );
                           })}
+                        </ScrollReveal>
                       </section>
 
                       <section id="blog" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
-                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40}}>
+                        <ScrollReveal>
+                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40, flexWrap: 'wrap', gap: '15px'}}>
                               <h2 className="section-title" style={{marginBottom: 0, width: 'auto'}}><span>✿ 09. {currentLang === 'vi' ? 'BLOG & CÂU CHUYỆN' : (currentLang === 'jp' ? 'ブログ・物語' : 'BLOG & STORIES')} ✿</span></h2>
                               <Link href="/blog" style={{background: 'white', border: '2px solid #ffb7b2', padding: '10px 20px', borderRadius: '30px', color: '#ff69b4', fontWeight: 'bold'}}>{currentLang === 'vi' ? 'Xem tất cả →' : (currentLang === 'jp' ? 'すべて見る →' : 'View All →')}</Link>
                           </div>
                           {latestPosts.length > 0 ? (
                               <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
-                                  {latestPosts.map(p => (
-                                      <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                          <div style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                          <div style={{padding: '20px'}}>
-                                              <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h4>
-                                              <span style={{fontSize: '0.8rem', color: '#aaa'}}>{new Date(p.createdAt).toLocaleDateString()}</span>
-                                          </div>
-                                      </Link>
+                                  {latestPosts.map((p, i) => (
+                                      <ScrollReveal key={p.id} delay={i * 0.1}>
+                                        <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
+                                            <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                            <div style={{padding: '20px'}}>
+                                                <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h4>
+                                                <span style={{fontSize: '0.8rem', color: '#aaa'}}>{new Date(p.createdAt).toLocaleDateString()}</span>
+                                            </div>
+                                        </Link>
+                                      </ScrollReveal>
                                   ))}
                               </div>
                           ) : <EmptyState lang={currentLang} />}
+                        </ScrollReveal>
                       </section>
 
                       <section id="gallery" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
+                        <ScrollReveal>
                           <h2 className="section-title"><span>✿ 10. {currentLang === 'vi' ? 'THƯ VIỆN ẢNH' : (currentLang === 'jp' ? 'ギャラリー' : 'GALLERY')} ✿</span></h2>
                           <h3 style={{fontSize: '1.2rem', marginBottom: 20, color: '#4a3b32', fontWeight: 'bold'}}>✿ {t.cat_it_event}</h3>
                           {dbItEvents.length > 0 ? (
                               <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
-                                  {dbItEvents.map(p => (
-                                      <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                          <div style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                          <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
-                                      </Link>
+                                  {dbItEvents.map((p, i) => (
+                                      <ScrollReveal key={p.id} delay={i * 0.1}>
+                                        <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
+                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                            <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                        </Link>
+                                      </ScrollReveal>
                                   ))}
                               </div>
                           ) : <EmptyState lang={currentLang} />}
+                        </ScrollReveal>
                       </section>
 
                       <section id="contact" style={{padding: '80px 0', marginBottom: '50px', scrollMarginTop: '100px'}}>
+                        <ScrollReveal>
                           <div style={{textAlign: 'center', maxWidth: '1000px', margin: '0 auto'}}>
                               <h2 className="section-title" style={{marginBottom: '20px'}}><span>✿ 11. {currentLang === 'vi' ? 'LIÊN HỆ' : (currentLang === 'jp' ? 'お問い合わせ' : 'CONTACT')} ✿</span></h2>
                               <p style={{fontSize: '1.2rem', color: '#4a3b32', marginBottom: '40px'}}>{currentLang === 'vi' ? 'Hãy cùng tạo ra những điều tuyệt vời! ✨' : (currentLang === 'jp' ? '一緒に素晴らしいものを作りましょう！✨' : 'Let\'s create something beautiful together! ✨')}</p>
                               {contactBoxes && contactBoxes.length > 0 ? (
                                   <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px', textAlign: 'left'}}>
-                                      {contactBoxes.map((box) => (
-                                          <div key={box.id} className="glass-box" style={{padding: '30px', background: 'rgba(255,255,255,0.95)', height: '100%'}}>
-                                              <h3 style={{color: '#ff69b4', borderBottom: '2px dashed #ffc1e3', paddingBottom: '10px', marginBottom: '20px', fontSize: '1.3rem', fontWeight: 'bold'}}>✿ {box.title}</h3>
-                                              <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
-                                                  {box.items.map((item, idx) => {
-                                                      let content;
-                                                      const val = item.value;
-                                                      if (val.includes('@')) { content = (<a href={`mailto:${val}`} style={{color: '#5d4037', fontWeight: 'bold', textDecoration: 'none', transition: '0.3s'}} className="hover:text-[#ff69b4]">{val} ✉</a>); } 
-                                                      else if (val.startsWith('http')) { content = (<a href={val} target="_blank" rel="noopener noreferrer" style={{color: '#007bff', fontWeight: 'bold', textDecoration: 'none', wordBreak: 'break-all'}} className="hover:underline">{val} ↗</a>); } 
-                                                      else if (val.match(/^[0-9+ ]+$/) && val.length > 8) { content = (<a href={`tel:${val.replace(/\s/g, '')}`} style={{color: '#28a745', fontWeight: 'bold', textDecoration: 'none'}}>{val} 📞</a>); } 
-                                                      else { content = <span style={{color: '#5d4037', fontWeight: 'bold'}}>{val}</span>; }
-                                                      return (<div key={idx} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #fff0f5', paddingBottom: '8px'}}><span style={{fontSize: '0.85rem', color: '#aaa', fontWeight: 'bold', textTransform: 'uppercase', marginRight: '10px'}}>{item.label}</span><div style={{textAlign: 'right'}}>{content}</div></div>);
-                                                  })}
-                                              </div>
-                                          </div>
+                                      {contactBoxes.map((box, boxIndex) => (
+                                          <ScrollReveal key={box.id} delay={boxIndex * 0.1}>
+                                            <div className="glass-box" style={{padding: '30px', background: 'rgba(255,255,255,0.95)', height: '100%'}}>
+                                                <h3 style={{color: '#ff69b4', borderBottom: '2px dashed #ffc1e3', paddingBottom: '10px', marginBottom: '20px', fontSize: '1.3rem', fontWeight: 'bold'}}>✿ {box.title}</h3>
+                                                <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
+                                                    {box.items.map((item, idx) => {
+                                                        let content;
+                                                        const val = item.value;
+                                                        if (val.includes('@')) { content = (<a href={`mailto:${val}`} style={{color: '#5d4037', fontWeight: 'bold', textDecoration: 'none', transition: '0.3s'}} className="hover:text-[#ff69b4]">{val} ✉</a>); } 
+                                                        else if (val.startsWith('http')) { content = (<a href={val} target="_blank" rel="noopener noreferrer" style={{color: '#007bff', fontWeight: 'bold', textDecoration: 'none', wordBreak: 'break-all'}} className="hover:underline">{val} ↗</a>); } 
+                                                        else if (val.match(/^[0-9+ ]+$/) && val.length > 8) { content = (<a href={`tel:${val.replace(/\s/g, '')}`} style={{color: '#28a745', fontWeight: 'bold', textDecoration: 'none'}}>{val} 📞</a>); } 
+                                                        else { content = <span style={{color: '#5d4037', fontWeight: 'bold'}}>{val}</span>; }
+                                                        return (<div key={idx} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #fff0f5', paddingBottom: '8px'}}><span style={{fontSize: '0.85rem', color: '#aaa', fontWeight: 'bold', textTransform: 'uppercase', marginRight: '10px'}}>{item.label}</span><div style={{textAlign: 'right'}}>{content}</div></div>);
+                                                    })}
+                                                </div>
+                                            </div>
+                                          </ScrollReveal>
                                       ))}
                                   </div>
                               ) : <EmptyState lang={currentLang} />}
                           </div>
+                        </ScrollReveal>
                       </section>
                   </div>
               </div>
           )}
       </main>
 
-      {/* --- [ĐÃ SỬA] ĐƯA SAKURA CHATBOX RA NGOÀI THẺ MAIN --- */}
       {!isLoading && (
           <div style={{position: 'relative', zIndex: 99999}}>
               <SakuraAiChatBox currentLang={currentLang}/>
           </div>
       )}
+
+      {/* NÚT CHỌN NGÔN NGỮ NỔI GÓC PHẢI */}
+      <LanguageSwitcher currentLang={currentLang} setCurrentLang={handleSetLanguage} />
+
     </>
   );
 }
