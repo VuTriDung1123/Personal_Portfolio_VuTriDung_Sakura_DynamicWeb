@@ -90,8 +90,10 @@ export default function SakuraNav({ t, currentLang, setCurrentLang, resumeUrl }:
       </div>
 
       <div className="nav-center">
-          <div className="nav-row">{row1.map(i => <NavLink key={i} item={i} />)}</div>
-          <div className="nav-row" style={{borderTop: '1px dashed #ffc1e3', paddingTop: '2px'}}>{row2.map(i => <NavLink key={i} item={i} />)}</div>
+          <div className="nav-row">
+             {row1.map(i => <NavLink key={i} item={i} />)}
+             {row2.map(i => <NavLink key={i} item={i} />)}
+          </div>
       </div>
 
       <div className="nav-right" style={{gap: '15px'}}>

@@ -90,6 +90,7 @@ export default function GlobalAudio() {
             
             {/* Đưa nút sang GÓC DƯỚI TRÁI - Kế bên mô hình 3D AI để không che khung chat */}
             <button
+                className="audio-btn"
                 onClick={togglePlay}
                 style={{
                     position: 'fixed',
