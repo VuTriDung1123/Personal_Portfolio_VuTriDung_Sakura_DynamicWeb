@@ -136,7 +136,7 @@ export default function SakuraHome() {
   useEffect(() => {
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
     if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) {
-        // [ĐÃ SỬA] Bỏ dòng eslint-disable thừa
+
         setCurrentLang(savedLang);
     }
 

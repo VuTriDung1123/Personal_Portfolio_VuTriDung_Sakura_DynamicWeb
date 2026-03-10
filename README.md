@@ -240,7 +240,11 @@ GEMINI_API_KEY="your_api_key_here" (Not show)
 
 ## 📊 Lighthouse Score
 
-![Lighthouse Result](./public/screenshots/lighthouse.png)
+### 💻 Desktop
+![Desktop](./public/screenshots/lighthouse-desktop.png)
+
+### 📱 Mobile
+![Mobile](./public/screenshots/lighthouse-mobile.png)
 
 ---
 
