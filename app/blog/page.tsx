@@ -49,6 +49,7 @@ export default function BlogPage() {
   // --- INITIAL LOAD ---
   useEffect(() => {
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) setCurrentLang(savedLang);
 
     Promise.all([
