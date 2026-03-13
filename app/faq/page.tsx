@@ -19,6 +19,7 @@ export default function SakuraFaqPage() {
 
     useEffect(() => {
         const savedLang = localStorage.getItem("sakura_lang") as Lang;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) setViewLang(savedLang);
 
         getSectionContent("faq_data").then((data) => {
