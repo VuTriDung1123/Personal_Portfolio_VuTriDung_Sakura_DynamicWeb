@@ -14,29 +14,17 @@ interface ConfigData { resumeUrl: string; isOpenForWork: boolean; }
 interface ExpItem { id: string; time: string; role: string; details: string[]; }
 interface ExpGroup { id: string; title: string; items: ExpItem[]; }
 interface FaqItem { q: string; a: string; }
-
-// AI Config Type
-interface AiProfile {
-    roleName: string;
-    tone: string;
-    customStory: string;
-    systemPromptOverride: string;
-}
-
-interface AiConfigData {
-    hacker: AiProfile;
-    sakura: AiProfile;
-}
+interface AiProfile { roleName: string; tone: string; customStory: string; systemPromptOverride: string; }
+interface AiConfigData { hacker: AiProfile; sakura: AiProfile; }
 
 // --- CONSTANTS ---
 const DEFAULT_HERO: HeroData = { fullName: "Vũ Trí Dũng", nickName1: "David Miller", nickName2: "Akina Aoi", avatarUrl: "", greeting: "Hi, I am", description: "", typewriter: '["Developer", "Student"]' };
-
 const DEFAULT_AI_CONFIG: AiConfigData = { 
     hacker: { roleName: "System Administrator", tone: "Logical, Cool, Concise", customStory: "", systemPromptOverride: "" },
     sakura: { roleName: "Sakura Assistant", tone: "Friendly, Cute, Helpful", customStory: "", systemPromptOverride: "" }
 };
 
-// --- STYLES (SAKURA STYLE) ---
+// --- STYLES ---
 const s = {
     container: { minHeight: '100vh', padding: '40px 20px', fontFamily: '"Nunito", sans-serif' },
     card: { background: 'rgba(255, 255, 255, 0.95)', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(255,105,180,0.15)', marginBottom: '30px', border: '1px solid white' },
@@ -53,70 +41,123 @@ const s = {
     itemBox: { background: '#fff0f5', padding: '15px', borderRadius: '15px', marginBottom: '15px', border: '1px dashed #ffc1e3' }
 };
 
-// --- SUB-COMPONENTS (FIXED TYPES FOR BUILD) ---
+// --- SUB-COMPONENTS ---
 
-// 1. BoxEditor
-const BoxEditor = ({ lang, data, onUpdate }: { lang: string, data: SectionBox[], onUpdate: (d: SectionBox[]) => void }) => { 
-    return <div style={s.card}><h3 style={s.subTitle}>PROFILE / CONTACT ({lang})</h3>{data.map((box, bIdx) => (<div key={box.id} style={s.itemBox}><div style={{display:'flex', gap:'10px', marginBottom:'10px'}}><input value={box.title} onChange={(e) => {const n=[...data];n[bIdx].title=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} placeholder="Group Title" /><button type="button" onClick={() => {const n=[...data];n.splice(bIdx,1);onUpdate(n)}} style={s.btnDelete}>X</button></div>{box.items.map((it, iIdx) => (<div key={iIdx} style={{display:'flex', gap:'10px'}}><input value={it.label} onChange={(e) => {const n=[...data];n[bIdx].items[iIdx].label=e.target.value;onUpdate(n)}} style={{...s.input, flex:1}} placeholder="Label" /><input value={it.value} onChange={(e) => {const n=[...data];n[bIdx].items[iIdx].value=e.target.value;onUpdate(n)}} style={{...s.input, flex:2}} placeholder="Value" /><button type="button" onClick={() => {const n=[...data];n[bIdx].items.splice(iIdx,1);onUpdate(n)}} style={{...s.btnDelete, height:'42px'}}>×</button></div>))}<button onClick={() => {const n=[...data];n[bIdx].items.push({label:"",value:""});onUpdate(n)}} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Add Item</button></div>))}<button onClick={() => onUpdate([...data, {id:Date.now().toString(), title:"New", items:[]}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ GROUP</button></div> 
+// BoxEditor (Sử dụng cho Profile, Contact, và giờ là cả SKILLS)
+const BoxEditor = ({ lang, data, onUpdate, titleLabel }: { lang: string, data: SectionBox[], onUpdate: (d: SectionBox[]) => void, titleLabel: string }) => { 
+    return (
+        <div style={s.card}>
+            <h3 style={s.subTitle}>{titleLabel} ({lang})</h3>
+            {data.map((box, bIdx) => (
+                <div key={box.id} style={s.itemBox}>
+                    <div style={{display:'flex', gap:'10px', marginBottom:'10px'}}>
+                        <input value={box.title} onChange={(e) => {const n=[...data];n[bIdx].title=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} placeholder="Group Title" />
+                        <button type="button" onClick={() => {const n=[...data];n.splice(bIdx,1);onUpdate(n)}} style={s.btnDelete}>X</button>
+                    </div>
+                    {box.items.map((it, iIdx) => (
+                        <div key={iIdx} style={{display:'flex', gap:'10px'}}>
+                            <input value={it.label} onChange={(e) => {const n=[...data];n[bIdx].items[iIdx].label=e.target.value;onUpdate(n)}} style={{...s.input, flex:1}} placeholder="Label (e.g. ReactJS)" />
+                            <input value={it.value} onChange={(e) => {const n=[...data];n[bIdx].items[iIdx].value=e.target.value;onUpdate(n)}} style={{...s.input, flex:2}} placeholder="Value (e.g. Advanced)" />
+                            <button type="button" onClick={() => {const n=[...data];n[bIdx].items.splice(iIdx,1);onUpdate(n)}} style={{...s.btnDelete, height:'42px'}}>×</button>
+                        </div>
+                    ))}
+                    <button type="button" onClick={() => {const n=[...data];n[bIdx].items.push({label:"",value:""});onUpdate(n)}} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Add Item</button>
+                </div>
+            ))}
+            <button type="button" onClick={() => onUpdate([...data, {id:Date.now().toString(), title:"New Group", items:[]}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ ADD GROUP</button>
+        </div> 
+    );
 };
 
-// 2. ExpEditor
 const ExpEditor = ({ lang, data, onUpdate }: { lang: string, data: ExpGroup[], onUpdate: (d: ExpGroup[]) => void }) => { 
-    return <div style={s.card}><h3 style={s.subTitle}>EXPERIENCE ({lang})</h3>{data.map((g, gIdx) => (<div key={g.id} style={{marginBottom:'20px', borderLeft:'4px solid #ff69b4', paddingLeft:'15px'}}><div style={{display:'flex', gap:'10px', marginBottom:'10px'}}><input value={g.title} onChange={(e)=>{const n=[...data];n[gIdx].title=e.target.value;onUpdate(n)}} style={{...s.input, fontSize:'1.1rem', fontWeight:'bold'}} placeholder="Category"/><button onClick={()=>{const n=[...data];n.splice(gIdx,1);onUpdate(n)}} style={s.btnDelete}>DEL</button></div>{g.items.map((it, iIdx)=>(<div key={it.id} style={{background:'white', padding:'15px', borderRadius:'10px', marginBottom:'10px', boxShadow:'0 2px 5px rgba(0,0,0,0.05)'}}><div style={{display:'grid', gridTemplateColumns:'1fr 2fr', gap:'10px'}}><input value={it.time} onChange={(e)=>{const n=[...data];n[gIdx].items[iIdx].time=e.target.value;onUpdate(n)}} style={s.input} placeholder="Time"/><div style={{display:'flex', gap:'5px'}}><input value={it.role} onChange={(e)=>{const n=[...data];n[gIdx].items[iIdx].role=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold'}} placeholder="Role"/><button onClick={()=>{const n=[...data];n[gIdx].items.splice(iIdx,1);onUpdate(n)}} style={s.btnDelete}>×</button></div></div><textarea value={it.details.join('\n')} onChange={(e)=>{const n=[...data];n[gIdx].items[iIdx].details=e.target.value.split('\n');onUpdate(n)}} style={{...s.input, height:'80px', fontFamily:'monospace', fontSize:'0.85rem'}} placeholder="- Detail"/></div>))}<button onClick={()=>{const n=[...data];n[gIdx].items.push({id:Date.now().toString(),time:"",role:"",details:[]});onUpdate(n)}} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Job</button></div>))}<button onClick={()=>onUpdate([...data,{id:Date.now().toString(),title:"New",items:[]}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ CAT</button></div> 
+    return (
+        <div style={s.card}>
+            <h3 style={s.subTitle}>EXPERIENCE ({lang})</h3>
+            {data.map((g, gIdx) => (
+                <div key={g.id} style={{marginBottom:'20px', borderLeft:'4px solid #ff69b4', paddingLeft:'15px'}}>
+                    <div style={{display:'flex', gap:'10px', marginBottom:'10px'}}>
+                        <input value={g.title} onChange={(e)=>{const n=[...data];n[gIdx].title=e.target.value;onUpdate(n)}} style={{...s.input, fontSize:'1.1rem', fontWeight:'bold'}} placeholder="Category"/>
+                        <button type="button" onClick={()=>{const n=[...data];n.splice(gIdx,1);onUpdate(n)}} style={s.btnDelete}>DEL</button>
+                    </div>
+                    {g.items.map((it, iIdx)=>(
+                        <div key={it.id} style={{background:'white', padding:'15px', borderRadius:'10px', marginBottom:'10px', boxShadow:'0 2px 5px rgba(0,0,0,0.05)'}}>
+                            <div style={{display:'grid', gridTemplateColumns:'1fr 2fr', gap:'10px'}}>
+                                <input value={it.time} onChange={(e)=>{const n=[...data];n[gIdx].items[iIdx].time=e.target.value;onUpdate(n)}} style={s.input} placeholder="Time"/>
+                                <div style={{display:'flex', gap:'5px'}}>
+                                    <input value={it.role} onChange={(e)=>{const n=[...data];n[gIdx].items[iIdx].role=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold'}} placeholder="Role"/>
+                                    <button type="button" onClick={()=>{const n=[...data];n[gIdx].items.splice(iIdx,1);onUpdate(n)}} style={s.btnDelete}>×</button>
+                                </div>
+                            </div>
+                            <textarea value={it.details.join('\n')} onChange={(e)=>{const n=[...data];n[gIdx].items[iIdx].details=e.target.value.split('\n');onUpdate(n)}} style={{...s.input, height:'80px', fontFamily:'monospace', fontSize:'0.85rem'}} placeholder="- Detail"/>
+                        </div>
+                    ))}
+                    <button type="button" onClick={()=>{const n=[...data];n[gIdx].items.push({id:Date.now().toString(),time:"",role:"",details:[]});onUpdate(n)}} style={{fontSize:'0.8rem', color:'#ff69b4', background:'none', border:'none', cursor:'pointer', fontWeight:'bold'}}>+ Job</button>
+                </div>
+            ))}
+            <button type="button" onClick={()=>onUpdate([...data,{id:Date.now().toString(),title:"New",items:[]}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ ADD CATEGORY</button>
+        </div> 
+    );
 };
 
-// 3. FaqEditor
 const FaqEditor = ({ lang, data, onUpdate }: { lang: string, data: FaqItem[], onUpdate: (d: FaqItem[]) => void }) => { 
-    return <div style={s.card}><h3 style={s.subTitle}>FAQ ({lang})</h3>{data.map((it, idx)=>(<div key={idx} style={s.itemBox}><div style={{display:'flex', justifyContent:'space-between', marginBottom:'5px'}}><label style={s.label}>Q</label><button onClick={()=>{const n=[...data];n.splice(idx,1);onUpdate(n)}} style={s.btnDelete}>×</button></div><input value={it.q} onChange={(e)=>{const n=[...data];n[idx].q=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} /><label style={s.label}>A</label><textarea value={it.a} onChange={(e)=>{const n=[...data];n[idx].a=e.target.value;onUpdate(n)}} style={{...s.input, height:'80px'}} /></div>))}<button onClick={()=>onUpdate([...data,{q:"",a:""}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ QUESTION</button></div> 
+    return (
+        <div style={s.card}>
+            <h3 style={s.subTitle}>FAQ ({lang})</h3>
+            {data.map((it, idx)=>(
+                <div key={idx} style={s.itemBox}>
+                    <div style={{display:'flex', justifyContent:'space-between', marginBottom:'5px'}}>
+                        <label style={s.label}>Q</label>
+                        <button type="button" onClick={()=>{const n=[...data];n.splice(idx,1);onUpdate(n)}} style={s.btnDelete}>×</button>
+                    </div>
+                    <input value={it.q} onChange={(e)=>{const n=[...data];n[idx].q=e.target.value;onUpdate(n)}} style={{...s.input, fontWeight:'bold', color:'#ff69b4'}} />
+                    <label style={s.label}>A</label>
+                    <textarea value={it.a} onChange={(e)=>{const n=[...data];n[idx].a=e.target.value;onUpdate(n)}} style={{...s.input, height:'80px'}} />
+                </div>
+            ))}
+            <button type="button" onClick={()=>onUpdate([...data,{q:"",a:""}])} style={{width:'100%', padding:'10px', border:'2px dashed #ffc1e3', background:'none', color:'#ff69b4', borderRadius:'10px', cursor:'pointer', fontWeight:'bold'}}>+ QUESTION</button>
+        </div> 
+    );
 };
 
-// 4. HeroEditor (Định nghĩa kiểu rõ ràng cho onUpdate)
-const HeroEditor = ({ lang, data, onUpdate }: { 
-    lang: string; 
-    data: HeroData; 
-    onUpdate: (field: keyof HeroData, val: string) => void 
-}) => ( 
-    <div style={s.card}><h3 style={s.subTitle}>HERO ({lang})</h3><div><label style={s.label}>Greeting</label><input value={data.greeting} onChange={(e)=>onUpdate('greeting',e.target.value)} style={s.input} /></div><div><label style={s.label}>Full Name</label><input value={data.fullName} onChange={(e)=>onUpdate('fullName',e.target.value)} style={s.input} /></div><div style={{display:'flex', gap:'10px'}}><div style={{flex:1}}><label style={s.label}>Nick 1</label><input value={data.nickName1} onChange={(e)=>onUpdate('nickName1', e.target.value)} style={s.input} /></div><div style={{flex:1}}><label style={s.label}>Nick 2</label><input value={data.nickName2} onChange={(e)=>onUpdate('nickName2', e.target.value)} style={s.input} /></div></div><div><label style={s.label}>Typewriter</label><input value={data.typewriter} onChange={(e)=>onUpdate('typewriter', e.target.value)} style={s.input} /></div><div><label style={s.label}>Description</label><textarea value={data.description} onChange={(e)=>onUpdate('description', e.target.value)} style={{...s.input, height:'80px'}} /></div><div><label style={s.label}>Avatar</label><input value={data.avatarUrl} onChange={(e)=>onUpdate('avatarUrl', e.target.value)} style={s.input} /></div></div> 
+const HeroEditor = ({ lang, data, onUpdate }: { lang: string; data: HeroData; onUpdate: (field: keyof HeroData, val: string) => void }) => ( 
+    <div style={s.card}>
+        <h3 style={s.subTitle}>HERO ({lang})</h3>
+        <div><label style={s.label}>Greeting</label><input value={data.greeting} onChange={(e)=>onUpdate('greeting',e.target.value)} style={s.input} /></div>
+        <div><label style={s.label}>Full Name</label><input value={data.fullName} onChange={(e)=>onUpdate('fullName',e.target.value)} style={s.input} /></div>
+        <div style={{display:'flex', gap:'10px'}}>
+            <div style={{flex:1}}><label style={s.label}>Nick 1</label><input value={data.nickName1} onChange={(e)=>onUpdate('nickName1', e.target.value)} style={s.input} /></div>
+            <div style={{flex:1}}><label style={s.label}>Nick 2</label><input value={data.nickName2} onChange={(e)=>onUpdate('nickName2', e.target.value)} style={s.input} /></div>
+        </div>
+        <div><label style={s.label}>Typewriter (JSON Array)</label><input value={data.typewriter} onChange={(e)=>onUpdate('typewriter', e.target.value)} style={s.input} placeholder='["Dev", "Student"]' /></div>
+        <div><label style={s.label}>Description</label><textarea value={data.description} onChange={(e)=>onUpdate('description', e.target.value)} style={{...s.input, height:'80px'}} /></div>
+        <div><label style={s.label}>Avatar URL</label><input value={data.avatarUrl} onChange={(e)=>onUpdate('avatarUrl', e.target.value)} style={s.input} /></div>
+    </div> 
 );
 
-// 5. AiConfigEditor
 const AiConfigEditor = ({ data, onUpdate }: { data: AiConfigData, onUpdate: (theme: 'hacker'|'sakura', f: keyof AiProfile, v: string) => void }) => (
     <div style={s.card}>
         <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'20px', borderBottom: '2px solid #ffe4e1', paddingBottom: '10px'}}>
             <span style={{fontSize:'2rem'}}>🧠</span>
             <h3 style={{...s.title, fontSize: '1.5rem'}}>DUAL CORE AI CONFIGURATION</h3>
         </div>
-        
         <div style={s.grid2}>
-            {/* CỘT HACKER */}
             <div style={{borderRight: '1px dashed #ffc1e3', paddingRight: '20px'}}>
                 <h4 style={{...s.subTitle, color: '#333', borderLeft: '5px solid #333'}}>[ HACKER_MODE ]</h4>
                 <div style={{marginBottom: '15px'}}><label style={s.label}>ROLE NAME</label><input value={data?.hacker?.roleName || ''} onChange={e => onUpdate('hacker', 'roleName', e.target.value)} style={s.input} placeholder="e.g. Cyber Security AI" /></div>
                 <div style={{marginBottom: '15px'}}><label style={s.label}>TONE</label><input value={data?.hacker?.tone || ''} onChange={e => onUpdate('hacker', 'tone', e.target.value)} style={s.input} placeholder="e.g. Cold, Logical" /></div>
-                <div style={{marginBottom: '15px'}}><label style={s.label}>SECRET</label><textarea value={data?.hacker?.customStory || ''} onChange={e => onUpdate('hacker', 'customStory', e.target.value)} style={{...s.input, height:'80px'}} placeholder="Hacker secrets..." /></div>
-                
-                <div style={{marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #eee'}}>
-                    <label style={{...s.label, color: 'red'}}>⚠ OVERRIDE</label>
-                    <textarea value={data?.hacker?.systemPromptOverride || ''} onChange={e => onUpdate('hacker', 'systemPromptOverride', e.target.value)} style={{...s.input, height:'60px', borderColor: 'red', background: '#fffafa'}} placeholder="Force command..." />
-                </div>
+                <div style={{marginBottom: '15px'}}><label style={s.label}>SECRET / SYSTEM PROMPT</label><textarea value={data?.hacker?.customStory || ''} onChange={e => onUpdate('hacker', 'customStory', e.target.value)} style={{...s.input, height:'80px'}} placeholder="Hacker instructions..." /></div>
             </div>
-
-            {/* CỘT SAKURA */}
             <div style={{paddingLeft: '10px'}}>
                 <h4 style={s.subTitle}>✿ SAKURA_MODE ✿</h4>
                 <div style={{marginBottom: '15px'}}><label style={s.label}>ROLE NAME</label><input value={data?.sakura?.roleName || ''} onChange={e => onUpdate('sakura', 'roleName', e.target.value)} style={s.input} placeholder="e.g. Sakura Assistant" /></div>
                 <div style={{marginBottom: '15px'}}><label style={s.label}>TONE</label><input value={data?.sakura?.tone || ''} onChange={e => onUpdate('sakura', 'tone', e.target.value)} style={s.input} placeholder="e.g. Cute, Friendly" /></div>
-                <div style={{marginBottom: '15px'}}><label style={s.label}>SECRET</label><textarea value={data?.sakura?.customStory || ''} onChange={e => onUpdate('sakura', 'customStory', e.target.value)} style={{...s.input, height:'80px'}} placeholder="Cute secrets..." /></div>
-                
-                <div style={{marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #ffe4e1'}}>
-                    <label style={{...s.label, color: '#ff69b4'}}>⚠ OVERRIDE</label>
-                    <textarea value={data?.sakura?.systemPromptOverride || ''} onChange={e => onUpdate('sakura', 'systemPromptOverride', e.target.value)} style={{...s.input, height:'60px', borderColor: '#ff69b4', background: '#fff0f5'}} placeholder="Force command..." />
-                </div>
+                <div style={{marginBottom: '15px'}}><label style={s.label}>SECRET / SYSTEM PROMPT</label><textarea value={data?.sakura?.customStory || ''} onChange={e => onUpdate('sakura', 'customStory', e.target.value)} style={{...s.input, height:'80px'}} placeholder="Sakura instructions..." /></div>
             </div>
         </div>
     </div>
 );
 
+// --- MAIN PAGE ---
 export default function AdminPage() {
   const [isAuth, setIsAuth] = useState(false);
   const [activeTab, setActiveTab] = useState<'blog' | 'content'>('blog');
@@ -133,16 +174,18 @@ export default function AdminPage() {
   const [isSaving, setIsSaving] = useState(false);
   
   const [secEn, setSecEn] = useState(""); const [secVi, setSecVi] = useState(""); const [secJp, setSecJp] = useState("");
+  
+  // Dùng chung SectionBox cho Profile, Contact và SKILLS
   const [boxesEn, setBoxesEn] = useState<SectionBox[]>([]); const [boxesVi, setBoxesVi] = useState<SectionBox[]>([]); const [boxesJp, setBoxesJp] = useState<SectionBox[]>([]);
+  
   const [heroEn, setHeroEn] = useState<HeroData>(DEFAULT_HERO); const [heroVi, setHeroVi] = useState<HeroData>(DEFAULT_HERO); const [heroJp, setHeroJp] = useState<HeroData>(DEFAULT_HERO);
   const [config, setConfig] = useState<ConfigData>({ resumeUrl: "", isOpenForWork: true });
   const [expEn, setExpEn] = useState<ExpGroup[]>([]); const [expVi, setExpVi] = useState<ExpGroup[]>([]); const [expJp, setExpJp] = useState<ExpGroup[]>([]);
   const [faqEn, setFaqEn] = useState<FaqItem[]>([]); const [faqVi, setFaqVi] = useState<FaqItem[]>([]); const [faqJp, setFaqJp] = useState<FaqItem[]>([]);
-  
-  // AI Config State (Khởi tạo Default để tránh undefined)
   const [aiConfig, setAiConfig] = useState<AiConfigData>(DEFAULT_AI_CONFIG);
 
-  const isBoxSection = ['profile', 'contact'].includes(sectionKey);
+  // Nhận diện kiểu section để render Editor tương ứng
+  const isBoxSection = ['profile', 'contact', 'skills'].includes(sectionKey);
   const isExpSection = sectionKey === 'experience'; 
   const isHeroSection = sectionKey === 'hero';
   const isConfigSection = sectionKey === 'global_config';
@@ -151,7 +194,7 @@ export default function AdminPage() {
 
   useEffect(() => { getAllPosts().then((data) => setPosts(data as unknown as Post[])); }, []);
 
-  // LOAD DATA
+  // LOAD DATA KHI ĐỔI TAB / ĐỔI SECTION
   useEffect(() => {
     if (activeTab === 'content') {
         const fetchSection = async () => {
@@ -160,24 +203,47 @@ export default function AdminPage() {
                 const data = await getSectionContent(sectionKey);
                 if (data) {
                     const typedData = data as unknown as SectionData;
-                    if (isExpSection) { try { setExpEn(JSON.parse(typedData.contentEn)); } catch { setExpEn([]); } try { setExpVi(JSON.parse(typedData.contentVi)); } catch { setExpVi([]); } try { setExpJp(JSON.parse(typedData.contentJp)); } catch { setExpJp([]); } }
-                    else if (isBoxSection) { try { setBoxesEn(JSON.parse(typedData.contentEn)); } catch { setBoxesEn([]); } try { setBoxesVi(JSON.parse(typedData.contentVi)); } catch { setBoxesVi([]); } try { setBoxesJp(JSON.parse(typedData.contentJp)); } catch { setBoxesJp([]); } } 
-                    else if (isHeroSection) { try { setHeroEn({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentEn) }); } catch { setHeroEn(DEFAULT_HERO); } try { setHeroVi({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentVi) }); } catch { setHeroVi(DEFAULT_HERO); } try { setHeroJp({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentJp) }); } catch { setHeroJp(DEFAULT_HERO); } }
-                    else if (isConfigSection) { try { const p = JSON.parse(typedData.contentEn); setConfig({ resumeUrl: p.resumeUrl || "", isOpenForWork: p.isOpenForWork ?? true }); } catch { setConfig({ resumeUrl: "", isOpenForWork: true }); } }
-                    else if (isFaqSection) { try { setFaqEn(JSON.parse(typedData.contentEn)); } catch { setFaqEn([]); } try { setFaqVi(JSON.parse(typedData.contentVi)); } catch { setFaqVi([]); } try { setFaqJp(JSON.parse(typedData.contentJp)); } catch { setFaqJp([]); } }
+                    if (isExpSection) { 
+                        try { setExpEn(JSON.parse(typedData.contentEn)); } catch { setExpEn([]); } 
+                        try { setExpVi(JSON.parse(typedData.contentVi)); } catch { setExpVi([]); } 
+                        try { setExpJp(JSON.parse(typedData.contentJp)); } catch { setExpJp([]); } 
+                    }
+                    else if (isBoxSection) { 
+                        try { setBoxesEn(JSON.parse(typedData.contentEn)); } catch { setBoxesEn([]); } 
+                        try { setBoxesVi(JSON.parse(typedData.contentVi)); } catch { setBoxesVi([]); } 
+                        try { setBoxesJp(JSON.parse(typedData.contentJp)); } catch { setBoxesJp([]); } 
+                    } 
+                    else if (isHeroSection) { 
+                        try { setHeroEn({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentEn) }); } catch { setHeroEn(DEFAULT_HERO); } 
+                        try { setHeroVi({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentVi) }); } catch { setHeroVi(DEFAULT_HERO); } 
+                        try { setHeroJp({ ...DEFAULT_HERO, ...JSON.parse(typedData.contentJp) }); } catch { setHeroJp(DEFAULT_HERO); } 
+                    }
+                    else if (isConfigSection) { 
+                        try { const p = JSON.parse(typedData.contentEn); setConfig({ resumeUrl: p.resumeUrl || "", isOpenForWork: p.isOpenForWork ?? true }); } catch { setConfig({ resumeUrl: "", isOpenForWork: true }); } 
+                    }
+                    else if (isFaqSection) { 
+                        try { setFaqEn(JSON.parse(typedData.contentEn)); } catch { setFaqEn([]); } 
+                        try { setFaqVi(JSON.parse(typedData.contentVi)); } catch { setFaqVi([]); } 
+                        try { setFaqJp(JSON.parse(typedData.contentJp)); } catch { setFaqJp([]); } 
+                    }
                     else if (isAiConfigSection) { 
                         try { 
                             const parsed = JSON.parse(typedData.contentEn);
-                            // Merge với Default để đảm bảo không bị thiếu key hacker/sakura
-                            setAiConfig({
-                                hacker: parsed.hacker || DEFAULT_AI_CONFIG.hacker,
-                                sakura: parsed.sakura || DEFAULT_AI_CONFIG.sakura
-                            });
+                            setAiConfig({ hacker: parsed.hacker || DEFAULT_AI_CONFIG.hacker, sakura: parsed.sakura || DEFAULT_AI_CONFIG.sakura });
                         } catch { setAiConfig(DEFAULT_AI_CONFIG); } 
                     }
-                    else { setSecEn(typedData.contentEn || ""); setSecVi(typedData.contentVi || ""); setSecJp(typedData.contentJp || ""); }
+                    else { 
+                        setSecEn(typedData.contentEn || ""); setSecVi(typedData.contentVi || ""); setSecJp(typedData.contentJp || ""); 
+                    }
                 } else {
-                    setSecEn(""); setSecVi(""); setSecJp(""); setBoxesEn([]); setBoxesVi([]); setBoxesJp([]); setExpEn([]); setExpVi([]); setExpJp([]); setFaqEn([]); setFaqVi([]); setFaqJp([]); setHeroEn(DEFAULT_HERO); setHeroVi(DEFAULT_HERO); setHeroJp(DEFAULT_HERO); setConfig({ resumeUrl: "", isOpenForWork: true }); setAiConfig(DEFAULT_AI_CONFIG);
+                    // Reset nếu không có data
+                    setSecEn(""); setSecVi(""); setSecJp(""); 
+                    setBoxesEn([]); setBoxesVi([]); setBoxesJp([]); 
+                    setExpEn([]); setExpVi([]); setExpJp([]); 
+                    setFaqEn([]); setFaqVi([]); setFaqJp([]); 
+                    setHeroEn(DEFAULT_HERO); setHeroVi(DEFAULT_HERO); setHeroJp(DEFAULT_HERO); 
+                    setConfig({ resumeUrl: "", isOpenForWork: true }); 
+                    setAiConfig(DEFAULT_AI_CONFIG);
                 }
                 setMsg("");
             } catch (error) { console.error(error); setMsg("Error loading!"); }
@@ -190,15 +256,16 @@ export default function AdminPage() {
   const addLinkField = () => setImages([...images, ""]);
   const removeLinkField = (index: number) => { const newImg = [...images]; newImg.splice(index, 1); setImages(newImg); };
   const updateLinkField = (index: number, val: string) => { const newImg = [...images]; newImg[index] = val; setImages(newImg); };
+  
   async function handleBlogSubmit(formData: FormData) { 
       const jsonImages = JSON.stringify(images.filter(img => img.trim() !== "")); formData.set("images", jsonImages);
       if (editingPost) await updatePost(formData); else await createPost(formData);
       setEditingPost(null); setImages([]); setPosts(await getAllPosts() as unknown as Post[]); alert("Saved! 🌸");
   }
+  
   function startEdit(post: Post) { setEditingPost(post); setTag(post.tag); try { setImages(JSON.parse(post.images)); } catch { setImages([]); } window.scrollTo({ top: 0, behavior: 'smooth' }); }
   async function handleDelete(id: string) { if(!confirm("Delete this?")) return; await deletePost(id); setPosts(await getAllPosts() as unknown as Post[]); }
 
-  // [UPDATED] Hàm updateHero được định nghĩa kiểu cụ thể để tránh lỗi 'implicitly has any type'
   const updateHero = (lang: 'en'|'vi'|'jp', field: keyof HeroData, val: string) => { 
       const setter = lang === 'en' ? setHeroEn : (lang === 'vi' ? setHeroVi : setHeroJp);
       setter(prev => ({ ...prev, [field]: val }));
@@ -210,6 +277,8 @@ export default function AdminPage() {
 
   async function handleSectionSubmit(formData: FormData) {
     if (isSaving) return; setIsSaving(true); setMsg("Saving...");
+    
+    // Gói dữ liệu thành JSON theo từng loại
     if (isExpSection) { formData.set("contentEn", JSON.stringify(expEn)); formData.set("contentVi", JSON.stringify(expVi)); formData.set("contentJp", JSON.stringify(expJp)); } 
     else if (isBoxSection) { formData.set("contentEn", JSON.stringify(boxesEn)); formData.set("contentVi", JSON.stringify(boxesVi)); formData.set("contentJp", JSON.stringify(boxesJp)); } 
     else if (isHeroSection) { formData.set("contentEn", JSON.stringify(heroEn)); formData.set("contentVi", JSON.stringify(heroVi)); formData.set("contentJp", JSON.stringify(heroJp)); } 
@@ -217,16 +286,21 @@ export default function AdminPage() {
     else if (isFaqSection) { formData.set("contentEn", JSON.stringify(faqEn)); formData.set("contentVi", JSON.stringify(faqVi)); formData.set("contentJp", JSON.stringify(faqJp)); } 
     else if (isAiConfigSection) { formData.set("contentEn", JSON.stringify(aiConfig)); formData.set("contentVi", ""); formData.set("contentJp", ""); }
     else { formData.set("contentEn", secEn); formData.set("contentVi", secVi); formData.set("contentJp", secJp); }
-    const res = await saveSectionContent(formData); setIsSaving(false); if (res.success) { setMsg("Saved! 🌸"); setTimeout(() => setMsg(""), 3000); } else setMsg("Failed!");
+    
+    const res = await saveSectionContent(formData); 
+    setIsSaving(false); 
+    if (res.success) { setMsg("Saved! 🌸"); setTimeout(() => setMsg(""), 3000); } else setMsg("Failed!");
   }
 
+  // --- RENDER LOGIN ---
   if (!isAuth) return ( <div style={{display:'flex', height:'100vh', justifyContent:'center', alignItems:'center'}}><form action={handleLogin} style={{...s.card, width:'400px', textAlign:'center'}}><h1 style={{...s.title, marginBottom:'20px'}}>🌸 ADMIN LOGIN</h1><input name="username" placeholder="Username" style={s.input} /><input name="password" type="password" placeholder="Password" style={s.input} /><button style={{...s.btnPrimary, width:'100%', marginTop:'10px'}}>LOGIN</button></form></div> );
 
+  // --- RENDER DASHBOARD ---
   return (
     <div style={s.container}>
       <SakuraFalling />
       
-      {/* HEADER */}
+      {/* HEADER TABS */}
       <div style={{...s.header, background:'rgba(255,255,255,0.9)', padding:'20px', borderRadius:'20px', position:'sticky', top:'10px', zIndex:100, backdropFilter:'blur(10px)'}}>
         <h1 style={s.title}>🌸 DASHBOARD</h1>
         <div style={{display:'flex', gap:'10px'}}>
@@ -235,6 +309,7 @@ export default function AdminPage() {
         </div>
       </div>
 
+      {/* --- BLOG TAB --- */}
       {activeTab === 'blog' && (
         <div style={s.grid2}>
              <div style={{...s.card, height:'fit-content', position:'sticky', top:'100px'}}>
@@ -247,7 +322,7 @@ export default function AdminPage() {
                         <div><label style={s.label}>LANG</label><select name="language" defaultValue={editingPost?.language||"vi"} style={s.input}><option value="vi">Vietnamese</option><option value="en">English</option><option value="jp">Japanese</option></select></div>
                     </div>
                     <label style={s.label}>CONTENT</label><textarea name="content" defaultValue={editingPost?.content} rows={10} required style={{...s.input, fontFamily:'monospace'}} />
-                    <div style={s.itemBox}><label style={s.label}>IMAGES</label>{images.map((l,i)=>(<div key={i} style={{display:'flex', gap:'5px', marginBottom:'5px'}}><input value={l} onChange={e=>updateLinkField(i,e.target.value)} style={{...s.input, marginBottom:0}} /><button type="button" onClick={()=>removeLinkField(i)} style={s.btnDelete}>X</button></div>))}<button type="button" onClick={addLinkField} style={{fontSize:'0.8rem', color:'#ff69b4', border:'none', background:'none', cursor:'pointer'}}>+ Add Image</button></div>
+                    <div style={s.itemBox}><label style={s.label}>IMAGES (URLs)</label>{images.map((l,i)=>(<div key={i} style={{display:'flex', gap:'5px', marginBottom:'5px'}}><input value={l} onChange={e=>updateLinkField(i,e.target.value)} style={{...s.input, marginBottom:0}} /><button type="button" onClick={()=>removeLinkField(i)} style={s.btnDelete}>X</button></div>))}<button type="button" onClick={addLinkField} style={{fontSize:'0.8rem', color:'#ff69b4', border:'none', background:'none', cursor:'pointer'}}>+ Add Image</button></div>
                     <div style={{display:'flex', gap:'10px', marginTop:'10px'}}><button style={{...s.btnPrimary, flex:1}}>SAVE</button>{editingPost && <button type="button" onClick={()=>{setEditingPost(null);setImages([])}} style={s.btnSecondary}>CANCEL</button>}</div>
                 </form>
             </div>
@@ -268,6 +343,7 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* --- CONTENT TAB --- */}
       {activeTab === 'content' && (
         <div style={{maxWidth:'1200px', margin:'0 auto'}}>
             <div style={s.card}>
@@ -285,7 +361,7 @@ export default function AdminPage() {
                             <option value="about">01. ABOUT ME (Text)</option>
                             <option value="profile">02. PROFILE (Boxes)</option>
                             <option value="career">04. CAREER GOALS (Text)</option>
-                            <option value="skills">06. SKILLS (Text)</option>
+                            <option value="skills">06. SKILLS (Boxes)</option>
                             <option value="experience">07. EXPERIENCE (CV Style)</option>
                             <option value="contact">11. CONTACT (Boxes)</option>
                             <option value="faq_data">12. FAQ (Q&A)</option>
@@ -294,7 +370,6 @@ export default function AdminPage() {
 
                     {isHeroSection ? (
                         <div style={s.grid3}>
-                            {/* [FIXED] SỬA LỖI IMPLICIT ANY BẰNG CÁCH DÙNG TYPE CỤ THỂ */}
                             <HeroEditor lang="en" data={heroEn} onUpdate={(f: keyof HeroData, v: string) => updateHero('en', f, v)} />
                             <HeroEditor lang="vi" data={heroVi} onUpdate={(f: keyof HeroData, v: string) => updateHero('vi', f, v)} />
                             <HeroEditor lang="jp" data={heroJp} onUpdate={(f: keyof HeroData, v: string) => updateHero('jp', f, v)} />
@@ -318,9 +393,9 @@ export default function AdminPage() {
                         </div>
                     ) : isBoxSection ? (
                         <div style={s.grid3}>
-                            <BoxEditor lang="en" data={boxesEn} onUpdate={setBoxesEn} />
-                            <BoxEditor lang="vi" data={boxesVi} onUpdate={setBoxesVi} />
-                            <BoxEditor lang="jp" data={boxesJp} onUpdate={setBoxesJp} />
+                            <BoxEditor lang="en" data={boxesEn} onUpdate={setBoxesEn} titleLabel={sectionKey.toUpperCase()} />
+                            <BoxEditor lang="vi" data={boxesVi} onUpdate={setBoxesVi} titleLabel={sectionKey.toUpperCase()} />
+                            <BoxEditor lang="jp" data={boxesJp} onUpdate={setBoxesJp} titleLabel={sectionKey.toUpperCase()} />
                         </div>
                     ) : isFaqSection ? (
                         <div style={s.grid3}>

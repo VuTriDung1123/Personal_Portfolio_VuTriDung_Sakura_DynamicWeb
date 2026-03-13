@@ -196,6 +196,7 @@ export default function SakuraHome() {
   const profileBoxes = getJson<SectionBox[]>('profile');
   const contactBoxes = getJson<SectionBox[]>('contact');
   const experienceData = getJson<ExpGroup[]>('experience');
+  const skillsBoxes = getJson<SectionBox[]>('skills');
 
   const getFontFamily = (lang: string) => {
       if (lang === 'vi') return "'Noto Serif', serif";
@@ -399,9 +400,23 @@ export default function SakuraHome() {
                       <section id="skills" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <ScrollReveal>
                           <h2 className="section-title"><span>✿ {t.sec_skills} ✿</span></h2>
-                          {getTxt("skills") ? (
-                              <div className="glass-box" style={{textAlign: 'center'}}>
-                                  <p style={{whiteSpace: 'pre-line', fontSize: '1.2rem', lineHeight: '2'}}>{getTxt("skills")}</p>
+                          {skillsBoxes && skillsBoxes.length > 0 ? (
+                              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '30px'}}>
+                                  {skillsBoxes.map((box, boxIndex) => (
+                                      <ScrollReveal key={box.id} delay={boxIndex * 0.1}>
+                                        <div className="glass-box" style={{padding: '30px', background: 'rgba(255,255,255,0.9)', height: '100%'}}>
+                                            <h3 style={{color: '#ff69b4', borderBottom: '1px dashed #ffc1e3', paddingBottom: '10px', marginBottom: '15px'}}>{box.title}</h3>
+                                            <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+                                                {box.items.map((it, i) => (
+                                                    <div key={i} style={{display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #fff0f5', paddingBottom: '8px'}}>
+                                                        <span style={{fontWeight: 'bold', color: '#aaa', fontSize: '0.85rem', width: '35%'}}>{it.label}</span>
+                                                        <span style={{fontWeight: 'bold', color: '#5d4037', textAlign: 'right', width: '65%'}}>{it.value}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                      </ScrollReveal>
+                                  ))}
                               </div>
                           ) : <EmptyState lang={currentLang} />}
                         </ScrollReveal>
