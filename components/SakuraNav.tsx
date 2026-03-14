@@ -27,7 +27,7 @@ interface TopNavProps {
 
 export default function SakuraNav({ t, currentLang, resumeUrl }: TopNavProps) {
   const pathname = usePathname(); 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Trạng thái mở menu mobile
   
   const navItems = ['home', 'about', 'profile', 'certificates', 'career', 'achievements', 'skills', 'experience', 'projects', 'blog', 'gallery', 'faq', 'contact'];
   
@@ -54,7 +54,7 @@ export default function SakuraNav({ t, currentLang, resumeUrl }: TopNavProps) {
             href={href} 
             className="nav-link"
             style={isActive ? {color: '#ff69b4', fontWeight: 'bold'} : {}}
-            onClick={() => setIsMobileMenuOpen(false)}
+            onClick={() => setIsMobileMenuOpen(false)} // Đóng menu khi click vào link
         >
             {label}
             {isActive && <div className="nav-active-line" style={{position: 'absolute', bottom: 0, left: '10%', width: '80%', height: '2px', background: '#ff69b4', borderRadius: '2px'}}></div>}
@@ -64,48 +64,44 @@ export default function SakuraNav({ t, currentLang, resumeUrl }: TopNavProps) {
 
   return (
     <nav className="navbar">
-      {/* Container gom tất cả vào 1 hàng trên Mobile */}
-      <div className="nav-mobile-container">
-          
-          <div className="nav-left">
-            <div className="nav-logo-img">
-               <img src="/pictures/VuTriDung.jpg" alt="Real Avatar" className="nav-real-img" />
-               <img src="/pictures/sakura_avatar.png" alt="Frame" className="nav-frame-img" />
-            </div>
-            
-            <div className="nav-logo-text" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginLeft: '12px' }}>
-                <span className="logo-name" style={{
-                    fontFamily: currentLang === 'en' ? 'inherit' : (currentLang === 'jp' ? "'Noto Serif JP', serif" : "'Noto Serif', serif"),
-                    fontSize: '1.1rem', fontWeight: 'bold', color: '#5d4037', lineHeight: '1.2', whiteSpace: 'nowrap'
-                }}>
-                    {NAMES[currentLang]}
-                </span>
-                <span className="logo-tag" style={{ fontSize: '0.75rem', color: '#ff69b4', fontWeight: 'bold', marginTop: '2px', whiteSpace: 'nowrap' }}>
-                    {TAGLINES[currentLang]}
-                </span>
-            </div>
-          </div>
-
-          <div className="nav-right" style={{gap: '10px'}}>
-            <a href="https://personal-portfolio-vu-tri-dung-dyna.vercel.app" className="btn-switch-theme" target="_blank" title="Hacker Version">
-               👾 <span className="desktop-text">HACKER VER</span>
-            </a>
-            <a href={resumeUrl || "#"} target="_blank" className="btn-cv" title="Download CV">
-               📄 <span className="desktop-text">CV ⇩</span>
-            </a>
-            
-            {/* Nút Hamburger chỉ hiện trên Mobile */}
-            <button className="mobile-menu-btn mobile-only" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? '✖' : '☰'}
-            </button>
-          </div>
-          
+      <div className="nav-left">
+        <div className="nav-logo-img">
+           <img src="/pictures/VuTriDung.jpg" alt="Real Avatar" className="nav-real-img" />
+           <img src="/pictures/sakura_avatar.png" alt="Frame" className="nav-frame-img" />
+        </div>
+        
+        <div className="nav-logo-text" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginLeft: '12px' }}>
+            <span className="logo-name" style={{
+                fontFamily: currentLang === 'en' ? 'inherit' : (currentLang === 'jp' ? "'Noto Serif JP', serif" : "'Noto Serif', serif"),
+                fontSize: '1.1rem', fontWeight: 'bold', color: '#5d4037', lineHeight: '1.2', whiteSpace: 'nowrap'
+            }}>
+                {NAMES[currentLang]}
+            </span>
+            <span className="logo-tag" style={{ fontSize: '0.75rem', color: '#ff69b4', fontWeight: 'bold', marginTop: '2px' }}>
+                {TAGLINES[currentLang]}
+            </span>
+        </div>
       </div>
 
       {/* Menu PC */}
       <div className="nav-center desktop-only-flex">
           <div className="nav-row">{row1.map(i => <NavLink key={i} item={i} />)}</div>
           <div className="nav-row" style={{borderTop: '1px dashed rgba(255, 105, 180, 0.3)', paddingTop: '5px'}}>{row2.map(i => <NavLink key={i} item={i} />)}</div>
+      </div>
+
+      {/* Nút bên phải & Nút mở Menu Mobile */}
+      <div className="nav-right" style={{gap: '10px'}}>
+        <a href="https://personal-portfolio-vu-tri-dung-dyna.vercel.app" className="btn-switch-theme" target="_blank" title="Hacker Version">
+           👾 <span className="desktop-text">HACKER VER</span>
+        </a>
+        <a href={resumeUrl || "#"} target="_blank" className="btn-cv" title="Download CV">
+           📄 <span className="desktop-text">CV ⇩</span>
+        </a>
+        
+        {/* Nút Hamburger chỉ hiện trên Mobile */}
+        <button className="mobile-menu-btn mobile-only" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? '✖' : '☰'}
+        </button>
       </div>
 
       {/* Menu Dropdown cho Mobile */}
