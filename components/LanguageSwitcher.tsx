@@ -38,7 +38,7 @@ export default function LanguageSwitcher({ currentLang, setCurrentLang }: Props)
 
   return (
     // Dời sang LEFT: 50px, BOTTOM: 90px (Nằm ngay trên nút bấm Nhạc)
-    <div ref={menuRef} style={{ position: 'fixed', bottom: '90px', left: '50px', zIndex: 999998 }}>
+    <div ref={menuRef} className="lang-switcher-container" style={{ position: 'fixed', bottom: '90px', left: '50px', zIndex: 999998 }}>
       
       {/* Nút bấm tròn hiển thị Cờ hiện tại */}
       <button 
