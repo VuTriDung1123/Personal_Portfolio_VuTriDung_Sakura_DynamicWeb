@@ -3,6 +3,8 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react"; 
 import Link from "next/link"; 
+import Image from "next/image";
+
 import SakuraCursorTrail from "@/components/SakuraCursorTrail";
 import SakuraFalling from "@/components/SakuraFalling"; 
 import SakuraNav from "@/components/SakuraNav";
@@ -123,7 +125,8 @@ export default function SakuraHome() {
   const [latestPosts, setLatestPosts] = useState<Post[]>([]);
   const [dbAchievements, setDbAchievements] = useState<Post[]>([]);
   const [dynamicSections, setDynamicSections] = useState<Record<string, SectionData>>({});
-  const [globalConfig, setGlobalConfig] = useState<{ resumeUrl: string; isOpenForWork: boolean } | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [globalConfig, setGlobalConfig] = useState<any>(null);
 
   // Filter States
   const [projLang, setProjLang] = useState<string>("ALL");
@@ -139,7 +142,6 @@ export default function SakuraHome() {
   useEffect(() => {
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
     if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentLang(savedLang);
     }
 
@@ -181,6 +183,14 @@ export default function SakuraHome() {
       const d = getJson<HeroData>('hero');
       return d || { fullName: "Vu Tri Dung", nickName1: "David Miller", nickName2: "Akina Aoi", avatarUrl: "/pictures/VuTriDung.jpg", greeting: "Hi, I am", description: "Loading...", typewriter: "[]" };
   })();
+
+  // Ngăn chặn lỗi JSON parse cho Typewriter
+  let typewriterWords = ["Developer", "Student"]; 
+  try {
+      if (hero.typewriter) typewriterWords = JSON.parse(hero.typewriter);
+  } catch (error) {
+      console.error("Lỗi cú pháp JSON ở phần Typewriter!");
+  }
   
   const currentMainName = MY_NAMES[currentLang]; 
   const subNames = [
@@ -199,9 +209,9 @@ export default function SakuraHome() {
   const skillsBoxes = getJson<SectionBox[]>('skills');
 
   const getFontFamily = (lang: string) => {
-      if (lang === 'vi') return "'Noto Serif', serif";
-      if (lang === 'jp') return "'Noto Serif JP', serif";
-      return "'Noto Sans', sans-serif";
+      if (lang === 'vi') return "var(--font-noto-serif)";
+      if (lang === 'jp') return "var(--font-noto-serif-jp)";
+      return "var(--font-noto-sans)";
   };
 
   const filterProjects = (projects: Post[]) => {
@@ -259,9 +269,8 @@ export default function SakuraHome() {
                           <span className="hero-greeting">{hero.greeting}</span>
                           <h1 className="hero-name" style={{fontFamily: getFontFamily(currentLang)}}>{currentMainName}</h1>
                             
-                            {/* --- TYPEWRITER ĐƯỢC ÁP DỤNG VÀO ĐÂY --- */}
                             <h2 style={{ fontSize: '1.5rem', color: '#8d6e63', marginBottom: '15px' }}>
-                                {t.hero_iam} <TypewriterText words={JSON.parse(hero.typewriter || '[]')} />
+                                {t.hero_iam} <TypewriterText words={typewriterWords} />
                             </h2>
 
                           <div className="hero-names-box">
@@ -286,14 +295,26 @@ export default function SakuraHome() {
                       
                       <div className="hero-image-container">
                           <div className="blob-bg"></div>
-                          <img src="/pictures/VuTriDung.jpg" alt="Real Face" className="avatar-real" />
-                          <img src="/pictures/sakura_avatar.png" alt="Frame" className="avatar-frame-overlay" />
+                          <Image 
+                              src="/pictures/VuTriDung.jpg" 
+                              alt="Real Face" 
+                              className="avatar-real" 
+                              width={450} 
+                              height={450} 
+                              priority 
+                          />
+                          <Image 
+                              src="/pictures/sakura_avatar.png" 
+                              alt="Frame" 
+                              className="avatar-frame-overlay" 
+                              width={450} 
+                              height={450} 
+                              priority 
+                          />
                       </div>
                   </section>
 
                   <div style={{maxWidth: '1200px', margin: '0 auto', padding: '0 20px'}}>
-                      
-                      {/* --- BỌC SCROLL REVEAL VÀO CÁC SECTION --- */}
                       
                       <section id="about" style={{padding: '80px 0', textAlign: 'center', scrollMarginTop: '100px'}}>
                         <ScrollReveal>
@@ -334,8 +355,8 @@ export default function SakuraHome() {
                               {dbLangCerts.length > 0 ? dbLangCerts.map((p, i) => (
                                   <ScrollReveal key={p.id} delay={i * 0.1}>
                                     <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
-                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                        <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}><Image src={getCover(p.images)} alt={p.title} width={600} height={400} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                        <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h3></div>
                                     </Link>
                                   </ScrollReveal>
                               )) : <EmptyState lang={currentLang} message={currentLang === 'vi' ? "Chưa có chứng chỉ 🍃" : (currentLang === 'jp' ? "証明書が見つかりません 🍃" : "No certificates found 🍃")} />}
@@ -346,8 +367,8 @@ export default function SakuraHome() {
                               {dbTechCerts.length > 0 ? dbTechCerts.map((p, i) => (
                                   <ScrollReveal key={p.id} delay={i * 0.1}>
                                     <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
-                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                        <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}><Image src={getCover(p.images)} alt={p.title} width={600} height={400} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                        <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h3></div>
                                     </Link>
                                   </ScrollReveal>
                               )) : <EmptyState lang={currentLang} message={currentLang === 'vi' ? "Chưa có chứng chỉ 🍃" : (currentLang === 'jp' ? "証明書が見つかりません 🍃" : "No certificates found 🍃")} />}
@@ -358,8 +379,8 @@ export default function SakuraHome() {
                               {dbOtherCerts.length > 0 ? dbOtherCerts.map((p, i) => (
                                   <ScrollReveal key={p.id} delay={i * 0.1}>
                                     <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
-                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                        <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}><Image src={getCover(p.images)} alt={p.title} width={600} height={400} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                        <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h3></div>
                                     </Link>
                                   </ScrollReveal>
                               )) : <EmptyState lang={currentLang} message={currentLang === 'vi' ? "Chưa có chứng chỉ 🍃" : (currentLang === 'jp' ? "証明書が見つかりません 🍃" : "No certificates found 🍃")} />}
@@ -387,8 +408,8 @@ export default function SakuraHome() {
                                   {dbAchievements.map((p, i) => (
                                       <ScrollReveal key={p.id} delay={i * 0.1}>
                                         <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                            <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}><Image src={getCover(p.images)} alt={p.title} width={600} height={400} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                            <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h3></div>
                                         </Link>
                                       </ScrollReveal>
                                   ))}
@@ -477,11 +498,11 @@ export default function SakuraHome() {
                                                   <ScrollReveal key={p.id} delay={i * 0.1}>
                                                     <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', transition: '0.3s', height: '100%', display: 'flex', flexDirection: 'column'}}>
                                                         <div className="img-wrapper" style={{height: '200px', overflow: 'hidden', position: 'relative'}}>
-                                                            <img src={getCover(p.images)} alt={p.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                                                            <Image src={getCover(p.images)} alt={p.title} width={600} height={400} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
                                                             {p.language && (<div style={{position: 'absolute', top: 10, right: 10, background: 'rgba(255, 105, 180, 0.9)', color: 'white', padding: '4px 8px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold'}}>{p.language.toUpperCase()}</div>)}
                                                         </div>
                                                         <div style={{padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
-                                                            <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '15px'}}>{p.title}</h4>
+                                                            <h3 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '15px'}}>{p.title}</h3>
                                                             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                                                                 <span style={{fontSize: '0.75rem', color: '#aaa'}}>{new Date(p.createdAt).toLocaleDateString()}</span>
                                                                 <span style={{fontSize: '0.8rem', color: '#ff69b4', fontWeight: 'bold', textTransform: 'uppercase'}}>Details →</span>
@@ -509,9 +530,9 @@ export default function SakuraHome() {
                                   {latestPosts.map((p, i) => (
                                       <ScrollReveal key={p.id} delay={i * 0.1}>
                                         <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                            <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                            <div className="img-wrapper" style={{height: 180, position: 'relative'}}><Image src={getCover(p.images)} alt={p.title} width={600} height={400} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
                                             <div style={{padding: '20px'}}>
-                                                <h4 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h4>
+                                                <h3 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h3>
                                                 <span style={{fontSize: '0.8rem', color: '#aaa'}}>{new Date(p.createdAt).toLocaleDateString()}</span>
                                             </div>
                                         </Link>
@@ -531,8 +552,8 @@ export default function SakuraHome() {
                                   {dbItEvents.map((p, i) => (
                                       <ScrollReveal key={p.id} delay={i * 0.1}>
                                         <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                            <div style={{padding: '20px'}}><h4 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h4></div>
+                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}><Image src={getCover(p.images)} alt={p.title} width={600} height={400} style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                            <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h3></div>
                                         </Link>
                                       </ScrollReveal>
                                   ))}

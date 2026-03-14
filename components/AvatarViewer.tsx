@@ -111,7 +111,6 @@ export default function AvatarViewer(props: AvatarViewerProps) {
 
 class ErrorBoundary extends React.Component<{ setHasError: (v: boolean) => void, children: React.ReactNode }> {
   static getDerivedStateFromError() { return { hasError: true }; }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  componentDidCatch(error: any) { this.props.setHasError(true); }
+  componentDidCatch() { this.props.setHasError(true); }
   render() { return this.props.children; }
 }

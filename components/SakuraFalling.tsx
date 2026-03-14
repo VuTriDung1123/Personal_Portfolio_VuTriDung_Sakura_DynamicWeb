@@ -35,16 +35,16 @@ export default function SakuraFalling() {
       {/* 1. Định nghĩa chuyển động ngay tại đây để chắc chắn chạy */}
       <style jsx global>{`
         @keyframes sakura-fall {
-          0% {
-            top: -10%;
-            transform: translateX(0) rotate(0deg);
-            opacity: 1;
-          }
-          100% {
-            top: 100%;
-            transform: translateX(100px) rotate(360deg);
-            opacity: 0;
-          }
+            0% {
+                /* Thay vì top: -10%, dùng transform */
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                /* Thay vì top: 110%, dùng transform */
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0.1;
+            }
         }
       `}</style>
 
@@ -77,7 +77,6 @@ export default function SakuraFalling() {
               animationIterationCount: 'infinite',
               animationDuration: p.animDuration,
               animationDelay: p.delay,
-              top: '-20px', // Xuất phát từ ngoài màn hình
               opacity: 0.8
             }}
           />
