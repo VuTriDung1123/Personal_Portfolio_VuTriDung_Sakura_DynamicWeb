@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Lang } from "@/lib/data";
 import { usePathname } from "next/navigation"; 
+import { useState } from "react";
 
 const NAMES = {
     vi: "Vũ Trí Dũng",
@@ -26,10 +27,10 @@ interface TopNavProps {
 
 export default function SakuraNav({ t, currentLang, resumeUrl }: TopNavProps) {
   const pathname = usePathname(); 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Trạng thái mở menu mobile
   
   const navItems = ['home', 'about', 'profile', 'certificates', 'career', 'achievements', 'skills', 'experience', 'projects', 'blog', 'gallery', 'faq', 'contact'];
   
-  // Chia làm 2 hàng cân đối cho PC
   const row1 = navItems.slice(0, 7);
   const row2 = navItems.slice(7, 13);
 
@@ -53,9 +54,10 @@ export default function SakuraNav({ t, currentLang, resumeUrl }: TopNavProps) {
             href={href} 
             className="nav-link"
             style={isActive ? {color: '#ff69b4', fontWeight: 'bold'} : {}}
+            onClick={() => setIsMobileMenuOpen(false)} // Đóng menu khi click vào link
         >
             {label}
-            {isActive && <div style={{position: 'absolute', bottom: 0, left: '10%', width: '80%', height: '2px', background: '#ff69b4', borderRadius: '2px'}}></div>}
+            {isActive && <div className="nav-active-line" style={{position: 'absolute', bottom: 0, left: '10%', width: '80%', height: '2px', background: '#ff69b4', borderRadius: '2px'}}></div>}
         </Link>
     );
   };
@@ -71,11 +73,7 @@ export default function SakuraNav({ t, currentLang, resumeUrl }: TopNavProps) {
         <div className="nav-logo-text" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginLeft: '12px' }}>
             <span className="logo-name" style={{
                 fontFamily: currentLang === 'en' ? 'inherit' : (currentLang === 'jp' ? "'Noto Serif JP', serif" : "'Noto Serif', serif"),
-                fontSize: '1.1rem',
-                fontWeight: 'bold',
-                color: '#5d4037',
-                lineHeight: '1.2',
-                whiteSpace: 'nowrap'
+                fontSize: '1.1rem', fontWeight: 'bold', color: '#5d4037', lineHeight: '1.2', whiteSpace: 'nowrap'
             }}>
                 {NAMES[currentLang]}
             </span>
@@ -85,22 +83,33 @@ export default function SakuraNav({ t, currentLang, resumeUrl }: TopNavProps) {
         </div>
       </div>
 
-      <div className="nav-center">
+      {/* Menu PC */}
+      <div className="nav-center desktop-only-flex">
           <div className="nav-row">{row1.map(i => <NavLink key={i} item={i} />)}</div>
-          {/* Hàng 2 có viền mờ ở trên cho đẹp */}
           <div className="nav-row" style={{borderTop: '1px dashed rgba(255, 105, 180, 0.3)', paddingTop: '5px'}}>{row2.map(i => <NavLink key={i} item={i} />)}</div>
       </div>
 
-      <div className="nav-right" style={{gap: '15px'}}>
-        <a 
-          href="https://personal-portfolio-vu-tri-dung-dyna.vercel.app" 
-          className="btn-switch-theme"
-          target="_blank"
-        >
-           👾 HACKER VER
+      {/* Nút bên phải & Nút mở Menu Mobile */}
+      <div className="nav-right" style={{gap: '10px'}}>
+        <a href="https://personal-portfolio-vu-tri-dung-dyna.vercel.app" className="btn-switch-theme" target="_blank" title="Hacker Version">
+           👾 <span className="desktop-text">HACKER VER</span>
         </a>
-        <a href={resumeUrl || "#"} target="_blank" className="btn-cv">CV ⇩</a>
+        <a href={resumeUrl || "#"} target="_blank" className="btn-cv" title="Download CV">
+           📄 <span className="desktop-text">CV ⇩</span>
+        </a>
+        
+        {/* Nút Hamburger chỉ hiện trên Mobile */}
+        <button className="mobile-menu-btn mobile-only" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          {isMobileMenuOpen ? '✖' : '☰'}
+        </button>
       </div>
+
+      {/* Menu Dropdown cho Mobile */}
+      {isMobileMenuOpen && (
+        <div className="mobile-dropdown-menu mobile-only">
+           {navItems.map(i => <NavLink key={i} item={i} />)}
+        </div>
+      )}
     </nav>
   );
 }

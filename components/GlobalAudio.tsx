@@ -92,7 +92,7 @@ export default function GlobalAudio() {
             <audio ref={audioRef} src="/music_japan.mp3" loop preload="auto" autoPlay />
             
             <button
-                className="audio-btn"
+                className="global-audio-btn"
                 onClick={togglePlay}
                 style={{
                     position: 'fixed',
