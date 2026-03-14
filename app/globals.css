@@ -345,49 +345,46 @@ button:disabled, .disabled { cursor: url('/cursors/Sakura_Unavailable.cur'), not
 .font-jp-hand { font-family: 'Zen Kurenaido', sans-serif; font-weight: 400; }
 
 /* =========================================
-   📱 RESPONSIVE MOBILE FIXES (MÀN HÌNH ĐIỆN THOẠI)
+   📱 RESPONSIVE MOBILE FIXES (CHỈ ÁP DỤNG CHO ĐIỆN THOẠI)
 ========================================= */
+/* Mặc định trên PC: Hiện chữ trong nút Hacker/CV, Ẩn nút Hamburger */
 .desktop-text { display: inline; }
 .mobile-only { display: none !important; }
 .desktop-only-flex { display: flex; }
-.nav-mobile-container { display: flex; width: 100%; justify-content: space-between; align-items: center; }
 
+/* KHI MÀN HÌNH NHỎ HƠN 900px (ĐIỆN THOẠI / TABLET DỌC) */
 @media (max-width: 900px) {
-  .desktop-text { display: none !important; } 
-  .desktop-only-flex { display: none !important; } 
-  .mobile-only { display: block !important; }
   
-  /* 1. Navbar Thu Gọn (ÉP NẰM TRÊN 1 HÀNG) */
+  /* --- 1. SỬA LỖI NAVBAR BỊ TRÀN & RỚT DÒNG --- */
+  .desktop-text { display: none !important; } /* Ẩn chữ HACKER VER và CV đi cho gọn */
+  .desktop-only-flex { display: none !important; } /* Ẩn cái Menu ngang dằng dặc của PC */
+  .mobile-only { display: block !important; } /* Hiện nút Hamburger ☰ */
+  
+  /* Ép Navbar thành 1 dòng ngang, không cho phép rớt dòng */
   .navbar { 
-    padding: 10px; 
+    padding: 10px 15px; 
     height: 65px; 
     display: flex;
-    flex-direction: row !important; /* Bắt buộc nằm ngang */
+    flex-direction: row !important; /* Quan trọng: Bắt buộc nằm ngang */
     align-items: center;
-  }
-  .nav-mobile-container {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    justify-content: space-between; /* Đẩy logo trái, nút phải */
-    align-items: center;
-    flex-wrap: nowrap; /* CẤM RỚT DÒNG */
+    justify-content: space-between;
+    flex-wrap: nowrap; /* Quan trọng: Tuyệt đối không rớt dòng */
   }
   
-  /* Thu nhỏ chữ Logo để vừa màn hình */
+  /* Cụm Logo bên trái (Ép nhỏ lại) */
   .nav-left { width: auto; gap: 8px; flex-shrink: 1; min-width: 0; }
   .nav-logo-img { width: 40px; height: 40px; flex-shrink: 0; }
-  .nav-logo-text h1 { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; }
+  .nav-logo-text h1 { font-size: 1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 0;}
   .nav-logo-text span { font-size: 0.65rem; }
   
-  /* Nút bên phải co lại vừa đủ */
-  .nav-right { flex-shrink: 0; gap: 8px !important; }
+  /* Cụm Nút bên phải (Ép nhỏ thành hình tròn) */
+  .nav-right { flex-shrink: 0; gap: 10px !important; display: flex; align-items: center; }
   
-  /* Thu gọn nút Hacker & CV thành hình tròn logo */
+  /* Biến nút Hacker và CV thành hình tròn chứa Icon */
   .btn-switch-theme, .btn-cv { 
     padding: 0 !important; 
-    width: 32px !important; 
-    height: 32px !important; 
+    width: 36px !important; 
+    height: 36px !important; 
     border-radius: 50% !important; 
     font-size: 1.1rem !important;
     display: flex !important;
@@ -395,66 +392,58 @@ button:disabled, .disabled { cursor: url('/cursors/Sakura_Unavailable.cur'), not
     align-items: center;
   }
   
-  /* Nút Hamburger Menu */
+  /* Thiết kế nút Hamburger (Menu thả xuống) */
   .mobile-menu-btn {
     background: transparent; border: none; color: #ff69b4;
-    font-size: 1.8rem; cursor: pointer; padding: 0 2px;
+    font-size: 2rem; cursor: pointer; padding: 0 2px;
+    display: flex; align-items: center;
   }
 
-  /* 2. Menu Mobile Dropdown */
+  /* --- 2. SỬA LỖI MÀN HÌNH CHÍNH (HERO SECTION) QUÁ TO --- */
+  .hero-section { 
+    flex-direction: column-reverse; /* Đẩy chữ xuống dưới, ảnh lên trên */
+    padding: 120px 20px 50px; /* Thụt lề lại */
+    text-align: center; 
+    gap: 30px; 
+  }
+  
+  /* Bóp nhỏ khung chứa ảnh đại diện */
+  .hero-image-container { 
+    width: 250px !important; 
+    height: 250px !important; 
+    margin: 0 auto; 
+  }
+  
+  /* Thu nhỏ chữ "David Miller" */
+  .hero-name { font-size: 2.5rem !important; margin-bottom: 5px; }
+  
+  /* Thu nhỏ chữ Typewriter ("I am a Developer") */
+  .hero-text h2 { font-size: 1.2rem !important; }
+  
+  /* Canh giữa các huy hiệu ngôn ngữ */
+  .hero-names-box { flex-wrap: wrap; justify-content: center; }
+  
+  /* Xếp dọc các nút "View Projects", "Contact Me" */
+  .hero-btns { flex-direction: column; width: 100%; gap: 10px;}
+  .btn-big { width: 100%; text-align: center; padding: 12px 20px; font-size: 0.95rem;}
+
+  /* --- 3. MENU THẢ XUỐNG CỦA MOBILE (KHI BẤM ☰) --- */
   .mobile-dropdown-menu {
     position: absolute;
     top: 65px; left: 0; width: 100%;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(15px);
     display: flex !important; flex-direction: column;
-    padding: 15px 20px; gap: 12px;
+    padding: 10px 20px; gap: 8px;
     border-bottom: 2px solid #ffc1e3;
     box-shadow: 0 10px 20px rgba(255,105,180,0.2);
-    animation: fadeInUp 0.3s ease;
-    max-height: 75vh; overflow-y: auto;
+    animation: fadeInUp 0.2s ease;
+    max-height: 70vh; overflow-y: auto;
   }
-  .mobile-dropdown-menu .nav-link { font-size: 1rem; padding: 8px 10px; border-bottom: 1px solid #fff0f5; width: 100%; }
-  .mobile-dropdown-menu .nav-active-line { display: none; }
+  .mobile-dropdown-menu .nav-link { font-size: 0.95rem; padding: 8px 10px; border-bottom: 1px solid #fff0f5; width: 100%; text-align: left;}
+  .mobile-dropdown-menu .nav-active-line { display: none; } /* Ẩn gạch chân trên mobile */
 
-  /* 3. Hero Section Fix (Vì Navbar đã ngắn lại) */
-  .hero-section { padding-top: 140px; }
-
-  /* 4. Quy hoạch lại Nút Trôi Nổi */
-  
-  /* Bé AI: Đẩy sát vào góc trái, nhỏ lại, cấm chạm */
-  .ai-model-container { 
-    width: 120px !important; 
-    height: 160px !important; 
-    left: -10px !important; 
-    bottom: -10px !important; 
-    pointer-events: none !important; 
-  }
-  
-  /* Nút Âm Thanh: Góc Trái Dưới */
-  .global-audio-btn { 
-    left: 15px !important; 
-    bottom: 15px !important; 
-    width: 40px !important; height: 40px !important; 
-  }
-  
-  /* Nút Ngôn Ngữ: Góc Trái (Nằm ngay trên nút Âm thanh) */
-  .lang-switcher-container { 
-    left: 15px !important; 
-    bottom: 65px !important; 
-  }
-  .lang-switcher-container button { width: 40px !important; height: 40px !important; font-size: 1.1rem !important; }
-  
-  /* NÚT AI CHAT: Đẩy sát ra góc PHẢI */
-  .ai-chat-btn-container {
-    right: 15px !important; /* Ép sát lề phải */
-  }
-  
-  /* Khung Chat: Bật lên tràn màn hình */
-  .chat-window { 
-    width: 90vw !important; 
-    height: 60vh !important; 
-    right: 5vw !important; 
-    bottom: 75px !important; 
-  }
+  /* Thu nhỏ thẻ dự án/kỹ năng để vừa màn hình dọc */
+  .section-title { font-size: 1.8rem; }
+  .glass-box { padding: 20px !important; border-radius: 20px !important; }
 }
