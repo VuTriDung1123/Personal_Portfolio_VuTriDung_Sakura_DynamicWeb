@@ -347,47 +347,64 @@ button:disabled, .disabled { cursor: url('/cursors/Sakura_Unavailable.cur'), not
 /* =========================================
    📱 RESPONSIVE MOBILE FIXES (MÀN HÌNH ĐIỆN THOẠI)
 ========================================= */
-/* Cấm rớt dòng cho 2 nút trên Navbar */
 .desktop-text { display: inline; }
 .mobile-only { display: none !important; }
 .desktop-only-flex { display: flex; }
+.nav-mobile-container { display: flex; width: 100%; justify-content: space-between; align-items: center; }
 
 @media (max-width: 900px) {
-  /* Ẩn hiện các class theo thiết bị */
-  .desktop-text { display: none !important; } /* Ẩn chữ HACKER VER và CV */
-  .desktop-only-flex { display: none !important; } /* Ẩn Menu ngang của PC */
+  .desktop-text { display: none !important; } 
+  .desktop-only-flex { display: none !important; } 
   .mobile-only { display: block !important; }
   
-  /* 1. Navbar Thu Gọn */
+  /* 1. Navbar Thu Gọn (ÉP NẰM TRÊN 1 HÀNG) */
   .navbar { 
-    padding: 10px 15px; 
-    height: 70px; 
-    flex-direction: row !important; 
+    padding: 10px; 
+    height: 65px; 
+    display: flex;
+    flex-direction: row !important; /* Bắt buộc nằm ngang */
+    align-items: center;
   }
-  .nav-left { width: auto; }
-  .nav-logo-img { width: 40px; height: 40px; }
-  .nav-logo-text h1 { font-size: 0.95rem; }
+  .nav-mobile-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between; /* Đẩy logo trái, nút phải */
+    align-items: center;
+    flex-wrap: nowrap; /* CẤM RỚT DÒNG */
+  }
+  
+  /* Thu nhỏ chữ Logo để vừa màn hình */
+  .nav-left { width: auto; gap: 8px; flex-shrink: 1; min-width: 0; }
+  .nav-logo-img { width: 40px; height: 40px; flex-shrink: 0; }
+  .nav-logo-text h1 { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; }
   .nav-logo-text span { font-size: 0.65rem; }
   
-  /* 2. Thu gọn nút Hacker & CV thành hình tròn logo */
+  /* Nút bên phải co lại vừa đủ */
+  .nav-right { flex-shrink: 0; gap: 8px !important; }
+  
+  /* Thu gọn nút Hacker & CV thành hình tròn logo */
   .btn-switch-theme, .btn-cv { 
     padding: 0 !important; 
-    width: 35px !important; 
-    height: 35px !important; 
+    width: 32px !important; 
+    height: 32px !important; 
     border-radius: 50% !important; 
-    font-size: 1.2rem !important;
+    font-size: 1.1rem !important;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
   }
   
   /* Nút Hamburger Menu */
   .mobile-menu-btn {
     background: transparent; border: none; color: #ff69b4;
-    font-size: 2rem; cursor: pointer; padding: 0 5px;
+    font-size: 1.8rem; cursor: pointer; padding: 0 2px;
   }
 
-  /* 3. Menu Mobile Dropdown (Danh sách xổ xuống) */
+  /* 2. Menu Mobile Dropdown */
   .mobile-dropdown-menu {
     position: absolute;
-    top: 70px; left: 0; width: 100%;
+    top: 65px; left: 0; width: 100%;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(15px);
     display: flex !important; flex-direction: column;
@@ -395,14 +412,17 @@ button:disabled, .disabled { cursor: url('/cursors/Sakura_Unavailable.cur'), not
     border-bottom: 2px solid #ffc1e3;
     box-shadow: 0 10px 20px rgba(255,105,180,0.2);
     animation: fadeInUp 0.3s ease;
-    max-height: 70vh; overflow-y: auto;
+    max-height: 75vh; overflow-y: auto;
   }
   .mobile-dropdown-menu .nav-link { font-size: 1rem; padding: 8px 10px; border-bottom: 1px solid #fff0f5; width: 100%; }
-  .mobile-dropdown-menu .nav-active-line { display: none; } /* Ẩn gạch chân trên mobile */
+  .mobile-dropdown-menu .nav-active-line { display: none; }
 
-  /* 4. Quy hoạch lại Nút Trôi Nổi (KHÔNG ĐỤNG NHAU) */
+  /* 3. Hero Section Fix (Vì Navbar đã ngắn lại) */
+  .hero-section { padding-top: 140px; }
+
+  /* 4. Quy hoạch lại Nút Trôi Nổi */
   
-  /* Bé AI: Đẩy sát vào góc trái, nhỏ lại, cấm chạm để không che nút */
+  /* Bé AI: Đẩy sát vào góc trái, nhỏ lại, cấm chạm */
   .ai-model-container { 
     width: 120px !important; 
     height: 160px !important; 
@@ -411,7 +431,7 @@ button:disabled, .disabled { cursor: url('/cursors/Sakura_Unavailable.cur'), not
     pointer-events: none !important; 
   }
   
-  /* Nút Âm Thanh: Góc Trái Dưới (Canh sát viền) */
+  /* Nút Âm Thanh: Góc Trái Dưới */
   .global-audio-btn { 
     left: 15px !important; 
     bottom: 15px !important; 
@@ -425,7 +445,12 @@ button:disabled, .disabled { cursor: url('/cursors/Sakura_Unavailable.cur'), not
   }
   .lang-switcher-container button { width: 40px !important; height: 40px !important; font-size: 1.1rem !important; }
   
-  /* Khung Chat: Góc Phải Dưới (Khung chat bật lên tràn màn hình 90%) */
+  /* NÚT AI CHAT: Đẩy sát ra góc PHẢI */
+  .ai-chat-btn-container {
+    right: 15px !important; /* Ép sát lề phải */
+  }
+  
+  /* Khung Chat: Bật lên tràn màn hình */
   .chat-window { 
     width: 90vw !important; 
     height: 60vh !important; 
