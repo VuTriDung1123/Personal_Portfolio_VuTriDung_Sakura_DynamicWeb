@@ -1,6 +1,5 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react"; 
 import Link from "next/link"; 
 import Image from "next/image";
@@ -142,6 +141,7 @@ export default function SakuraHome() {
   useEffect(() => {
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
     if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentLang(savedLang);
     }
 
@@ -188,6 +188,7 @@ export default function SakuraHome() {
   let typewriterWords = ["Developer", "Student"]; 
   try {
       if (hero.typewriter) typewriterWords = JSON.parse(hero.typewriter);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
       console.error("Lỗi cú pháp JSON ở phần Typewriter!");
   }
@@ -242,11 +243,15 @@ export default function SakuraHome() {
               }}>
                   <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1}}>
                       <video 
-                          autoPlay loop muted playsInline 
-                          style={{width: '100%', height: '100%', objectFit: 'cover'}}
-                      >
-                          <source src="/videos/sakura_bg.mp4" type="video/mp4" />
-                      </video>
+                        autoPlay 
+                        loop 
+                        muted 
+                        playsInline 
+                        preload="metadata" /* Chỉ tải trước một ít dữ liệu để web không bị treo */
+                        style={{width: '100%', height: '100%', objectFit: 'cover'}}
+                    >
+                        <source src="/videos/sakura_bg.mp4" type="video/mp4" />
+                    </video>
                       <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255, 240, 245, 0.75)', backdropFilter: 'blur(4px)'}}></div>
                   </div>
 
@@ -296,21 +301,23 @@ export default function SakuraHome() {
                       <div className="hero-image-container">
                           <div className="blob-bg"></div>
                           <Image 
-                              src="/pictures/VuTriDung.jpg" 
-                              alt="Real Face" 
-                              className="avatar-real" 
-                              width={450} 
-                              height={450} 
-                              priority 
-                          />
-                          <Image 
-                              src="/pictures/sakura_avatar.png" 
-                              alt="Frame" 
-                              className="avatar-frame-overlay" 
-                              width={450} 
-                              height={450} 
-                              priority 
-                          />
+                                src="/pictures/VuTriDung.jpg" 
+                                alt="Real Face" 
+                                className="avatar-real" 
+                                width={450} 
+                                height={450} 
+                                sizes="(max-width: 900px) 250px, 450px" /* Tải ảnh 250px cho mobile, 450px cho PC */
+                                priority 
+                            />
+                            <Image 
+                                src="/pictures/sakura_avatar.png" 
+                                alt="Frame" 
+                                className="avatar-frame-overlay" 
+                                width={450} 
+                                height={450} 
+                                sizes="(max-width: 900px) 250px, 450px"
+                                priority 
+                            />
                       </div>
                   </section>
 

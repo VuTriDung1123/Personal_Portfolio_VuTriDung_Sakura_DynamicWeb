@@ -214,10 +214,11 @@ ul { list-style: none; }
 
 .hero-btns { display: flex; gap: 15px; }
 .btn-big { padding: 12px 30px; border-radius: 30px; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; transition: 0.3s; }
-.btn-pink { background: var(--primary); color: white; box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4); }
-.btn-pink:hover { transform: translateY(-3px); background: #ff47a0; }
-.btn-white { background: white; color: #d81b60; border: 2px solid #ffc1e3; }
-.btn-white:hover { border-color: #d81b60; background: #fff0f5; }
+.btn-pink { background: #d81b60; color: white; box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4); }
+.btn-pink:hover { transform: translateY(-3px); background: #c2185b; }
+
+.btn-white { background: white; color: #c2185b; border: 2px solid #d81b60; }
+.btn-white:hover { border-color: #c2185b; background: #fff0f5; }
 
 .hero-image-container {
   position: relative; 
