@@ -13,23 +13,22 @@ export default function GlobalAudio() {
     // Kiểm tra xem có đang ở trang admin không
     const isAdmin = pathname.startsWith("/admin");
 
-    // 1. ÉP PHÁT NHẠC NGAY LẬP TỨC KHI VỪA VÀO WEB
+    // 1. CỐ GẮNG PHÁT NHẠC NGAY LẬP TỨC (Dành cho trình duyệt đã nới lỏng chính sách)
     useEffect(() => {
         if (isAdmin || hasInteracted) return;
 
         const audio = audioRef.current;
         if (audio) {
-            // Cố gắng phát nhạc ngay. Dùng Promise để bắt lỗi nếu trình duyệt chặn Autoplay.
             audio.play().then(() => {
                 setIsPlaying(true);
                 setHasInteracted(true);
-            }).catch(() => {
-                console.log("Trình duyệt chặn Autoplay. Đang đợi người dùng thao tác...");
+            }).catch((err) => {
+                console.log("Trình duyệt chặn Autoplay thuần. Đang đợi người dùng nhúc nhích chuột...");
             });
         }
     }, [isAdmin, hasInteracted]);
 
-    // 2. Kế hoạch B: Lắng nghe tương tác (Click/Scroll) nếu Autoplay bị chặn
+    // 2. LƯỚI BẮT SỰ KIỆN SIÊU NHẠY: Bật nhạc ngay cả khi chỉ lướt chuột qua lúc đang Loading
     useEffect(() => {
         const handleInteraction = () => {
             if (!hasInteracted && !pathname.startsWith("/admin")) {
@@ -41,17 +40,23 @@ export default function GlobalAudio() {
             }
         };
 
-        // Bắt sự kiện click hoặc cuộn trang lần đầu tiên
-        document.addEventListener("click", handleInteraction, { once: true });
-        document.addEventListener("scroll", handleInteraction, { once: true });
+        // Khai báo mọi cử chỉ có thể xảy ra trên PC và Mobile
+        const events = ["click", "scroll", "mousemove", "touchstart", "keydown"];
+        
+        // Gắn sự kiện vào toàn trang web
+        events.forEach(event => {
+            document.addEventListener(event, handleInteraction, { once: true });
+        });
 
         return () => {
-            document.removeEventListener("click", handleInteraction);
-            document.removeEventListener("scroll", handleInteraction);
+            // Dọn dẹp để không bị rò rỉ bộ nhớ
+            events.forEach(event => {
+                document.removeEventListener(event, handleInteraction);
+            });
         };
     }, [hasInteracted, pathname]);
 
-    // 3. Xử lý bật/tắt nhạc khi đổi trang (chặn Admin)
+    // 3. Xử lý bật/tắt nhạc khi chuyển qua lại giữa các trang (VD: Từ Home -> Admin)
     useEffect(() => {
         const audio = audioRef.current;
         if (!audio) return;
@@ -59,14 +64,13 @@ export default function GlobalAudio() {
         if (isAdmin) {
             audio.pause(); // Vào admin thì tắt nhạc
         } else if (isPlaying && hasInteracted) {
-            // Đang phát nhạc và ra khỏi admin -> phát lại
             audio.play().catch(() => setIsPlaying(false));
         }
     }, [pathname, isAdmin, isPlaying, hasInteracted]);
 
-    // 4. Hàm cho nút bật/tắt thủ công
+    // 4. Hàm cho nút bật/tắt thủ công ở góc
     const togglePlay = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Tránh kích hoạt lại sự kiện click ở document
+        e.stopPropagation(); 
         const audio = audioRef.current;
         if (!audio) return;
 
@@ -80,22 +84,20 @@ export default function GlobalAudio() {
         }
     };
 
-    // Nếu đang ở trang Admin thì không hiển thị nút nhạc và dừng phát
     if (isAdmin) return null;
 
     return (
         <>
-            {/* Thẻ audio chạy ngầm, loop lặp lại liên tục, thêm thuộc tính autoPlay */}
+            {/* autoPlay được set sẵn, preload = "auto" để tải nhạc về máy ngay từ giây đầu tiên */}
             <audio ref={audioRef} src="/music_japan.mp3" loop preload="auto" autoPlay />
             
-            {/* Đưa nút sang GÓC DƯỚI TRÁI - Kế bên mô hình 3D AI để không che khung chat */}
             <button
                 className="audio-btn"
                 onClick={togglePlay}
                 style={{
                     position: 'fixed',
                     bottom: '30px', 
-                    left: '50px', 
+                    left: '50px',
                     width: '45px',
                     height: '45px',
                     borderRadius: '50%',
