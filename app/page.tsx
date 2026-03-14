@@ -458,7 +458,7 @@ export default function SakuraHome() {
                           <h2 className="section-title"><span>✿ {t.sec_proj} ✿</span></h2>
                           
                           <div className="glass-box" style={{marginBottom: '40px', padding: '15px 25px', background: 'rgba(255,255,255,0.9)', borderRadius: '50px', display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 15px rgba(255, 105, 180, 0.15)'}}>
-                              <div style={{display: 'flex', gap: '10px', overflowX: 'auto'}}>
+                              <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '4px'}}>
                                   {[{v: "ALL", l: "✨ All"}, {v: "vi", l: "🇻🇳 VI"}, {v: "en", l: "🇬🇧 EN"}, {v: "jp", l: "🇯🇵 JP"}].map(langOpt => (
                                       <button key={langOpt.v} onClick={() => setProjLang(langOpt.v)} style={{whiteSpace: 'nowrap', padding: '8px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.3s', background: projLang === langOpt.v ? '#ff69b4' : '#ffe4e1', color: projLang === langOpt.v ? 'white' : '#8d6e63', boxShadow: projLang === langOpt.v ? '0 2px 8px rgba(255,105,180,0.4)' : 'none', transform: projLang === langOpt.v ? 'scale(1.05)' : 'scale(1)'}}>{langOpt.l}</button>
                                   ))}
