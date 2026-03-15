@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Lang } from "@/lib/data";
 import { usePathname } from "next/navigation"; 
 import { useState } from "react";
+import Image from "next/image";
 
 const NAMES = {
     vi: "Vũ Trí Dũng",
@@ -66,8 +67,8 @@ export default function SakuraNav({ t, currentLang, resumeUrl }: TopNavProps) {
     <nav className="navbar">
       <div className="nav-left">
         <div className="nav-logo-img">
-           <img src="/pictures/VuTriDung.jpg" alt="Real Avatar" className="nav-real-img" />
-           <img src="/pictures/sakura_avatar.png" alt="Frame" className="nav-frame-img" />
+           <Image src="/pictures/VuTriDung.jpg" alt="Real Avatar" className="nav-real-img" width={50} height={50} />
+           <Image src="/pictures/sakura_avatar.png" alt="Frame" className="nav-frame-img" width={50} height={50} />
         </div>
         
         <div className="nav-logo-text" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginLeft: '12px' }}>
