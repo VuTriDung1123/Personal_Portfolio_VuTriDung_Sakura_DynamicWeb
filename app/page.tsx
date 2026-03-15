@@ -4,23 +4,16 @@
 import { useState, useEffect } from "react"; 
 import Link from "next/link"; 
 import Image from "next/image";
-// Sử dụng next/dynamic để nạp chậm các component nặng
-import dynamic from "next/dynamic";
 
 import SakuraCursorTrail from "@/components/SakuraCursorTrail";
 import SakuraFalling from "@/components/SakuraFalling"; 
 import SakuraNav from "@/components/SakuraNav";
 import { translations, Lang } from "@/lib/data"; 
 import { getAllPosts, getPostsByTag, getSectionContent } from "@/lib/actions";
+import SakuraAiChatBox from "@/components/SakuraAiChatBox";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-
-// Tải chậm các component nặng để không chặn việc hiển thị giao diện ban đầu (Tăng điểm FCP, TBT)
-const ScrollReveal = dynamic(() => import("@/components/ScrollReveal"), { ssr: false });
-const TypewriterText = dynamic(() => import("@/components/TypewriterText"), { ssr: false });
-const SakuraAiChatBox = dynamic(() => import("@/components/SakuraAiChatBox"), { 
-    ssr: false, 
-    loading: () => null // Không hiển thị gì trong lúc đang tải ngầm
-});
+import ScrollReveal from "@/components/ScrollReveal";
+import TypewriterText from "@/components/TypewriterText";
 
 // --- DỮ LIỆU TÊN ---
 const MY_NAMES = {
@@ -60,10 +53,7 @@ const HandwritingText = ({ text, color, fontClass }: { text: string, color: stri
         <div style={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
             <svg viewBox="0 0 1000 150" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
                 <text 
-                    x="50%" 
-                    y="50%" 
-                    textAnchor="middle" 
-                    dominantBaseline="middle"
+                    x="50%" y="50%" textAnchor="middle" dominantBaseline="middle"
                     className={`svg-text-draw ${fontClass}`}
                     style={{ stroke: color, fontSize: '40px', letterSpacing: '2px' }}
                 >
@@ -94,7 +84,6 @@ export default function SakuraHome() {
   const [currentLang, setCurrentLang] = useState<Lang>("en");
   const [isLoading, setIsLoading] = useState(true);
   const [loadingQuotes, setLoadingQuotes] = useState({ en: "", vi: "", jp: "" });
-  const [showVideo, setShowVideo] = useState(false); // Trạng thái tải video chậm
 
   // Data States
   const [dbUniProjects, setDbUniProjects] = useState<Post[]>([]);
@@ -123,7 +112,6 @@ export default function SakuraHome() {
   useEffect(() => {
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
     if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentLang(savedLang);
     }
 
@@ -132,9 +120,6 @@ export default function SakuraHome() {
         vi: LOADING_POEMS.vi[Math.floor(Math.random() * LOADING_POEMS.vi.length)],
         jp: LOADING_POEMS.jp[Math.floor(Math.random() * LOADING_POEMS.jp.length)]
     });
-
-    // Trì hoãn việc tải thẻ video để ưu tiên LCP
-    const videoTimer = setTimeout(() => setShowVideo(true), 500);
 
     Promise.all([
         getPostsByTag("uni_projects").then(d => setDbUniProjects(d as unknown as Post[])),
@@ -156,10 +141,8 @@ export default function SakuraHome() {
             if (secs.global_config) try { setGlobalConfig(JSON.parse(secs.global_config.contentEn)); } catch { /* ignore */ }
         })
     ]).finally(() => {
-        setTimeout(() => setIsLoading(false), 2000); // Giảm mạnh thời gian chờ
+        setTimeout(() => setIsLoading(false), 2000); 
     });
-
-    return () => clearTimeout(videoTimer);
   }, []);
 
   // Helpers
@@ -227,13 +210,11 @@ export default function SakuraHome() {
                   display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
                   textAlign: 'center', padding: '20px'
               }}>
-                  {/* Lazy load Video để tối ưu hoá băng thông */}
                   <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1, background: 'rgba(255, 240, 245, 0.75)'}}>
-                      {showVideo && (
-                          <video autoPlay loop muted playsInline style={{width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5}}>
-                              <source src="/videos/sakura_bg.mp4" type="video/mp4" />
-                          </video>
-                      )}
+                      {/* Video tải mượt, không chặn Main Thread */}
+                      <video autoPlay loop muted playsInline preload="none" style={{width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5}}>
+                          <source src="/videos/sakura_bg.mp4" type="video/mp4" />
+                      </video>
                       <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(4px)'}}></div>
                   </div>
                   <div style={{fontSize: '4rem', animation: 'spin-slow 3s linear infinite', marginBottom: '10px'}}>🌸</div>
@@ -273,14 +254,14 @@ export default function SakuraHome() {
                       
                       <div className="hero-image-container">
                           <div className="blob-bg"></div>
-                          <Image src="/pictures/VuTriDung.jpg" alt="Real Face" className="avatar-real" width={450} height={450} sizes="(max-width: 900px) 250px, 450px" priority fetchPriority="high" />
-                          <Image src="/pictures/sakura_avatar.png" alt="Frame" className="avatar-frame-overlay" width={450} height={450} sizes="(max-width: 900px) 250px, 450px" priority fetchPriority="high" />
+                          {/* CHỈNH LẠI KÍCH THƯỚC CỰC CHUẨN CHO ĐIỆN THOẠI (200px) */}
+                          <Image src="/pictures/VuTriDung.jpg" alt="Real Face" className="avatar-real" width={450} height={450} sizes="(max-width: 900px) 200px, 450px" priority fetchPriority="high" />
+                          <Image src="/pictures/sakura_avatar.png" alt="Frame" className="avatar-frame-overlay" width={450} height={450} sizes="(max-width: 900px) 200px, 450px" priority fetchPriority="high" />
                       </div>
                   </section>
 
                   <div style={{maxWidth: '1200px', margin: '0 auto', padding: '0 20px'}}>
                       
-                      {/* --- CÁC PHẦN TEXT BÌNH THƯỜNG --- */}
                       <section id="about" style={{padding: '80px 0', textAlign: 'center', scrollMarginTop: '100px'}}>
                         <ScrollReveal>
                           <h2 className="section-title"><span>✿ {t.sec_about} ✿</span></h2>
@@ -311,7 +292,6 @@ export default function SakuraHome() {
                         </ScrollReveal>
                       </section>
 
-                      {/* --- CERTIFICATES --- */}
                       <section id="certificates" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <ScrollReveal>
                           <h2 className="section-title"><span>✿ {t.sec_cert} ✿</span></h2>

@@ -2,15 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Lang } from "@/lib/data";
-import AvatarViewer from "./AvatarViewer";
 
 const GREETINGS = {
     vi: "Chào bạn! 🌸 Mình là trợ lý ảo của Dũng. Bạn cần giúp gì không?",
     en: "Hello! 🌸 I'm Dung's virtual assistant. How can I help you?",
     jp: "こんにちは！🌸 ズンのAIアシスタントです。何かお手伝いしましょうか？"
 };
-
-const SAKURA_MODEL_URL = "/models/blue_archive_miyako_sakura_portfolio.glb";
 
 export default function SakuraAiChatBox({ currentLang }: { currentLang: Lang }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,42 +50,7 @@ export default function SakuraAiChatBox({ currentLang }: { currentLang: Lang }) 
 
   return (
     <>
-      {/* ------------------------------------------------------------------ */}
-      {/* 1. ROBOT (GÓC TRÁI DƯỚI) - TRONG SUỐT, KHÔNG KHUNG VIỀN           */}
-      {/* ------------------------------------------------------------------ */}
-      <div 
-        className="ai-model-container"
-        style={{
-          position: 'fixed',
-          bottom: '0px', 
-          left: '20px',          
-          width: '220px',        
-          height: '300px',       
-          zIndex: 999999, // Đè lên tất cả
-          pointerEvents: 'auto', // Để xoay được model
-          // ĐÃ XÓA BỎ BORDER VÀ BACKGROUND ĐỂ NÓ TRONG SUỐT HOÀN TOÀN
-        }}
-      >
-          <AvatarViewer url={SAKURA_MODEL_URL} isTalking={isLoading} theme="sakura" />
-          
-          {/* Bóng hồng mờ ảo dưới chân cho đẹp */}
-          <div style={{
-              position: 'absolute', bottom: '15px', left: '50%', transform: 'translateX(-50%)', 
-              width: '100px', height: '15px', 
-              background: 'radial-gradient(ellipse, rgba(255,105,180,0.4) 0%, transparent 70%)', 
-              zIndex: -1, pointerEvents: 'none', filter: 'blur(5px)'
-          }}></div>
-
-          {/* Bong bóng chat nhỏ khi đang suy nghĩ */}
-          {isLoading && (
-             <div className="absolute top-10 right-0 bg-white text-[#ff69b4] text-xs px-3 py-1 rounded-t-xl rounded-br-xl shadow-md animate-bounce border border-[#ffc1e3]">
-                 Hmm... 🌸
-             </div>
-          )}
-      </div>
-
-
-      {/* 2. CHATBOX (GÓC PHẢI DƯỚI) - UI ĐẸP (SAKURA THEME) */}
+      {/* CHATBOX (GÓC PHẢI DƯỚI) - Đã bỏ mô hình 3D */}
       <div 
         className="ai-chat-btn-container" 
         style={{position: 'fixed', bottom: '30px', right: '50px', zIndex: 999999, fontFamily: 'sans-serif'}}
@@ -115,10 +77,10 @@ export default function SakuraAiChatBox({ currentLang }: { currentLang: Lang }) 
 
         {/* Khung Chat Chính (Khi mở) */}
         {isOpen && (
-          <div style={{
+          <div className="chat-window" style={{
               width: '340px', height: '500px', 
-              background: 'rgba(255, 255, 255, 0.92)', // Nền trắng mờ
-              backdropFilter: 'blur(12px)', // Hiệu ứng kính mờ
+              background: 'rgba(255, 255, 255, 0.92)', 
+              backdropFilter: 'blur(12px)',
               borderRadius: '24px', 
               boxShadow: '0 20px 50px rgba(255,105,180,0.25)', 
               border: '1px solid rgba(255, 255, 255, 0.8)',
