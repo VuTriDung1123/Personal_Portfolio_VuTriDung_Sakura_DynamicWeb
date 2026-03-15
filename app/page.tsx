@@ -255,8 +255,8 @@ export default function SakuraHome() {
                       <div className="hero-image-container">
                           <div className="blob-bg"></div>
                           {/* CHỈNH LẠI KÍCH THƯỚC CỰC CHUẨN CHO ĐIỆN THOẠI (200px) */}
-                          <Image src="/pictures/VuTriDung.jpg" alt="Real Face" className="avatar-real" width={450} height={450} sizes="(max-width: 900px) 200px, 450px" priority fetchPriority="high" />
-                          <Image src="/pictures/sakura_avatar.png" alt="Frame" className="avatar-frame-overlay" width={450} height={450} sizes="(max-width: 900px) 200px, 450px" priority fetchPriority="high" />
+                          <Image src="/pictures/VuTriDung.jpg" alt="Real Face" className="avatar-real" width={450} height={450} sizes="(max-width: 900px) 250px, 450px" quality={75} priority fetchPriority="high" />
+                          <Image src="/pictures/sakura_avatar.png" alt="Frame" className="avatar-frame-overlay" width={450} height={450} sizes="(max-width: 900px) 250px, 450px" quality={75} priority fetchPriority="high" />
                       </div>
                   </section>
 
