@@ -12,6 +12,8 @@ import { translations, Lang } from "@/lib/data";
 import { getAllPosts, getPostsByTag, getSectionContent } from "@/lib/actions";
 import SakuraAiChatBox from "@/components/SakuraAiChatBox";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+
+// --- MỚI THÊM: IMPORT CÁC COMPONENT HIỆU ỨNG ---
 import ScrollReveal from "@/components/ScrollReveal";
 import TypewriterText from "@/components/TypewriterText";
 
@@ -53,7 +55,10 @@ const HandwritingText = ({ text, color, fontClass }: { text: string, color: stri
         <div style={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
             <svg viewBox="0 0 1000 150" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
                 <text 
-                    x="50%" y="50%" textAnchor="middle" dominantBaseline="middle"
+                    x="50%" 
+                    y="50%" 
+                    textAnchor="middle" 
+                    dominantBaseline="middle"
                     className={`svg-text-draw ${fontClass}`}
                     style={{ stroke: color, fontSize: '40px', letterSpacing: '2px' }}
                 >
@@ -89,6 +94,7 @@ export default function SakuraHome() {
   const [dbUniProjects, setDbUniProjects] = useState<Post[]>([]);
   const [dbPersonalProjects, setDbPersonalProjects] = useState<Post[]>([]);
   const [dbItEvents, setDbItEvents] = useState<Post[]>([]);
+  const [dbOtherEvents, setDbOtherEvents] = useState<Post[]>([]); // Đã thêm: Sự kiện khác
   const [dbLangCerts, setDbLangCerts] = useState<Post[]>([]);
   const [dbTechCerts, setDbTechCerts] = useState<Post[]>([]);
   const [dbOtherCerts, setDbOtherCerts] = useState<Post[]>([]);
@@ -125,6 +131,7 @@ export default function SakuraHome() {
         getPostsByTag("uni_projects").then(d => setDbUniProjects(d as unknown as Post[])),
         getPostsByTag("personal_projects").then(d => setDbPersonalProjects(d as unknown as Post[])),
         getPostsByTag("it_events").then(d => setDbItEvents(d as unknown as Post[])),
+        getPostsByTag("other_events").then(d => setDbOtherEvents(d as unknown as Post[])), // Đã thêm: Get sự kiện khác
         getPostsByTag("lang_certs").then(d => setDbLangCerts(d as unknown as Post[])),
         getPostsByTag("tech_certs").then(d => setDbTechCerts(d as unknown as Post[])),
         getPostsByTag("other_certs").then(d => setDbOtherCerts(d as unknown as Post[])),
@@ -211,7 +218,6 @@ export default function SakuraHome() {
                   textAlign: 'center', padding: '20px'
               }}>
                   <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1, background: 'rgba(255, 240, 245, 0.75)'}}>
-                      {/* Video tải mượt, không chặn Main Thread */}
                       <video autoPlay loop muted playsInline preload="none" style={{width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5}}>
                           <source src="/videos/sakura_bg.mp4" type="video/mp4" />
                       </video>
@@ -224,7 +230,6 @@ export default function SakuraHome() {
               </div>
           ) : (
               <div>
-                  {/* --- HERO SECTION --- */}
                   <section id="home" className="hero-section">
                       <div className="hero-text">
                           <span className="hero-greeting">{hero.greeting}</span>
@@ -254,9 +259,8 @@ export default function SakuraHome() {
                       
                       <div className="hero-image-container">
                           <div className="blob-bg"></div>
-                          {/* CHỈNH LẠI KÍCH THƯỚC CỰC CHUẨN CHO ĐIỆN THOẠI (200px) */}
-                          <Image src="/pictures/VuTriDung.jpg" alt="Real Face" className="avatar-real" width={450} height={450} sizes="(max-width: 900px) 250px, 450px" quality={75} priority fetchPriority="high" />
-                          <Image src="/pictures/sakura_avatar.png" alt="Frame" className="avatar-frame-overlay" width={450} height={450} sizes="(max-width: 900px) 250px, 450px" quality={75} priority fetchPriority="high" />
+                          <Image src="/pictures/VuTriDung.jpg" alt="Real Face" className="avatar-real" width={450} height={450} sizes="(max-width: 900px) 200px, 450px" quality={75} priority fetchPriority="high" />
+                          <Image src="/pictures/sakura_avatar.png" alt="Frame" className="avatar-frame-overlay" width={450} height={450} sizes="(max-width: 900px) 200px, 450px" quality={75} priority fetchPriority="high" />
                       </div>
                   </section>
 
@@ -497,12 +501,15 @@ export default function SakuraHome() {
                         </ScrollReveal>
                       </section>
 
+                      {/* --- GALLERY (ĐÃ THÊM SỰ KIỆN KHÁC BÊN DƯỚI IT EVENTS) --- */}
                       <section id="gallery" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <ScrollReveal>
                           <h2 className="section-title"><span>✿ 10. {currentLang === 'vi' ? 'THƯ VIỆN ẢNH' : (currentLang === 'jp' ? 'ギャラリー' : 'GALLERY')} ✿</span></h2>
-                          <h3 style={{fontSize: '1.2rem', marginBottom: 20, color: '#4a3b32', fontWeight: 'bold'}}>✿ {t.cat_it_event}</h3>
+                          
+                          {/* IT Events */}
+                          <h3 style={{fontSize: '1.2rem', marginBottom: 20, color: '#4a3b32', fontWeight: 'bold'}}>✿ {t.cat_it_event || "IT Events"}</h3>
                           {dbItEvents.length > 0 ? (
-                              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
+                              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px', marginBottom: '40px'}}>
                                   {dbItEvents.map((p, i) => (
                                       <ScrollReveal key={p.id} delay={i * 0.1}>
                                         <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
@@ -513,6 +520,22 @@ export default function SakuraHome() {
                                   ))}
                               </div>
                           ) : <EmptyState lang={currentLang} />}
+
+                          {/* Other Events */}
+                          <h3 style={{fontSize: '1.2rem', marginBottom: 20, color: '#4a3b32', fontWeight: 'bold'}}>✿ {currentLang === 'vi' ? 'Sự Kiện Khác' : (currentLang === 'jp' ? 'その他のイベント' : 'Other Events')}</h3>
+                          {dbOtherEvents.length > 0 ? (
+                              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
+                                  {dbOtherEvents.map((p, i) => (
+                                      <ScrollReveal key={p.id} delay={i * 0.1}>
+                                        <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
+                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                            <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h3></div>
+                                        </Link>
+                                      </ScrollReveal>
+                                  ))}
+                              </div>
+                          ) : <EmptyState lang={currentLang} />}
+
                         </ScrollReveal>
                       </section>
 

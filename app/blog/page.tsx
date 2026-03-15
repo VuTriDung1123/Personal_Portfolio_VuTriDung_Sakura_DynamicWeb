@@ -28,6 +28,7 @@ const ALL_TAGS = [
     { value: "personal_projects", label: "Personal Code" },
     { value: "achievements", label: "Achievements" },
     { value: "it_events", label: "IT Events" },
+    { value: "other_events", label: "Other Events" }, // Đã thêm ở đây
     { value: "tech_certs", label: "Certificates" },
 ];
 
@@ -71,9 +72,9 @@ export default function BlogPage() {
 
   // --- HELPER: FONT CHỮ THEO NGÔN NGỮ ---
   const getFontFamily = (lang: string) => {
-      if (lang === 'vi') return "'Noto Serif', serif"; // Tiếng Việt dùng có chân cho thơ
-      if (lang === 'jp') return "'Noto Serif JP', serif"; // Font Nhật chuẩn
-      return "'Noto Sans', sans-serif"; // Tiếng Anh hiện đại
+      if (lang === 'vi') return "'Noto Serif', serif"; 
+      if (lang === 'jp') return "'Noto Serif JP', serif"; 
+      return "'Noto Sans', sans-serif"; 
   };
 
   // --- HELPER: DỊCH THUẬT LABEL ---
@@ -197,7 +198,6 @@ export default function BlogPage() {
                                 fontFamily: 'inherit'
                             }}
                         >
-                            {/* Logic hiển thị Tag Label (Có thể mở rộng dịch thuật nếu cần) */}
                             {tag.label} 
                         </button>
                     ))}
@@ -268,5 +268,3 @@ export default function BlogPage() {
     </main>
   );
 }
-
-

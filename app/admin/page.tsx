@@ -1,6 +1,5 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
 import { useState, useEffect } from "react";
 import SakuraFalling from "@/components/SakuraFalling"; 
 import { checkAdmin, createPost, deletePost, getAllPosts, updatePost, getSectionContent, saveSectionContent } from "@/lib/actions";
@@ -43,7 +42,6 @@ const s = {
 
 // --- SUB-COMPONENTS ---
 
-// BoxEditor (Sử dụng cho Profile, Contact, và giờ là cả SKILLS)
 const BoxEditor = ({ lang, data, onUpdate, titleLabel }: { lang: string, data: SectionBox[], onUpdate: (d: SectionBox[]) => void, titleLabel: string }) => { 
     return (
         <div style={s.card}>
@@ -175,7 +173,6 @@ export default function AdminPage() {
   
   const [secEn, setSecEn] = useState(""); const [secVi, setSecVi] = useState(""); const [secJp, setSecJp] = useState("");
   
-  // Dùng chung SectionBox cho Profile, Contact và SKILLS
   const [boxesEn, setBoxesEn] = useState<SectionBox[]>([]); const [boxesVi, setBoxesVi] = useState<SectionBox[]>([]); const [boxesJp, setBoxesJp] = useState<SectionBox[]>([]);
   
   const [heroEn, setHeroEn] = useState<HeroData>(DEFAULT_HERO); const [heroVi, setHeroVi] = useState<HeroData>(DEFAULT_HERO); const [heroJp, setHeroJp] = useState<HeroData>(DEFAULT_HERO);
@@ -184,7 +181,6 @@ export default function AdminPage() {
   const [faqEn, setFaqEn] = useState<FaqItem[]>([]); const [faqVi, setFaqVi] = useState<FaqItem[]>([]); const [faqJp, setFaqJp] = useState<FaqItem[]>([]);
   const [aiConfig, setAiConfig] = useState<AiConfigData>(DEFAULT_AI_CONFIG);
 
-  // Nhận diện kiểu section để render Editor tương ứng
   const isBoxSection = ['profile', 'contact', 'skills'].includes(sectionKey);
   const isExpSection = sectionKey === 'experience'; 
   const isHeroSection = sectionKey === 'hero';
@@ -236,7 +232,6 @@ export default function AdminPage() {
                         setSecEn(typedData.contentEn || ""); setSecVi(typedData.contentVi || ""); setSecJp(typedData.contentJp || ""); 
                     }
                 } else {
-                    // Reset nếu không có data
                     setSecEn(""); setSecVi(""); setSecJp(""); 
                     setBoxesEn([]); setBoxesVi([]); setBoxesJp([]); 
                     setExpEn([]); setExpVi([]); setExpJp([]); 
@@ -278,7 +273,6 @@ export default function AdminPage() {
   async function handleSectionSubmit(formData: FormData) {
     if (isSaving) return; setIsSaving(true); setMsg("Saving...");
     
-    // Gói dữ liệu thành JSON theo từng loại
     if (isExpSection) { formData.set("contentEn", JSON.stringify(expEn)); formData.set("contentVi", JSON.stringify(expVi)); formData.set("contentJp", JSON.stringify(expJp)); } 
     else if (isBoxSection) { formData.set("contentEn", JSON.stringify(boxesEn)); formData.set("contentVi", JSON.stringify(boxesVi)); formData.set("contentJp", JSON.stringify(boxesJp)); } 
     else if (isHeroSection) { formData.set("contentEn", JSON.stringify(heroEn)); formData.set("contentVi", JSON.stringify(heroVi)); formData.set("contentJp", JSON.stringify(heroJp)); } 
@@ -292,10 +286,8 @@ export default function AdminPage() {
     if (res.success) { setMsg("Saved! 🌸"); setTimeout(() => setMsg(""), 3000); } else setMsg("Failed!");
   }
 
-  // --- RENDER LOGIN ---
   if (!isAuth) return ( <div style={{display:'flex', height:'100vh', justifyContent:'center', alignItems:'center'}}><form action={handleLogin} style={{...s.card, width:'400px', textAlign:'center'}}><h1 style={{...s.title, marginBottom:'20px'}}>🌸 ADMIN LOGIN</h1><input name="username" placeholder="Username" style={s.input} /><input name="password" type="password" placeholder="Password" style={s.input} /><button style={{...s.btnPrimary, width:'100%', marginTop:'10px'}}>LOGIN</button></form></div> );
 
-  // --- RENDER DASHBOARD ---
   return (
     <div style={s.container}>
       <SakuraFalling />
@@ -318,7 +310,19 @@ export default function AdminPage() {
                     {editingPost && <input type="hidden" name="id" value={editingPost.id} />}
                     <label style={s.label}>TITLE</label><input name="title" defaultValue={editingPost?.title} required style={s.input} />
                     <div style={s.grid2}>
-                        <div><label style={s.label}>TAG</label><select name="tag" value={tag} onChange={e=>setTag(e.target.value)} style={s.input}><option value="my_confessions">My Confessions</option><option value="uni_projects">University Projects</option><option value="personal_projects">Personal Projects</option><option value="achievements">Achievements</option><option value="it_events">IT Events</option><option value="lang_certs">Language Certs</option><option value="tech_certs">Tech Certs</option><option value="other_certs">Other Certs</option></select></div>
+                        <div><label style={s.label}>TAG</label>
+                            <select name="tag" value={tag} onChange={e=>setTag(e.target.value)} style={s.input}>
+                                <option value="my_confessions">My Confessions</option>
+                                <option value="uni_projects">University Projects</option>
+                                <option value="personal_projects">Personal Projects</option>
+                                <option value="achievements">Achievements</option>
+                                <option value="it_events">IT Events</option>
+                                <option value="other_events">Other Events</option> {/* Đã thêm ở đây */}
+                                <option value="lang_certs">Language Certs</option>
+                                <option value="tech_certs">Tech Certs</option>
+                                <option value="other_certs">Other Certs</option>
+                            </select>
+                        </div>
                         <div><label style={s.label}>LANG</label><select name="language" defaultValue={editingPost?.language||"vi"} style={s.input}><option value="vi">Vietnamese</option><option value="en">English</option><option value="jp">Japanese</option></select></div>
                     </div>
                     <label style={s.label}>CONTENT</label><textarea name="content" defaultValue={editingPost?.content} rows={10} required style={{...s.input, fontFamily:'monospace'}} />
