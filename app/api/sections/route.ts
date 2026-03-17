@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic'; // Bắt buộc để không bị cache
 
 // Hàm helper trả về JSON có gắn CORS header
-function jsonResponse(data: any, status = 200) {
+function jsonResponse(data: unknown, status = 200) {
     return NextResponse.json(data, {
         status,
         headers: {
