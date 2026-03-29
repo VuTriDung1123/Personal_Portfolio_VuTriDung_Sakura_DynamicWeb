@@ -92,7 +92,7 @@ export default function SakuraNav({ t, currentLang, resumeUrl }: TopNavProps) {
 
       {/* Nút bên phải & Nút mở Menu Mobile */}
       <div className="nav-right" style={{gap: '10px'}}>
-        <a href="https://personal-portfolio-vu-tri-dung-dyna.vercel.app" className="btn-switch-theme" target="_blank" title="Hacker Version">
+        <a href="https://portfolio-vutridung-hackermode.vercel.app" className="btn-switch-theme" target="_blank" title="Hacker Version">
            👾 <span className="desktop-text">HACKER VER</span>
         </a>
         <a href={resumeUrl || "#"} target="_blank" className="btn-cv" title="Download CV">

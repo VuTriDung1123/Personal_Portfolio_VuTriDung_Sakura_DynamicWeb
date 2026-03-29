@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
         // Bỏ 'id' và 'createdAt' đi vì PostgreSQL tự động tạo
-        const { id, createdAt, ...dataToSave } = body; 
+        const { ...dataToSave } = body; 
         const newPost = await prisma.post.create({ data: dataToSave });
         return jsonResponse(newPost);
     } catch { return jsonResponse({ error: "Lỗi tạo bài" }, 500); }
