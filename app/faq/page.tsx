@@ -17,6 +17,10 @@ export default function SakuraFaqPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
+    // --- FORM STATES ---
+    const [isSending, setIsSending] = useState(false);
+    const [sendMsg, setSendMsg] = useState<{ text: string, type: 'success' | 'error' | '' }>({ text: '', type: '' });
+
     useEffect(() => {
         const savedLang = localStorage.getItem("sakura_lang") as Lang;
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -42,6 +46,42 @@ export default function SakuraFaqPage() {
     };
 
     const currentList = allFaq[viewLang];
+
+    // --- XỬ LÝ GỬI FORM EMAIL ---
+    const handleSendMail = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSending(true);
+        setSendMsg({ text: 'Đang gửi bức thư của bạn đi... 🌸', type: '' });
+
+        const formData = new FormData(e.currentTarget);
+        
+        // Kiểm tra dung lượng file
+        const file = formData.get('file') as File;
+        if (file && file.size > 4 * 1024 * 1024) { // Tối đa 4MB
+            setSendMsg({ text: 'File đính kèm quá lớn (Tối đa 4MB) 🍃', type: 'error' });
+            setIsSending(false);
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/contact', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (res.ok) {
+                setSendMsg({ text: 'Đã gửi thư thành công! Hãy kiểm tra hộp thư của bạn nhé. 🌸', type: 'success' });
+                (e.target as HTMLFormElement).reset(); // Làm trống form
+            } else {
+                setSendMsg({ text: 'Có lỗi xảy ra khi gửi thư. Vui lòng thử lại sau 🍃', type: 'error' });
+            }
+        } catch (error) {
+            setSendMsg({ text: 'Lỗi kết nối mạng 🍃', type: 'error' });
+        } finally {
+            setIsSending(false);
+            setTimeout(() => setSendMsg({ text: '', type: '' }), 8000); // Ẩn thông báo sau 8s
+        }
+    };
 
     return (
         <main style={{ 
@@ -85,7 +125,7 @@ export default function SakuraFaqPage() {
                     </p>
                 </div>
 
-                {/* Thanh chọn ngôn ngữ (Style Sakura) */}
+                {/* Thanh chọn ngôn ngữ */}
                 <div style={{display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '40px'}}>
                     {[
                         { code: 'vi', label: '🇻🇳 Tiếng Việt' },
@@ -113,7 +153,7 @@ export default function SakuraFaqPage() {
                     ))}
                 </div>
 
-                {/* Nội dung FAQ (Glassmorphism) */}
+                {/* Nội dung FAQ */}
                 {isLoading ? (
                     <div style={{textAlign: 'center', fontSize: '1.5rem', color: '#ff69b4', padding: '50px'}}>
                         <div style={{animation: 'spin-slow 3s infinite', display: 'inline-block'}}>🌸</div> Đang tải dữ liệu...
@@ -173,6 +213,74 @@ export default function SakuraFaqPage() {
                         )}
                     </div>
                 )}
+
+                {/* --- FORM ĐẶT CÂU HỎI TRỰC TIẾP --- */}
+                <div style={{
+                    marginTop: '60px',
+                    background: 'rgba(255, 255, 255, 0.9)', 
+                    borderRadius: '30px',
+                    padding: '40px',
+                    boxShadow: '0 10px 30px rgba(255,105,180,0.15)',
+                    border: '1px solid white'
+                }}>
+                    <h2 style={{ textAlign: 'center', fontSize: '2rem', color: '#d81b60', marginBottom: '10px', fontWeight: 'bold' }}>
+                        ✿ ĐẶT CÂU HỎI CHO TÔI ✿
+                    </h2>
+                    <p style={{ textAlign: 'center', color: '#8d6e63', marginBottom: '30px', fontStyle: 'italic' }}>
+                        Bạn không tìm thấy câu trả lời? Hãy gửi email trực tiếp cho tôi nhé! ✨
+                    </p>
+
+                    <form onSubmit={handleSendMail} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', color: '#ff69b4', fontWeight: 'bold', fontSize: '0.9rem' }}>Email của bạn:</label>
+                                <input type="email" name="email" required placeholder="your.email@domain.com" style={{
+                                    width: '100%', padding: '12px 15px', borderRadius: '15px', border: '1px solid #ffc1e3', outline: 'none', background: 'white', color: '#5d4037', fontSize: '1rem'
+                                }} />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', color: '#ff69b4', fontWeight: 'bold', fontSize: '0.9rem' }}>Tiêu đề:</label>
+                                <input type="text" name="subject" required placeholder="Vấn đề bạn cần hỏi..." style={{
+                                    width: '100%', padding: '12px 15px', borderRadius: '15px', border: '1px solid #ffc1e3', outline: 'none', background: 'white', color: '#5d4037', fontSize: '1rem'
+                                }} />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', color: '#ff69b4', fontWeight: 'bold', fontSize: '0.9rem' }}>Nội dung câu hỏi:</label>
+                            <textarea name="message" required rows={5} placeholder="Nhập câu hỏi chi tiết của bạn tại đây..." style={{
+                                width: '100%', padding: '15px', borderRadius: '15px', border: '1px solid #ffc1e3', outline: 'none', background: 'white', color: '#5d4037', fontSize: '1rem', resize: 'vertical'
+                            }}></textarea>
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', color: '#ff69b4', fontWeight: 'bold', fontSize: '0.9rem' }}>Đính kèm file (Tùy chọn):</label>
+                            <input type="file" name="file" style={{
+                                width: '100%', padding: '10px', background: '#fff0f5', borderRadius: '10px', color: '#8d6e63', fontSize: '0.9rem', cursor: 'pointer'
+                            }} />
+                        </div>
+
+                        {sendMsg.text && (
+                            <div style={{
+                                padding: '15px', borderRadius: '15px', fontWeight: 'bold', textAlign: 'center',
+                                background: sendMsg.type === 'error' ? '#ffebee' : '#f0fdf4',
+                                color: sendMsg.type === 'error' ? '#c62828' : '#2e7d32',
+                                border: `1px solid ${sendMsg.type === 'error' ? '#ef9a9a' : '#bbf7d0'}`
+                            }}>
+                                {sendMsg.text}
+                            </div>
+                        )}
+
+                        <button type="submit" disabled={isSending} style={{
+                            marginTop: '10px', padding: '15px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', transition: 'all 0.3s', border: 'none',
+                            background: isSending ? '#ffc1e3' : 'linear-gradient(135deg, #ff69b4, #ff8da1)', color: 'white',
+                            boxShadow: isSending ? 'none' : '0 5px 15px rgba(255,105,180,0.4)',
+                        }}>
+                            {isSending ? '🌸 Đang gửi đi...' : 'GỬI CÂU HỎI ➤'}
+                        </button>
+                    </form>
+                </div>
+                
             </div>
         </main>
     );
