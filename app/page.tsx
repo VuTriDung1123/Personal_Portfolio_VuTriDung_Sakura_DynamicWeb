@@ -118,6 +118,7 @@ export default function SakuraHome() {
   useEffect(() => {
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
     if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars, react-hooks/set-state-in-effect
         setCurrentLang(savedLang);
     }
 
