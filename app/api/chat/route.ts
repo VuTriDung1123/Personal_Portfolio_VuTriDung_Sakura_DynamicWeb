@@ -2,27 +2,25 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getSectionContent, getAllPosts } from '@/lib/actions';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const apiKey = process.env.GEMINI_API_KEY || "";
+const genAI = new GoogleGenerativeAI(apiKey);
 
 export async function POST(req: Request) {
   try {
-    // [MỚI] Nhận thêm biến 'theme' từ Frontend
+    if (!apiKey) {
+      console.error("LỖI: Chưa tìm thấy GEMINI_API_KEY trong file .env");
+      return NextResponse.json({ reply: "Lỗi hệ thống: Chưa cấu hình API Key. 🍃" }, { status: 500 });
+    }
+
     const { messages, language, theme } = await req.json(); 
-    
     const lastMessage = messages[messages.length - 1].content;
 
-    // Map ngôn ngữ
     const langMap: Record<string, string> = { 'vi': 'Vietnamese', 'en': 'English', 'jp': 'Japanese' };
     const targetLang = langMap[language] || 'English';
 
-    // Tải dữ liệu Admin
     const [heroData, aboutData, skillsData, expData, faqData, aiConfigData, projects] = await Promise.all([
-      getSectionContent('hero'),
-      getSectionContent('about'),
-      getSectionContent('skills'),
-      getSectionContent('experience'),
-      getSectionContent('faq_data'),
-      getSectionContent('ai_config'),
+      getSectionContent('hero'), getSectionContent('about'), getSectionContent('skills'),
+      getSectionContent('experience'), getSectionContent('faq_data'), getSectionContent('ai_config'),
       getAllPosts()
     ]);
 
@@ -34,22 +32,18 @@ export async function POST(req: Request) {
     const exp = parse((expData as any)?.contentEn || "[]");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const faq = parse((faqData as any)?.contentEn || "[]");
-    
-    // [MỚI] Parse AI Config và chọn đúng profile dựa trên 'theme'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const fullAiConfig = parse((aiConfigData as any)?.contentEn || "{}");
     
-    // Mặc định chọn Hacker nếu không có theme
     const activeProfile = (theme === 'sakura') 
-        ? (fullAiConfig.sakura || { roleName: "Sakura Assistant", tone: "Cute, Friendly", customStory: "" })
-        : (fullAiConfig.hacker || { roleName: "System Admin", tone: "Cool, Logical", customStory: "" });
+        ? (fullAiConfig.sakura || { roleName: "Sakura Assistant", tone: "Cute, Friendly", customStory: "", systemPromptOverride: "" })
+        : (fullAiConfig.hacker || { roleName: "System Admin", tone: "Cool, Logical", customStory: "", systemPromptOverride: "" });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const skillText = (skillsData as any)?.contentEn || "";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const aboutText = (aboutData as any)?.contentEn || "";
 
-    // SYSTEM PROMPT (Dùng activeProfile để nạp vai)
     const systemPrompt = `
       ROLE: You are the "${activeProfile.roleName}" for the Portfolio of "${hero.fullName || "Vu Tri Dung"}".
       
@@ -57,10 +51,13 @@ export async function POST(req: Request) {
       - Tone: ${activeProfile.tone}
       - Style: ${theme === 'sakura' ? 'Use emojis like 🌸✨, be warm and polite.' : 'Use technical terms, be concise and cool.'}
       
-      --- SECRET KNOWLEDGE (ONLY YOU KNOW) ---
+      --- SECRET KNOWLEDGE ---
       ${activeProfile.customStory || "No secret info."}
 
-      --- PUBLIC KNOWLEDGE BASE ---
+      --- OVERRIDE ---
+      ${activeProfile.systemPromptOverride || "None."}
+
+      --- PUBLIC DATA ---
       1. PROFILE: ${hero.greeting}, ${hero.description}
       2. ABOUT: ${aboutText}
       3. SKILLS: ${skillText}
@@ -74,19 +71,16 @@ export async function POST(req: Request) {
       3. Keep answers concise.
     `;
 
-    const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.5-flash", // Hoặc gemini-1.5-flash
-        systemInstruction: systemPrompt,
-    });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", systemInstruction: systemPrompt });
 
     const result = await model.generateContent(lastMessage);
-    const response = await result.response;
-    const reply = response.text();
+    const reply = result.response.text();
 
     return NextResponse.json({ reply });
 
-  } catch (error) {
-    console.error("Gemini AI Error:", error);
-    return NextResponse.json({ reply: "SYSTEM_ERROR: Neural Link Interrupted." }, { status: 500 });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error("Gemini AI Error Details:", error.message || error);
+    return NextResponse.json({ reply: "Hệ thống AI đang quá tải hoặc lỗi kết nối. Vui lòng thử lại sau 🍃" }, { status: 500 });
   }
 }
