@@ -5,6 +5,15 @@ import { getSectionContent, getAllPosts } from '@/lib/actions';
 const apiKey = process.env.GEMINI_API_KEY || "";
 const genAI = new GoogleGenerativeAI(apiKey);
 
+// [MỚI] Danh sách Model dự phòng (Fallback Models)
+// Sắp xếp theo thứ tự: Mới/Nhanh nhất -> Ổn định -> Cũ hơn
+const FALLBACK_MODELS = [
+    "gemini-3.1-flash-lite-preview",
+    "gemini-2.5-flash-001",
+    "gemini-flash-latest",
+    "gemini-2.0-flash-001"
+];
+
 export async function POST(req: Request) {
   try {
     if (!apiKey) {
@@ -71,16 +80,39 @@ export async function POST(req: Request) {
       3. Keep answers concise.
     `;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash", systemInstruction: systemPrompt });
+    let reply = "";
+    let success = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let lastError: any = null;
 
-    const result = await model.generateContent(lastMessage);
-    const reply = result.response.text();
+    // [MỚI] VÒNG LẶP THỬ TỪNG MODEL
+    for (const modelName of FALLBACK_MODELS) {
+        try {
+            console.log(`Đang gọi model AI: ${modelName}...`);
+            const model = genAI.getGenerativeModel({ model: modelName, systemInstruction: systemPrompt });
+            const result = await model.generateContent(lastMessage);
+            reply = result.response.text();
+            success = true;
+            console.log(`>> Thành công với model: ${modelName}`);
+            break; // Thoát vòng lặp ngay khi có model trả lời thành công
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            console.warn(`>> Model ${modelName} thất bại: ${errorMessage}`);
+            lastError = err;
+            // Nếu lỗi, vòng lặp tự động chạy tiếp sang model dưới
+        }
+    }
+
+    // Nếu lặp qua hết danh sách mà vẫn lỗi thì ném lỗi ra ngoài
+    if (!success) {
+        throw lastError || new Error("Tất cả các model AI đều thất bại.");
+    }
 
     return NextResponse.json({ reply });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
-    console.error("Gemini AI Error Details:", error.message || error);
+    console.error("Gemini AI Final Error Details:", error.message || error);
     return NextResponse.json({ reply: "Hệ thống AI đang quá tải hoặc lỗi kết nối. Vui lòng thử lại sau 🍃" }, { status: 500 });
   }
 }

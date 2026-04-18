@@ -12,12 +12,15 @@ import { getAllPosts, getSectionContent } from "@/lib/actions";
 // --- TYPES ---
 type Post = { 
     id: string; 
-    title: string; 
+    titleVi: string; 
+    titleEn: string; 
+    titleJp: string; 
     images: string; 
     createdAt: Date | string; 
     tag?: string; 
-    language?: string; 
-    content?: string; 
+    contentVi?: string; 
+    contentEn?: string; 
+    contentJp?: string; 
 };
 
 // Danh sách Tag (Label để tiếng Anh làm gốc, ta sẽ dịch hiển thị bên dưới)
@@ -28,7 +31,7 @@ const ALL_TAGS = [
     { value: "personal_projects", label: "Personal Code" },
     { value: "achievements", label: "Achievements" },
     { value: "it_events", label: "IT Events" },
-    { value: "other_events", label: "Other Events" }, // Đã thêm ở đây
+    { value: "other_events", label: "Other Events" },
     { value: "tech_certs", label: "Certificates" },
 ];
 
@@ -50,8 +53,9 @@ export default function BlogPage() {
   // --- INITIAL LOAD ---
   useEffect(() => {
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) setCurrentLang(savedLang);
+    if (savedLang && ['en', 'vi', 'jp'].includes(savedLang) && savedLang !== currentLang) {
+        setCurrentLang(savedLang);
+    }
 
     Promise.all([
         getAllPosts(),
@@ -63,6 +67,7 @@ export default function BlogPage() {
         }
         setTimeout(() => setIsLoading(false), 500);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSetLanguage = (lang: Lang) => {
@@ -110,7 +115,14 @@ export default function BlogPage() {
   // --- LOGIC LỌC ---
   const filteredPosts = useMemo(() => {
     let result = [...posts];
-    if (search.trim()) result = result.filter(p => p.title.toLowerCase().includes(search.toLowerCase()));
+    if (search.trim()) {
+        const s = search.toLowerCase();
+        result = result.filter(p => 
+            p.titleEn.toLowerCase().includes(s) || 
+            p.titleVi.toLowerCase().includes(s) || 
+            p.titleJp.toLowerCase().includes(s)
+        );
+    }
     if (selectedTag !== "ALL") result = result.filter(p => p.tag === selectedTag);
     result.sort((a, b) => {
         const dateA = new Date(a.createdAt).getTime();
@@ -213,7 +225,9 @@ export default function BlogPage() {
             ) : (
                 <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
                     {filteredPosts.length > 0 ? (
-                        filteredPosts.map(post => (
+                        filteredPosts.map(post => {
+                            const displayTitle = currentLang === 'vi' ? post.titleVi : currentLang === 'jp' ? post.titleJp : post.titleEn;
+                            return (
                             <Link key={post.id} href={`/blog/${post.id}`} style={{display: 'block', textDecoration: 'none'}}>
                                 <div className="glass-box" style={{height: '100%', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden', transition: '0.3s', background: 'white', border: '1px solid white'}}>
                                     
@@ -221,14 +235,11 @@ export default function BlogPage() {
                                     <div style={{height: '200px', overflow: 'hidden', position: 'relative', borderBottom: '1px solid #fff0f5'}}>
                                         <img 
                                             src={getCover(post.images)} 
-                                            alt={post.title} 
+                                            alt={displayTitle} 
                                             style={{width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s'}} 
                                             onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                                             onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                                         />
-                                        <div style={{position: 'absolute', top: 10, right: 10, background: 'rgba(255, 105, 180, 0.9)', color: 'white', padding: '5px 10px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 'bold', backdropFilter: 'blur(5px)'}}>
-                                            {post.language?.toUpperCase()}
-                                        </div>
                                     </div>
 
                                     {/* Nội dung tóm tắt */}
@@ -237,7 +248,7 @@ export default function BlogPage() {
                                             {ALL_TAGS.find(t => t.value === post.tag)?.label || post.tag}
                                         </span>
                                         <h3 style={{fontSize: '1.25rem', color: '#5d4037', marginBottom: '10px', lineHeight: '1.4', fontWeight: 'bold'}}>
-                                            {post.title}
+                                            {displayTitle}
                                         </h3>
                                         <div style={{marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', color: '#aaa', borderTop:'1px dashed #eee', paddingTop:'15px'}}>
                                             <span style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
@@ -250,7 +261,7 @@ export default function BlogPage() {
                                     </div>
                                 </div>
                             </Link>
-                        ))
+                        )})
                     ) : (
                         <div style={{textAlign: 'center', gridColumn: '1 / -1', padding: '60px', background: 'rgba(255,255,255,0.6)', borderRadius: '25px', border: '2px dashed #ffc1e3'}}>
                             <div style={{fontSize: '3rem', marginBottom: '10px'}}>🍃</div>

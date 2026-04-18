@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,16 +9,23 @@ datasource db {
 }
 
 model Post {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
+  // Giữ nguyên uuid() của cấu trúc cũ để không bị lỗi ID
+  id        String   @id @default(uuid()) 
+  
+  // Ánh xạ (Map) dữ liệu cột cũ sang trường mới
+  titleVi   String   @map("title")
+  titleEn   String   @default("")
+  titleJp   String   @default("")
+  
+  contentVi String   @db.Text @map("content")
+  contentEn String   @db.Text @default("")
+  contentJp String   @db.Text @default("")
+  
   tag       String?
-  language  String   @default("vi")
   images    String   @default("[]")
   createdAt DateTime @default(now())
 }
 
-// [ĐỔI TÊN Ở ĐÂY]
 model PageSection {
   id          String   @id @default(uuid())
   sectionKey  String   @unique 
@@ -28,13 +33,4 @@ model PageSection {
   contentVi   String   @db.Text
   contentJp   String   @db.Text
   updatedAt   DateTime @updatedAt
-}
-model SectionContent {
-  id        String   @id @default(cuid())
-  sectionKey String  @unique // Ví dụ: "hero", "about", "contact"
-  contentEn String?  @db.Text // Nội dung tiếng Anh (Lưu JSON)
-  contentVi String?  @db.Text // Nội dung tiếng Việt (Lưu JSON)
-  contentJp String?  @db.Text // Nội dung tiếng Nhật (Lưu JSON)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }

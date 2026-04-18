@@ -13,55 +13,21 @@ import { getAllPosts, getPostsByTag, getSectionContent } from "@/lib/actions";
 import SakuraAiChatBox from "@/components/SakuraAiChatBox";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
-// --- MỚI THÊM: IMPORT CÁC COMPONENT HIỆU ỨNG ---
 import ScrollReveal from "@/components/ScrollReveal";
 import TypewriterText from "@/components/TypewriterText";
 
-// --- DỮ LIỆU TÊN ---
-const MY_NAMES = {
-    vi: "Vũ Trí Dũng",
-    en: "David Miller",
-    jp: "明菜青い" 
-};
-
-// --- KHO THƠ ---
+const MY_NAMES = { vi: "Vũ Trí Dũng", en: "David Miller", jp: "明菜青い" };
 const LOADING_POEMS = {
-    en: [
-        "Crafting digital dreams...",
-        "The cherry blossoms fall, code stands tall...",
-        "Patience is the companion of wisdom...",
-        "Code is poetry written by logic...",
-        "Quietly building the future, one line at a time..."
-    ],
-    vi: [
-        "Dệt mộng kỹ thuật số...",
-        "Cánh hoa tàn, nhưng hồn hoa vẫn nở...",
-        "Đợi một chút, mùa xuân đang về...",
-        "Lập trình là nghệ thuật sắp đặt tư duy...",
-        "Hãy code bằng cả trái tim..."
-    ],
-    jp: [
-        "デジタルな夢を紡ぐ...",
-        "桜散る、コードに残る、夢の跡...",
-        "待てば海路の日和あり...",
-        "継続は力なり...",
-        "初心忘るべからず..."
-    ]
+    en: ["Crafting digital dreams...", "The cherry blossoms fall, code stands tall...", "Code is poetry written by logic..."],
+    vi: ["Dệt mộng kỹ thuật số...", "Cánh hoa tàn, nhưng hồn hoa vẫn nở...", "Lập trình là nghệ thuật sắp đặt tư duy..."],
+    jp: ["デジタルな夢を紡ぐ...", "桜散る、コードに残る、夢の跡...", "継続は力なり..."]
 };
 
-// --- COMPONENT HIỆU ỨNG VIẾT TAY SVG ---
 const HandwritingText = ({ text, color, fontClass }: { text: string, color: string, fontClass: string }) => {
     return (
         <div style={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
             <svg viewBox="0 0 1000 150" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
-                <text 
-                    x="50%" 
-                    y="50%" 
-                    textAnchor="middle" 
-                    dominantBaseline="middle"
-                    className={`svg-text-draw ${fontClass}`}
-                    style={{ stroke: color, fontSize: '40px', letterSpacing: '2px' }}
-                >
+                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className={`svg-text-draw ${fontClass}`} style={{ stroke: color, fontSize: '40px', letterSpacing: '2px' }}>
                     {text}
                 </text>
             </svg>
@@ -69,15 +35,14 @@ const HandwritingText = ({ text, color, fontClass }: { text: string, color: stri
     );
 };
 
-// --- TYPES ---
-type Post = { id: string; title: string; images: string; createdAt: Date | string; tag?: string; language?: string; content?: string; };
+// --- TYPES (Đã sửa lại khớp với Schema mới) ---
+type Post = { id: string; titleVi: string; titleEn: string; titleJp: string; images: string; createdAt: Date | string; tag?: string; };
 type SectionData = { contentEn: string; contentVi: string; contentJp: string; };
 type SectionBox = { id: string; title: string; items: { label: string; value: string }[]; };
 type HeroData = { fullName: string; nickName1: string; nickName2: string; avatarUrl: string; greeting: string; description: string; typewriter: string; };
 interface ExpItem { id: string; time: string; role: string; details: string[]; }
 interface ExpGroup { id: string; title: string; items: ExpItem[]; }
 
-// Component EmptyState
 const EmptyState = ({ message, lang }: { message?: string, lang?: Lang }) => (
     <div className="glass-box" style={{textAlign: 'center', padding: '40px', color: '#8d6e63', fontStyle: 'italic', background: 'rgba(255,255,255,0.6)'}}>
         <div style={{fontSize: '2rem', marginBottom: '10px'}}>🍃</div>
@@ -90,11 +55,10 @@ export default function SakuraHome() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingQuotes, setLoadingQuotes] = useState({ en: "", vi: "", jp: "" });
 
-  // Data States
   const [dbUniProjects, setDbUniProjects] = useState<Post[]>([]);
   const [dbPersonalProjects, setDbPersonalProjects] = useState<Post[]>([]);
   const [dbItEvents, setDbItEvents] = useState<Post[]>([]);
-  const [dbOtherEvents, setDbOtherEvents] = useState<Post[]>([]); // Đã thêm: Sự kiện khác
+  const [dbOtherEvents, setDbOtherEvents] = useState<Post[]>([]);
   const [dbLangCerts, setDbLangCerts] = useState<Post[]>([]);
   const [dbTechCerts, setDbTechCerts] = useState<Post[]>([]);
   const [dbOtherCerts, setDbOtherCerts] = useState<Post[]>([]);
@@ -104,24 +68,16 @@ export default function SakuraHome() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [globalConfig, setGlobalConfig] = useState<any>(null);
 
-  // Filter States
   const [projLang, setProjLang] = useState<string>("ALL");
   const [projSort, setProjSort] = useState<"newest" | "oldest">("newest");
 
   const t = translations[currentLang]; 
 
-  const handleSetLanguage = (lang: Lang) => {
-      setCurrentLang(lang);
-      localStorage.setItem("sakura_lang", lang);
-  };
-
   useEffect(() => {
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
     if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars, react-hooks/set-state-in-effect
         setCurrentLang(savedLang);
     }
-
     setLoadingQuotes({
         en: LOADING_POEMS.en[Math.floor(Math.random() * LOADING_POEMS.en.length)],
         vi: LOADING_POEMS.vi[Math.floor(Math.random() * LOADING_POEMS.vi.length)],
@@ -132,13 +88,12 @@ export default function SakuraHome() {
         getPostsByTag("uni_projects").then(d => setDbUniProjects(d as unknown as Post[])),
         getPostsByTag("personal_projects").then(d => setDbPersonalProjects(d as unknown as Post[])),
         getPostsByTag("it_events").then(d => setDbItEvents(d as unknown as Post[])),
-        getPostsByTag("other_events").then(d => setDbOtherEvents(d as unknown as Post[])), // Đã thêm: Get sự kiện khác
+        getPostsByTag("other_events").then(d => setDbOtherEvents(d as unknown as Post[])),
         getPostsByTag("lang_certs").then(d => setDbLangCerts(d as unknown as Post[])),
         getPostsByTag("tech_certs").then(d => setDbTechCerts(d as unknown as Post[])),
         getPostsByTag("other_certs").then(d => setDbOtherCerts(d as unknown as Post[])),
         getPostsByTag("achievements").then(d => setDbAchievements(d as unknown as Post[])),
         getAllPosts().then(d => d && setLatestPosts(d.slice(0, 3) as unknown as Post[])),
-        
         Promise.all(["about", "career", "skills", "profile", "experience", "contact", "hero", "global_config"].map(key => getSectionContent(key)))
         .then(results => {
             const secs: Record<string, SectionData> = {};
@@ -146,14 +101,13 @@ export default function SakuraHome() {
                 if (results[i]) secs[key] = results[i] as unknown as SectionData;
             });
             setDynamicSections(secs);
-            if (secs.global_config) try { setGlobalConfig(JSON.parse(secs.global_config.contentEn)); } catch { /* ignore */ }
+            if (secs.global_config) try { setGlobalConfig(JSON.parse(secs.global_config.contentEn)); } catch {}
         })
-    ]).finally(() => {
-        setTimeout(() => setIsLoading(false), 2000); 
-    });
+    ]).finally(() => { setTimeout(() => setIsLoading(false), 2000); });
   }, []);
 
-  // Helpers
+  const handleSetLanguage = (lang: Lang) => { setCurrentLang(lang); localStorage.setItem("sakura_lang", lang); };
+
   const getTxt = (key: string) => { const d = dynamicSections[key]; if(!d) return null; return (currentLang==='en'?d.contentEn:(currentLang==='vi'?d.contentVi:d.contentJp)) || null; };
   const getJson = <T,>(key: string): T | null => { const d = dynamicSections[key]; if(!d) return null; try { return JSON.parse((currentLang==='en'?d.contentEn:(currentLang==='vi'?d.contentVi:d.contentJp))); } catch { return null; } };
   
@@ -163,23 +117,15 @@ export default function SakuraHome() {
   })();
 
   let typewriterWords = ["Developer", "Student"]; 
-  try {
-      if (hero.typewriter) typewriterWords = JSON.parse(hero.typewriter);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
-      console.error("Lỗi cú pháp JSON ở phần Typewriter!");
-  }
+  try { if (hero.typewriter) typewriterWords = JSON.parse(hero.typewriter); } catch {}
   
   const currentMainName = MY_NAMES[currentLang]; 
-  const subNames = [
-      { lang: 'vi', label: 'VN', val: MY_NAMES.vi },
-      { lang: 'en', label: 'GB', val: MY_NAMES.en },
-      { lang: 'jp', label: 'JP', val: MY_NAMES.jp }
-  ].filter(n => n.val !== currentMainName);
+  const subNames = [ { lang: 'vi', label: 'VN', val: MY_NAMES.vi }, { lang: 'en', label: 'GB', val: MY_NAMES.en }, { lang: 'jp', label: 'JP', val: MY_NAMES.jp } ].filter(n => n.val !== currentMainName);
 
-  const getCover = (json: string) => { 
-      try { const arr = JSON.parse(json); return (arr.length > 0 && arr[0]) ? arr[0] : "https://placehold.co/600x400/ffc0cb/ffffff?text=Sakura"; } catch { return "https://placehold.co/600x400/ffc0cb/ffffff?text=Sakura"; } 
-  };
+  const getCover = (json: string) => { try { const arr = JSON.parse(json); return (arr.length > 0 && arr[0]) ? arr[0] : "https://placehold.co/600x400/ffc0cb/ffffff?text=Sakura"; } catch { return "https://placehold.co/600x400/ffc0cb/ffffff?text=Sakura"; } };
+  
+  // --- HÀM LẤY TIÊU ĐỀ THEO NGÔN NGỮ ---
+  const getTitle = (p: Post) => currentLang === 'vi' ? p.titleVi : currentLang === 'jp' ? p.titleJp : p.titleEn;
 
   const profileBoxes = getJson<SectionBox[]>('profile');
   const contactBoxes = getJson<SectionBox[]>('contact');
@@ -194,16 +140,14 @@ export default function SakuraHome() {
 
   const filterProjects = (projects: Post[]) => {
       let res = [...projects];
-      if (projLang !== "ALL") {
-          res = res.filter(p => p.language?.toLowerCase() === projLang.toLowerCase());
-      }
+      // Nếu có dùng projLang để filter (hiện tại schema gộp chung nên filter lang có thể không cần thiết nữa, nhưng giữ nguyên logic cũ)
       res.sort((a, b) => {
-          const tA = new Date(a.createdAt).getTime();
-          const tB = new Date(b.createdAt).getTime();
+          const tA = new Date(a.createdAt).getTime(); const tB = new Date(b.createdAt).getTime();
           return projSort === "newest" ? tB - tA : tA - tB;
       });
       return res;
   };
+  const scrollCarousel = (id: string, direction: number) => { const container = document.getElementById(id); if (container) container.scrollBy({ left: direction * 300, behavior: 'smooth' }); };
 
   return (
     <>
@@ -213,20 +157,14 @@ export default function SakuraHome() {
           <SakuraNav t={t} currentLang={currentLang} setCurrentLang={handleSetLanguage} resumeUrl={globalConfig?.resumeUrl} />
           
           {isLoading ? (
-              <div style={{
-                  position: 'fixed', inset: 0, zIndex: 9999,
-                  display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-                  textAlign: 'center', padding: '20px'
-              }}>
+              <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: '20px' }}>
                   <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1, background: 'rgba(255, 240, 245, 0.75)'}}>
-                      <video autoPlay loop muted playsInline preload="none" style={{width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5}}>
-                          <source src="/videos/sakura_bg.mp4" type="video/mp4" />
-                      </video>
+                      <video autoPlay loop muted playsInline preload="none" style={{width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5}}><source src="/videos/sakura_bg.mp4" type="video/mp4" /></video>
                       <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(4px)'}}></div>
                   </div>
                   <div style={{fontSize: '4rem', animation: 'spin-slow 3s linear infinite', marginBottom: '10px'}}>🌸</div>
                   <div style={{display: 'flex', flexDirection: 'column', gap: '5px', width: '100%', maxWidth: '900px', zIndex: 10}}>
-                      <HandwritingText text={`"${loadingQuotes.en}"`} color="#5d4037" fontClass="font-dancing" />
+                      <HandwritingText text={`"${loadingQuotes[currentLang] || loadingQuotes.en}"`} color="#5d4037" fontClass="font-dancing" />
                   </div>
               </div>
           ) : (
@@ -238,7 +176,6 @@ export default function SakuraHome() {
                             <h2 style={{ fontSize: '1.5rem', color: '#8d6e63', marginBottom: '15px' }}>
                                 {t.hero_iam} <TypewriterText words={typewriterWords} />
                             </h2>
-
                           <div className="hero-names-box">
                               {subNames.map((sub, idx) => (
                                   <span key={idx} className="hero-badge"><strong style={{color: '#ff69b4', marginRight: '5px'}}>{sub.label}</strong>{sub.val}</span>
@@ -247,7 +184,7 @@ export default function SakuraHome() {
                           {globalConfig?.isOpenForWork && (
                               <div style={{color: '#2e7d32', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '5px'}}>
                                   <span style={{width: '8px', height: '8px', background: '#2e7d32', borderRadius: '50%'}}></span>
-                                  {currentLang==='vi'?'Đang tìm việc':'Open for Work'}
+                                  {currentLang==='vi'?'Đang tìm việc':(currentLang==='jp'?'求職中':'Open for Work')}
                               </div>
                           )}
                           <p className="hero-desc">{hero.description}</p>
@@ -260,7 +197,7 @@ export default function SakuraHome() {
                       
                       <div className="hero-image-container">
                           <div className="blob-bg"></div>
-                          <Image src="/pictures/VuTriDung.jpg" alt="Real Face" className="avatar-real" width={450} height={450} sizes="(max-width: 900px) 200px, 450px" quality={75} priority fetchPriority="high" />
+                          <Image src={hero.avatarUrl || "/pictures/VuTriDung.jpg"} alt="Real Face" className="avatar-real" width={450} height={450} sizes="(max-width: 900px) 200px, 450px" quality={75} priority fetchPriority="high" />
                           <Image src="/pictures/sakura_avatar.png" alt="Frame" className="avatar-frame-overlay" width={450} height={450} sizes="(max-width: 900px) 200px, 450px" quality={75} priority fetchPriority="high" />
                       </div>
                   </section>
@@ -268,8 +205,7 @@ export default function SakuraHome() {
                   <div style={{maxWidth: '1200px', margin: '0 auto', padding: '0 20px'}}>
                       
                       <section id="about" style={{padding: '80px 0', textAlign: 'center', scrollMarginTop: '100px'}}>
-                        <ScrollReveal>
-                          <h2 className="section-title"><span>✿ {t.sec_about} ✿</span></h2>
+                        <ScrollReveal><h2 className="section-title"><span>✿ {t.sec_about} ✿</span></h2>
                           {getTxt("about") ? (<div className="glass-box"><p style={{whiteSpace: 'pre-line', lineHeight: '1.8'}}>{getTxt("about")}</p></div>) : <EmptyState lang={currentLang} />}
                         </ScrollReveal>
                       </section>
@@ -306,10 +242,8 @@ export default function SakuraHome() {
                               {dbLangCerts.length > 0 ? dbLangCerts.map((p, i) => (
                                   <ScrollReveal key={p.id} delay={i * 0.1}>
                                     <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
-                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}>
-                                            <img src={getCover(p.images)} alt={p.title} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} />
-                                        </div>
-                                        <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h3></div>
+                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={getTitle(p)} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                        <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{getTitle(p)}</h3></div>
                                     </Link>
                                   </ScrollReveal>
                               )) : <EmptyState lang={currentLang} message={currentLang === 'vi' ? "Chưa có chứng chỉ 🍃" : (currentLang === 'jp' ? "証明書が見つかりません 🍃" : "No certificates found 🍃")} />}
@@ -320,10 +254,8 @@ export default function SakuraHome() {
                               {dbTechCerts.length > 0 ? dbTechCerts.map((p, i) => (
                                   <ScrollReveal key={p.id} delay={i * 0.1}>
                                     <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
-                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}>
-                                            <img src={getCover(p.images)} alt={p.title} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} />
-                                        </div>
-                                        <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h3></div>
+                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={getTitle(p)} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                        <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{getTitle(p)}</h3></div>
                                     </Link>
                                   </ScrollReveal>
                               )) : <EmptyState lang={currentLang} message={currentLang === 'vi' ? "Chưa có chứng chỉ 🍃" : (currentLang === 'jp' ? "証明書が見つかりません 🍃" : "No certificates found 🍃")} />}
@@ -334,10 +266,8 @@ export default function SakuraHome() {
                               {dbOtherCerts.length > 0 ? dbOtherCerts.map((p, i) => (
                                   <ScrollReveal key={p.id} delay={i * 0.1}>
                                     <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block', transition: '0.3s'}}>
-                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}>
-                                            <img src={getCover(p.images)} alt={p.title} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} />
-                                        </div>
-                                        <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h3></div>
+                                        <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={getTitle(p)} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                        <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{getTitle(p)}</h3></div>
                                     </Link>
                                   </ScrollReveal>
                               )) : <EmptyState lang={currentLang} message={currentLang === 'vi' ? "Chưa có chứng chỉ 🍃" : (currentLang === 'jp' ? "証明書が見つかりません 🍃" : "No certificates found 🍃")} />}
@@ -365,10 +295,8 @@ export default function SakuraHome() {
                                   {dbAchievements.map((p, i) => (
                                       <ScrollReveal key={p.id} delay={i * 0.1}>
                                         <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}>
-                                                <img src={getCover(p.images)} alt={p.title} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} />
-                                            </div>
-                                            <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h3></div>
+                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={getTitle(p)} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                            <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{getTitle(p)}</h3></div>
                                         </Link>
                                       </ScrollReveal>
                                   ))}
@@ -438,15 +366,11 @@ export default function SakuraHome() {
                           <h2 className="section-title"><span>✿ {t.sec_proj} ✿</span></h2>
                           
                           <div className="glass-box" style={{marginBottom: '40px', padding: '15px 25px', background: 'rgba(255,255,255,0.9)', borderRadius: '50px', display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 15px rgba(255, 105, 180, 0.15)'}}>
-                              <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap', padding: '4px'}}>
-                                  {[{v: "ALL", l: "✨ All"}, {v: "vi", l: "🇻🇳 VI"}, {v: "en", l: "🇬🇧 EN"}, {v: "jp", l: "🇯🇵 JP"}].map(langOpt => (
-                                      <button key={langOpt.v} onClick={() => setProjLang(langOpt.v)} style={{whiteSpace: 'nowrap', padding: '8px 16px', borderRadius: '20px', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.3s', background: projLang === langOpt.v ? '#ff69b4' : '#ffe4e1', color: projLang === langOpt.v ? 'white' : '#8d6e63', boxShadow: projLang === langOpt.v ? '0 2px 8px rgba(255,105,180,0.4)' : 'none', transform: projLang === langOpt.v ? 'scale(1.05)' : 'scale(1)'}}>{langOpt.l}</button>
-                                  ))}
-                              </div>
+                              {/* Có thể thêm bộ lọc ở đây nếu cần */}
                               <button onClick={() => setProjSort(prev => prev === "newest" ? "oldest" : "newest")} style={{whiteSpace: 'nowrap', padding: '8px 16px', borderRadius: '20px', background: 'white', border: '2px solid #ffb7b2', color: '#ff69b4', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.85rem'}}>{projSort === "newest" ? "⌚ Newest First" : "⌛ Oldest First"}</button>
                           </div>
 
-                          {[{ title: t.cat_uni_proj, data: dbUniProjects }, { title: t.cat_personal_proj, data: dbPersonalProjects }].map((cat, idx) => {
+                          {[{ title: t.cat_uni_proj, data: dbUniProjects, id: 'uni-projects' }, { title: t.cat_personal_proj, data: dbPersonalProjects, id: 'personal-projects' }].map((cat, idx) => {
                               const filteredData = filterProjects(cat.data);
                               return (
                                   <div key={idx} style={{marginBottom: '60px'}}>
@@ -455,13 +379,12 @@ export default function SakuraHome() {
                                           <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px'}}>
                                               {filteredData.map((p, i) => (
                                                   <ScrollReveal key={p.id} delay={i * 0.1}>
-                                                    <Link key={p.id} href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', transition: '0.3s', height: '100%', display: 'flex', flexDirection: 'column'}}>
+                                                    <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', transition: '0.3s', height: '100%', display: 'flex', flexDirection: 'column'}}>
                                                         <div className="img-wrapper" style={{height: '200px', overflow: 'hidden', position: 'relative'}}>
-                                                            <img src={getCover(p.images)} alt={p.title} loading="lazy" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-                                                            {p.language && (<div style={{position: 'absolute', top: 10, right: 10, background: 'rgba(255, 105, 180, 0.9)', color: 'white', padding: '4px 8px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 'bold'}}>{p.language.toUpperCase()}</div>)}
+                                                            <img src={getCover(p.images)} alt={getTitle(p)} loading="lazy" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
                                                         </div>
                                                         <div style={{padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
-                                                            <h3 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '15px'}}>{p.title}</h3>
+                                                            <h3 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '15px'}}>{getTitle(p)}</h3>
                                                             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                                                                 <span style={{fontSize: '0.75rem', color: '#aaa'}}>{new Date(p.createdAt).toLocaleDateString()}</span>
                                                                 <span style={{fontSize: '0.8rem', color: '#ff69b4', fontWeight: 'bold', textTransform: 'uppercase'}}>Details →</span>
@@ -471,7 +394,7 @@ export default function SakuraHome() {
                                                   </ScrollReveal>
                                               ))}
                                           </div>
-                                      ) : (<div style={{textAlign: 'center', padding: '30px', background: 'rgba(255,255,255,0.5)', borderRadius: '20px', border: '2px dashed #ffc1e3', color: '#8d6e63'}}>🍃 Không có dự án nào (Bộ lọc: {projLang})</div>)}
+                                      ) : (<div style={{textAlign: 'center', padding: '30px', background: 'rgba(255,255,255,0.5)', borderRadius: '20px', border: '2px dashed #ffc1e3', color: '#8d6e63'}}>🍃 Không có dữ liệu</div>)}
                                   </div>
                               );
                           })}
@@ -489,9 +412,9 @@ export default function SakuraHome() {
                                   {latestPosts.map((p, i) => (
                                       <ScrollReveal key={p.id} delay={i * 0.1}>
                                         <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                            <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                            <div className="img-wrapper" style={{height: 180, position: 'relative'}}><img src={getCover(p.images)} alt={getTitle(p)} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
                                             <div style={{padding: '20px'}}>
-                                                <h3 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{p.title}</h3>
+                                                <h3 style={{fontWeight: 'bold', color: '#5d4037', marginBottom: '5px'}}>{getTitle(p)}</h3>
                                                 <span style={{fontSize: '0.8rem', color: '#aaa'}}>{new Date(p.createdAt).toLocaleDateString()}</span>
                                             </div>
                                         </Link>
@@ -502,7 +425,6 @@ export default function SakuraHome() {
                         </ScrollReveal>
                       </section>
 
-                      {/* --- GALLERY (ĐÃ THÊM SỰ KIỆN KHÁC BÊN DƯỚI IT EVENTS) --- */}
                       <section id="gallery" style={{padding: '80px 0', scrollMarginTop: '100px'}}>
                         <ScrollReveal>
                           <h2 className="section-title"><span>✿ 10. {currentLang === 'vi' ? 'THƯ VIỆN ẢNH' : (currentLang === 'jp' ? 'ギャラリー' : 'GALLERY')} ✿</span></h2>
@@ -514,8 +436,8 @@ export default function SakuraHome() {
                                   {dbItEvents.map((p, i) => (
                                       <ScrollReveal key={p.id} delay={i * 0.1}>
                                         <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                            <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h3></div>
+                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={getTitle(p)} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                            <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{getTitle(p)}</h3></div>
                                         </Link>
                                       </ScrollReveal>
                                   ))}
@@ -529,8 +451,8 @@ export default function SakuraHome() {
                                   {dbOtherEvents.map((p, i) => (
                                       <ScrollReveal key={p.id} delay={i * 0.1}>
                                         <Link href={`/blog/${p.id}`} className="glass-box" style={{padding: 0, overflow: 'hidden', display: 'block'}}>
-                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={p.title} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
-                                            <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{p.title}</h3></div>
+                                            <div className="img-wrapper" style={{height: 200, position: 'relative'}}><img src={getCover(p.images)} alt={getTitle(p)} loading="lazy" style={{width:'100%', height:'100%', objectFit:'cover'}} /></div>
+                                            <div style={{padding: '20px'}}><h3 style={{fontWeight: 'bold', color: '#5d4037'}}>{getTitle(p)}</h3></div>
                                         </Link>
                                       </ScrollReveal>
                                   ))}
@@ -581,9 +503,7 @@ export default function SakuraHome() {
           </div>
       )}
 
-      {/* NÚT CHỌN NGÔN NGỮ NỔI GÓC PHẢI */}
       <LanguageSwitcher currentLang={currentLang} setCurrentLang={handleSetLanguage} />
-
     </>
   );
 }

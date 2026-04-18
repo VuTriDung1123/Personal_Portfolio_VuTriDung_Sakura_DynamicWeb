@@ -15,37 +15,52 @@ export async function checkAdmin(formData: FormData) {
   return { success: false };
 }
 
-// --- 2. BLOG MANAGER ---
+// --- 2. BLOG MANAGER (3 LANGUAGES) ---
 export async function createPost(formData: FormData) {
-  const title = formData.get("title") as string;
-  const content = formData.get("content") as string;
-  const tag = formData.get("tag") as string;
-  const language = formData.get("language") as string;
-  const images = (formData.get("images") as string) || "[]";
+  const data = {
+    titleVi: formData.get("titleVi") as string || "",
+    titleEn: formData.get("titleEn") as string || "",
+    titleJp: formData.get("titleJp") as string || "",
+    contentVi: formData.get("contentVi") as string || "",
+    contentEn: formData.get("contentEn") as string || "",
+    contentJp: formData.get("contentJp") as string || "",
+    tag: formData.get("tag") as string || "general",
+    images: (formData.get("images") as string) || "[]",
+  };
 
   try {
-    await prisma.post.create({ data: { title, content, tag, language, images } });
+    await prisma.post.create({ data });
     revalidatePath("/");
-  } catch (error) { console.error("Create error:", error); }
+  } catch (error) { 
+    console.error("Create error:", error); 
+  }
 }
 
 export async function updatePost(formData: FormData) {
   const id = formData.get("id") as string;
-  const title = formData.get("title") as string;
-  const content = formData.get("content") as string;
-  const tag = formData.get("tag") as string;
-  const language = formData.get("language") as string;
-  const images = (formData.get("images") as string) || "[]";
+  const data = {
+    titleVi: formData.get("titleVi") as string || "",
+    titleEn: formData.get("titleEn") as string || "",
+    titleJp: formData.get("titleJp") as string || "",
+    contentVi: formData.get("contentVi") as string || "",
+    contentEn: formData.get("contentEn") as string || "",
+    contentJp: formData.get("contentJp") as string || "",
+    tag: formData.get("tag") as string || "general",
+    images: (formData.get("images") as string) || "[]",
+  };
 
   try {
-    await prisma.post.update({ where: { id }, data: { title, content, tag, language, images } });
+    await prisma.post.update({ where: { id }, data });
     revalidatePath("/");
     return { success: true };
-  } catch (error) { return { success: false, error }; }
+  } catch (error) { 
+    console.error("Update error:", error);
+    return { success: false }; 
+  }
 }
 
 export async function deletePost(id: string) {
-    try { await prisma.post.delete({ where: { id } }); revalidatePath("/"); } catch (error) {}
+    try { await prisma.post.delete({ where: { id } }); revalidatePath("/"); } catch (error) { console.error(error); }
 }
 
 export async function getAllPosts() {
@@ -63,7 +78,7 @@ export async function getPostById(id: string) {
 // --- 3. SECTION CONTENT MANAGER ---
 export async function getSectionContent(key: string) {
   try { return await prisma.pageSection.findUnique({ where: { sectionKey: key } }); } 
-  catch (error) { return null; }
+  catch (error) { console.error(error); return null; }
 }
 
 export async function saveSectionContent(formData: FormData) {
@@ -80,5 +95,8 @@ export async function saveSectionContent(formData: FormData) {
     });
     revalidatePath("/");
     return { success: true };
-  } catch (error) { return { success: false }; }
+  } catch (error) { 
+    console.error(error);
+    return { success: false }; 
+  }
 }

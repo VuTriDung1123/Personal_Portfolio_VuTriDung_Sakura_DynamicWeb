@@ -23,8 +23,9 @@ export default function SakuraFaqPage() {
 
     useEffect(() => {
         const savedLang = localStorage.getItem("sakura_lang") as Lang;
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (savedLang && ['en', 'vi', 'jp'].includes(savedLang)) setViewLang(savedLang);
+        if (savedLang && ['en', 'vi', 'jp'].includes(savedLang) && savedLang !== viewLang) {
+            setViewLang(savedLang);
+        }
 
         getSectionContent("faq_data").then((data) => {
             if (data) {
@@ -39,6 +40,7 @@ export default function SakuraFaqPage() {
             }
             setTimeout(() => setIsLoading(false), 800);
         });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const toggleFaq = (index: number) => {
