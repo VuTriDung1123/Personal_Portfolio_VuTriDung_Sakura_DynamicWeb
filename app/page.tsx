@@ -103,7 +103,17 @@ export default function SakuraHome() {
             setDynamicSections(secs);
             if (secs.global_config) try { setGlobalConfig(JSON.parse(secs.global_config.contentEn)); } catch {}
         })
-    ]).finally(() => { setTimeout(() => setIsLoading(false), 2000); });
+    ]).finally(() => { 
+        const hasVisited = sessionStorage.getItem("sakura_intro_played");
+        if (hasVisited) {
+            setIsLoading(false);
+        } else {
+            setTimeout(() => {
+                setIsLoading(false);
+                sessionStorage.setItem("sakura_intro_played", "true");
+            }, 2000); 
+        }
+     });
   }, []);
 
   const handleSetLanguage = (lang: Lang) => { setCurrentLang(lang); localStorage.setItem("sakura_lang", lang); };
