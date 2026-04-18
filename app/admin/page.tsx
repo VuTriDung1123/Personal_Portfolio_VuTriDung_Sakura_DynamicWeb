@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import SakuraFalling from "@/components/SakuraFalling"; 
 import { checkAdmin, createPost, deletePost, getAllPosts, updatePost, getSectionContent, saveSectionContent } from "@/lib/actions";
 
-// --- TYPES ---
-interface Post { id: string; title: string; tag: string; language: string; content: string; images: string; }
+// --- TYPES (Đã sửa Post để chứa 3 ngôn ngữ) ---
+interface Post { id: string; titleVi: string; titleEn: string; titleJp: string; tag: string; contentVi: string; contentEn: string; contentJp: string; images: string; }
 interface SectionBox { id: string; title: string; items: { label: string; value: string }[]; }
 interface SectionData { contentEn: string; contentVi: string; contentJp: string; }
 interface HeroData { fullName: string; nickName1: string; nickName2: string; avatarUrl: string; greeting: string; description: string; typewriter: string; }
@@ -41,7 +41,6 @@ const s = {
 };
 
 // --- SUB-COMPONENTS ---
-
 const BoxEditor = ({ lang, data, onUpdate, titleLabel }: { lang: string, data: SectionBox[], onUpdate: (d: SectionBox[]) => void, titleLabel: string }) => { 
     return (
         <div style={s.card}>
@@ -54,8 +53,8 @@ const BoxEditor = ({ lang, data, onUpdate, titleLabel }: { lang: string, data: S
                     </div>
                     {box.items.map((it, iIdx) => (
                         <div key={iIdx} style={{display:'flex', gap:'10px'}}>
-                            <input value={it.label} onChange={(e) => {const n=[...data];n[bIdx].items[iIdx].label=e.target.value;onUpdate(n)}} style={{...s.input, flex:1}} placeholder="Label (e.g. ReactJS)" />
-                            <input value={it.value} onChange={(e) => {const n=[...data];n[bIdx].items[iIdx].value=e.target.value;onUpdate(n)}} style={{...s.input, flex:2}} placeholder="Value (e.g. Advanced)" />
+                            <input value={it.label} onChange={(e) => {const n=[...data];n[bIdx].items[iIdx].label=e.target.value;onUpdate(n)}} style={{...s.input, flex:1}} placeholder="Label" />
+                            <input value={it.value} onChange={(e) => {const n=[...data];n[bIdx].items[iIdx].value=e.target.value;onUpdate(n)}} style={{...s.input, flex:2}} placeholder="Value" />
                             <button type="button" onClick={() => {const n=[...data];n[bIdx].items.splice(iIdx,1);onUpdate(n)}} style={{...s.btnDelete, height:'42px'}}>×</button>
                         </div>
                     ))}
@@ -248,6 +247,7 @@ export default function AdminPage() {
   }, [sectionKey, activeTab, isBoxSection, isHeroSection, isConfigSection, isExpSection, isFaqSection, isAiConfigSection]);
 
   async function handleLogin(formData: FormData) { const res = await checkAdmin(formData); if (res.success) setIsAuth(true); else alert("Wrong Password! 🌸"); }
+  
   const addLinkField = () => setImages([...images, ""]);
   const removeLinkField = (index: number) => { const newImg = [...images]; newImg.splice(index, 1); setImages(newImg); };
   const updateLinkField = (index: number, val: string) => { const newImg = [...images]; newImg[index] = val; setImages(newImg); };
@@ -308,34 +308,55 @@ export default function AdminPage() {
                 <h2 style={s.subTitle}>{editingPost ? "EDIT POST" : "NEW POST"}</h2>
                 <form action={handleBlogSubmit}>
                     {editingPost && <input type="hidden" name="id" value={editingPost.id} />}
-                    <label style={s.label}>TITLE</label><input name="title" defaultValue={editingPost?.title} required style={s.input} />
-                    <div style={s.grid2}>
-                        <div><label style={s.label}>TAG</label>
-                            <select name="tag" value={tag} onChange={e=>setTag(e.target.value)} style={s.input}>
-                                <option value="my_confessions">My Confessions</option>
-                                <option value="uni_projects">University Projects</option>
-                                <option value="personal_projects">Personal Projects</option>
-                                <option value="achievements">Achievements</option>
-                                <option value="it_events">IT Events</option>
-                                <option value="other_events">Other Events</option> {/* Đã thêm ở đây */}
-                                <option value="lang_certs">Language Certs</option>
-                                <option value="tech_certs">Tech Certs</option>
-                                <option value="other_certs">Other Certs</option>
-                            </select>
-                        </div>
-                        <div><label style={s.label}>LANG</label><select name="language" defaultValue={editingPost?.language||"vi"} style={s.input}><option value="vi">Vietnamese</option><option value="en">English</option><option value="jp">Japanese</option></select></div>
+                    
+                    <div style={s.grid3}>
+                        <div><label style={s.label}>TITLE (VI)</label><input name="titleVi" defaultValue={editingPost?.titleVi} required style={s.input} /></div>
+                        <div><label style={s.label}>TITLE (EN)</label><input name="titleEn" defaultValue={editingPost?.titleEn} required style={s.input} /></div>
+                        <div><label style={s.label}>TITLE (JP)</label><input name="titleJp" defaultValue={editingPost?.titleJp} required style={s.input} /></div>
                     </div>
-                    <label style={s.label}>CONTENT</label><textarea name="content" defaultValue={editingPost?.content} rows={10} required style={{...s.input, fontFamily:'monospace'}} />
-                    <div style={s.itemBox}><label style={s.label}>IMAGES (URLs)</label>{images.map((l,i)=>(<div key={i} style={{display:'flex', gap:'5px', marginBottom:'5px'}}><input value={l} onChange={e=>updateLinkField(i,e.target.value)} style={{...s.input, marginBottom:0}} /><button type="button" onClick={()=>removeLinkField(i)} style={s.btnDelete}>X</button></div>))}<button type="button" onClick={addLinkField} style={{fontSize:'0.8rem', color:'#ff69b4', border:'none', background:'none', cursor:'pointer'}}>+ Add Image</button></div>
-                    <div style={{display:'flex', gap:'10px', marginTop:'10px'}}><button style={{...s.btnPrimary, flex:1}}>SAVE</button>{editingPost && <button type="button" onClick={()=>{setEditingPost(null);setImages([])}} style={s.btnSecondary}>CANCEL</button>}</div>
+
+                    <label style={s.label}>TAG</label>
+                    <select name="tag" value={tag} onChange={e=>setTag(e.target.value)} style={{...s.input, marginBottom: '15px'}}>
+                        <option value="my_confessions">My Confessions</option>
+                        <option value="uni_projects">University Projects</option>
+                        <option value="personal_projects">Personal Projects</option>
+                        <option value="achievements">Achievements</option>
+                        <option value="it_events">IT Events</option>
+                        <option value="other_events">Other Events</option>
+                        <option value="lang_certs">Language Certs</option>
+                        <option value="tech_certs">Tech Certs</option>
+                        <option value="other_certs">Other Certs</option>
+                    </select>
+
+                    <div style={s.grid3}>
+                        <div><label style={s.label}>CONTENT (VI)</label><textarea name="contentVi" defaultValue={editingPost?.contentVi} rows={8} required style={{...s.input, fontFamily:'monospace'}} /></div>
+                        <div><label style={s.label}>CONTENT (EN)</label><textarea name="contentEn" defaultValue={editingPost?.contentEn} rows={8} required style={{...s.input, fontFamily:'monospace'}} /></div>
+                        <div><label style={s.label}>CONTENT (JP)</label><textarea name="contentJp" defaultValue={editingPost?.contentJp} rows={8} required style={{...s.input, fontFamily:'monospace'}} /></div>
+                    </div>
+
+                    <div style={s.itemBox}>
+                        <label style={s.label}>IMAGES (URLs)</label>
+                        {images.map((l,i)=>(
+                            <div key={i} style={{display:'flex', gap:'5px', marginBottom:'5px'}}>
+                                <input value={l} onChange={e=>updateLinkField(i,e.target.value)} style={{...s.input, marginBottom:0}} />
+                                <button type="button" onClick={()=>removeLinkField(i)} style={s.btnDelete}>X</button>
+                            </div>
+                        ))}
+                        <button type="button" onClick={addLinkField} style={{fontSize:'0.8rem', color:'#ff69b4', border:'none', background:'none', cursor:'pointer'}}>+ Add Image</button>
+                    </div>
+
+                    <div style={{display:'flex', gap:'10px', marginTop:'10px'}}>
+                        <button style={{...s.btnPrimary, flex:1}}>SAVE</button>
+                        {editingPost && <button type="button" onClick={()=>{setEditingPost(null);setImages([])}} style={s.btnSecondary}>CANCEL</button>}
+                    </div>
                 </form>
             </div>
             <div style={{display:'flex', flexDirection:'column', gap:'15px'}}>
                 {posts.map(post => (
                     <div key={post.id} style={{background:'white', padding:'20px', borderRadius:'15px', border:'1px solid #ffc1e3', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                         <div>
-                            <h3 style={{margin:'0 0 5px 0', color:'#5d4037'}}>{post.title}</h3>
-                            <span style={{fontSize:'0.8rem', background:'#fff0f5', padding:'3px 8px', borderRadius:'8px', color:'#ff69b4'}}>{post.tag} | {post.language}</span>
+                            <h3 style={{margin:'0 0 5px 0', color:'#5d4037'}}>{post.titleVi} | {post.titleEn}</h3>
+                            <span style={{fontSize:'0.8rem', background:'#fff0f5', padding:'3px 8px', borderRadius:'8px', color:'#ff69b4'}}>{post.tag}</span>
                         </div>
                         <div style={{display:'flex', gap:'5px'}}>
                             <button onClick={()=>startEdit(post)} style={{...s.btnSecondary, padding:'5px 15px', fontSize:'0.8rem'}}>EDIT</button>
