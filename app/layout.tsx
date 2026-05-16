@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans, Noto_Serif, Noto_Serif_JP, Dancing_Script } from "next/font/google";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import "./globals.css";
 import GlobalAudio from "@/components/GlobalAudio";
 
