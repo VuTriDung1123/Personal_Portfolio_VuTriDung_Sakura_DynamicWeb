@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import ReCAPTCHA from "react-google-recaptcha";
+
 import SakuraFalling from "@/components/SakuraFalling";
 import SakuraCursorTrail from "@/components/SakuraCursorTrail";
 import { getSectionContent } from "@/lib/actions";
 import { Lang } from "@/lib/data";
-import ReCAPTCHA from "react-google-recaptcha";
-import { useRef } from "react";
 
 // Type dữ liệu
 type FaqItem = { q: string; a: string; };
@@ -19,11 +19,9 @@ export default function SakuraFaqPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-    // --- FORM STATES ---
+    // --- FORM & CAPTCHA STATES ---
     const [isSending, setIsSending] = useState(false);
     const [sendMsg, setSendMsg] = useState<{ text: string, type: 'success' | 'error' | '' }>({ text: '', type: '' });
-
-    //Capcha ref
     const recaptchaRef = useRef<ReCAPTCHA>(null);
 
     useEffect(() => {
@@ -58,10 +56,8 @@ export default function SakuraFaqPage() {
     const handleSendMail = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         
-        // [MỚI] Lấy mã token trực tiếp từ thẻ reCAPTCHA thay vì dùng State
+        // Rào chắn 1: Lấy token trực tiếp từ reCAPTCHA
         const token = recaptchaRef.current?.getValue();
-        
-        // Rào chắn 1: Kiểm tra xem đã tick CAPTCHA chưa
         if (!token) {
             setSendMsg({ text: 'Vui lòng tick vào ô "I am not a robot" 🌸', type: 'error' });
             return;
@@ -71,9 +67,9 @@ export default function SakuraFaqPage() {
         setSendMsg({ text: 'Đang gửi bức thư của bạn đi... 🌸', type: '' });
 
         const formData = new FormData(e.currentTarget);
-        formData.append('recaptchaToken', token); 
+        formData.append('recaptchaToken', token);
         
-        // Kiểm tra dung lượng file
+        // Rào chắn 2: Kiểm tra dung lượng file
         const file = formData.get('file') as File;
         if (file && file.size > 4 * 1024 * 1024) { // Tối đa 4MB
             setSendMsg({ text: 'File đính kèm quá lớn (Tối đa 4MB) 🍃', type: 'error' });
@@ -90,15 +86,11 @@ export default function SakuraFaqPage() {
             if (res.ok) {
                 setSendMsg({ text: 'Đã gửi thư thành công! Hãy kiểm tra hộp thư của bạn nhé. 🌸', type: 'success' });
                 (e.target as HTMLFormElement).reset(); 
-                
-                // Reset lại ô CAPTCHA sau khi gửi thành công
-                recaptchaRef.current?.reset();
-                setCaptchaToken(null);
+                recaptchaRef.current?.reset(); // Reset lại ô CAPTCHA
             } else {
                 const errorData = await res.json();
                 setSendMsg({ text: errorData.error || 'Có lỗi xảy ra khi gửi thư. 🍃', type: 'error' });
                 recaptchaRef.current?.reset();
-                setCaptchaToken(null);
             }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
@@ -219,7 +211,7 @@ export default function SakuraFaqPage() {
                                         </span>
                                     </button>
 
-                                    {/* Câu trả lời (Animation mở) */}
+                                    {/* Câu trả lời */}
                                     {expandedIndex === index && (
                                         <div style={{
                                             padding: '0 25px 25px', 
@@ -304,8 +296,6 @@ export default function SakuraFaqPage() {
                                 {sendMsg.text}
                             </div>
                         )}
-
-
 
                         <button type="submit" disabled={isSending} style={{
                             marginTop: '10px', padding: '15px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', transition: 'all 0.3s', border: 'none',
