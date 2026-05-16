@@ -6,6 +6,8 @@ import SakuraFalling from "@/components/SakuraFalling";
 import SakuraCursorTrail from "@/components/SakuraCursorTrail";
 import { getSectionContent } from "@/lib/actions";
 import { Lang } from "@/lib/data";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useRef } from "react";
 
 // Type dữ liệu
 type FaqItem = { q: string; a: string; };
@@ -20,6 +22,9 @@ export default function SakuraFaqPage() {
     // --- FORM STATES ---
     const [isSending, setIsSending] = useState(false);
     const [sendMsg, setSendMsg] = useState<{ text: string, type: 'success' | 'error' | '' }>({ text: '', type: '' });
+
+    //Capcha ref
+    const recaptchaRef = useRef<ReCAPTCHA>(null);
 
     useEffect(() => {
         const savedLang = localStorage.getItem("sakura_lang") as Lang;
@@ -52,10 +57,21 @@ export default function SakuraFaqPage() {
     // --- XỬ LÝ GỬI FORM EMAIL ---
     const handleSendMail = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        
+        // [MỚI] Lấy mã token trực tiếp từ thẻ reCAPTCHA thay vì dùng State
+        const token = recaptchaRef.current?.getValue();
+        
+        // Rào chắn 1: Kiểm tra xem đã tick CAPTCHA chưa
+        if (!token) {
+            setSendMsg({ text: 'Vui lòng tick vào ô "I am not a robot" 🌸', type: 'error' });
+            return;
+        }
+
         setIsSending(true);
         setSendMsg({ text: 'Đang gửi bức thư của bạn đi... 🌸', type: '' });
 
         const formData = new FormData(e.currentTarget);
+        formData.append('recaptchaToken', token); 
         
         // Kiểm tra dung lượng file
         const file = formData.get('file') as File;
@@ -73,15 +89,23 @@ export default function SakuraFaqPage() {
 
             if (res.ok) {
                 setSendMsg({ text: 'Đã gửi thư thành công! Hãy kiểm tra hộp thư của bạn nhé. 🌸', type: 'success' });
-                (e.target as HTMLFormElement).reset(); // Làm trống form
+                (e.target as HTMLFormElement).reset(); 
+                
+                // Reset lại ô CAPTCHA sau khi gửi thành công
+                recaptchaRef.current?.reset();
+                setCaptchaToken(null);
             } else {
-                setSendMsg({ text: 'Có lỗi xảy ra khi gửi thư. Vui lòng thử lại sau 🍃', type: 'error' });
+                const errorData = await res.json();
+                setSendMsg({ text: errorData.error || 'Có lỗi xảy ra khi gửi thư. 🍃', type: 'error' });
+                recaptchaRef.current?.reset();
+                setCaptchaToken(null);
             }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             setSendMsg({ text: 'Lỗi kết nối mạng 🍃', type: 'error' });
         } finally {
             setIsSending(false);
-            setTimeout(() => setSendMsg({ text: '', type: '' }), 8000); // Ẩn thông báo sau 8s
+            setTimeout(() => setSendMsg({ text: '', type: '' }), 8000);
         }
     };
 
@@ -262,6 +286,14 @@ export default function SakuraFaqPage() {
                             }} />
                         </div>
 
+                        {/* Giao diện CAPTCHA */}
+                        <div style={{ display: 'flex', justifyContent: 'center', margin: '10px 0' }}>
+                            <ReCAPTCHA
+                                ref={recaptchaRef}
+                                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                            />
+                        </div>
+
                         {sendMsg.text && (
                             <div style={{
                                 padding: '15px', borderRadius: '15px', fontWeight: 'bold', textAlign: 'center',
@@ -272,6 +304,8 @@ export default function SakuraFaqPage() {
                                 {sendMsg.text}
                             </div>
                         )}
+
+
 
                         <button type="submit" disabled={isSending} style={{
                             marginTop: '10px', padding: '15px', borderRadius: '30px', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', transition: 'all 0.3s', border: 'none',

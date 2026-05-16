@@ -21,6 +21,7 @@
     "prisma": "5.19.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-google-recaptcha": "^3.1.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
     "three": "^0.182.0"
@@ -31,6 +32,7 @@
     "@types/nodemailer": "^8.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/react-google-recaptcha": "^2.1.9",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",

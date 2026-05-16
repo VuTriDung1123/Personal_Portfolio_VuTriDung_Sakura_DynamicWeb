@@ -8,11 +8,31 @@ export async function POST(req: Request) {
         const subject = formData.get('subject') as string;
         const message = formData.get('message') as string;
         const file = formData.get('file') as File | null;
+        
+        // [MỚI] Nhận mã CAPTCHA từ frontend
+        const recaptchaToken = formData.get('recaptchaToken') as string;
 
         if (!email || !subject || !message) {
             return NextResponse.json({ error: "Thiếu thông tin bắt buộc." }, { status: 400 });
         }
 
+        if (!recaptchaToken) {
+            return NextResponse.json({ error: "Vui lòng xác thực bạn không phải là Robot." }, { status: 400 });
+        }
+
+        // [MỚI] Gửi token cho Google kiểm tra
+        const verifyRes = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`
+        });
+        const verifyData = await verifyRes.json();
+
+        if (!verifyData.success) {
+            return NextResponse.json({ error: "Xác thực CAPTCHA thất bại. Vui lòng thử lại." }, { status: 400 });
+        }
+
+        // Vượt qua ải Google, bắt đầu gửi mail
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
             console.error("LỖI: Chưa cấu hình EMAIL_USER hoặc EMAIL_PASS trong file .env");
             return NextResponse.json({ error: "Lỗi cấu hình Server." }, { status: 500 });
@@ -26,17 +46,12 @@ export async function POST(req: Request) {
             },
         });
 
-        // TÍNH NĂNG MỚI: Check xem kết nối với Gmail có thành công không
         await transporter.verify(); 
 
         const attachments = [];
-        // Xử lý file (Bỏ qua nếu file rỗng)
         if (file && file.size > 0 && file.name !== 'undefined') {
             const buffer = Buffer.from(await file.arrayBuffer());
-            attachments.push({
-                filename: file.name,
-                content: buffer,
-            });
+            attachments.push({ filename: file.name, content: buffer });
         }
 
         // 1. GỬI EMAIL CHO BẠN
