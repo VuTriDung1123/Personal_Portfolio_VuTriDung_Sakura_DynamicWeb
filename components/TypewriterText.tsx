@@ -15,22 +15,25 @@ export default function TypewriterText({ words }: { words: string[] }) {
 
     const currentWord = words[currentWordIndex];
 
-    const timeout = setTimeout(() => {
-      if (!isDeleting) {
-        // Đang gõ
-        setCurrentText(currentWord.substring(0, currentText.length + 1));
-        if (currentText === currentWord) {
-          setTimeout(() => setIsDeleting(true), delayBetweenWords);
+    const timeout = setTimeout(
+      () => {
+        if (!isDeleting) {
+          // Đang gõ
+          setCurrentText(currentWord.substring(0, currentText.length + 1));
+          if (currentText === currentWord) {
+            setTimeout(() => setIsDeleting(true), delayBetweenWords);
+          }
+        } else {
+          // Đang xóa
+          setCurrentText(currentWord.substring(0, currentText.length - 1));
+          if (currentText === "") {
+            setIsDeleting(false);
+            setCurrentWordIndex((prev) => (prev + 1) % words.length);
+          }
         }
-      } else {
-        // Đang xóa
-        setCurrentText(currentWord.substring(0, currentText.length - 1));
-        if (currentText === "") {
-          setIsDeleting(false);
-          setCurrentWordIndex((prev) => (prev + 1) % words.length);
-        }
-      }
-    }, isDeleting ? deleteSpeed : typeSpeed);
+      },
+      isDeleting ? deleteSpeed : typeSpeed,
+    );
 
     return () => clearTimeout(timeout);
   }, [currentText, isDeleting, currentWordIndex, words]);
@@ -38,7 +41,9 @@ export default function TypewriterText({ words }: { words: string[] }) {
   return (
     <span style={{ color: "#ff69b4", fontWeight: "bold" }}>
       {currentText}
-      <span className="animate-pulse" style={{ color: "#5d4037" }}>|</span>
+      <span className="animate-pulse" style={{ color: "#5d4037" }}>
+        |
+      </span>
     </span>
   );
 }

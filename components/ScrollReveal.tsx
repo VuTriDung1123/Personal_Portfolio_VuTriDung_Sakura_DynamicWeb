@@ -9,7 +9,11 @@ interface Props {
   delay?: number;
 }
 
-export default function ScrollReveal({ children, width = "100%", delay = 0 }: Props) {
+export default function ScrollReveal({
+  children,
+  width = "100%",
+  delay = 0,
+}: Props) {
   const ref = useRef(null);
   // once: true giúp hiệu ứng chỉ chạy 1 lần khi cuộn tới, không bị giật lag
   // margin: "-50px" giúp phần tử bắt đầu hiện khi nó vào vùng nhìn thấy 50px
@@ -31,7 +35,11 @@ export default function ScrollReveal({ children, width = "100%", delay = 0 }: Pr
         }}
         initial="hidden"
         animate={mainControls}
-        transition={{ duration: 0.7, delay: delay, ease: [0.17, 0.55, 0.55, 1] }} // Ease này tạo cảm giác mượt như bơ
+        transition={{
+          duration: 0.7,
+          delay: delay,
+          ease: [0.17, 0.55, 0.55, 1],
+        }} // Ease này tạo cảm giác mượt như bơ
       >
         {children}
       </motion.div>
