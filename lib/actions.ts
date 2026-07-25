@@ -1,13 +1,13 @@
 "use server";
 
-import prisma from "./prisma"; 
+import prisma from "./prisma";
 import { revalidatePath } from "next/cache";
 
 // --- 1. ADMIN AUTH ---
 export async function checkAdmin(formData: FormData) {
   const username = formData.get("username") as string;
   const password = formData.get("password") as string;
-  const VALID_USER = "admin"; 
+  const VALID_USER = "admin";
   const VALID_PASS = "Dung2005";
   if (username?.trim() === VALID_USER && password?.trim() === VALID_PASS) {
     return { success: true };
@@ -18,34 +18,34 @@ export async function checkAdmin(formData: FormData) {
 // --- 2. BLOG MANAGER (3 LANGUAGES) ---
 export async function createPost(formData: FormData) {
   const data = {
-    titleVi: formData.get("titleVi") as string || "",
-    titleEn: formData.get("titleEn") as string || "",
-    titleJp: formData.get("titleJp") as string || "",
-    contentVi: formData.get("contentVi") as string || "",
-    contentEn: formData.get("contentEn") as string || "",
-    contentJp: formData.get("contentJp") as string || "",
-    tag: formData.get("tag") as string || "general",
+    titleVi: (formData.get("titleVi") as string) || "",
+    titleEn: (formData.get("titleEn") as string) || "",
+    titleJp: (formData.get("titleJp") as string) || "",
+    contentVi: (formData.get("contentVi") as string) || "",
+    contentEn: (formData.get("contentEn") as string) || "",
+    contentJp: (formData.get("contentJp") as string) || "",
+    tag: (formData.get("tag") as string) || "general",
     images: (formData.get("images") as string) || "[]",
   };
 
   try {
     await prisma.post.create({ data });
     revalidatePath("/");
-  } catch (error) { 
-    console.error("Create error:", error); 
+  } catch (error) {
+    console.error("Create error:", error);
   }
 }
 
 export async function updatePost(formData: FormData) {
   const id = formData.get("id") as string;
   const data = {
-    titleVi: formData.get("titleVi") as string || "",
-    titleEn: formData.get("titleEn") as string || "",
-    titleJp: formData.get("titleJp") as string || "",
-    contentVi: formData.get("contentVi") as string || "",
-    contentEn: formData.get("contentEn") as string || "",
-    contentJp: formData.get("contentJp") as string || "",
-    tag: formData.get("tag") as string || "general",
+    titleVi: (formData.get("titleVi") as string) || "",
+    titleEn: (formData.get("titleEn") as string) || "",
+    titleJp: (formData.get("titleJp") as string) || "",
+    contentVi: (formData.get("contentVi") as string) || "",
+    contentEn: (formData.get("contentEn") as string) || "",
+    contentJp: (formData.get("contentJp") as string) || "",
+    tag: (formData.get("tag") as string) || "general",
     images: (formData.get("images") as string) || "[]",
   };
 
@@ -53,32 +53,56 @@ export async function updatePost(formData: FormData) {
     await prisma.post.update({ where: { id }, data });
     revalidatePath("/");
     return { success: true };
-  } catch (error) { 
+  } catch (error) {
     console.error("Update error:", error);
-    return { success: false }; 
+    return { success: false };
   }
 }
 
 export async function deletePost(id: string) {
-    try { await prisma.post.delete({ where: { id } }); revalidatePath("/"); } catch (error) { console.error(error); }
+  try {
+    await prisma.post.delete({ where: { id } });
+    revalidatePath("/");
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 export async function getAllPosts() {
-  try { return await prisma.post.findMany({ orderBy: { createdAt: "desc" } }); } catch { return []; }
+  try {
+    return await prisma.post.findMany({ orderBy: { createdAt: "desc" } });
+  } catch {
+    return [];
+  }
 }
 
 export async function getPostsByTag(tag: string) {
-  try { return await prisma.post.findMany({ where: { tag }, orderBy: { createdAt: "desc" } }); } catch { return []; }
+  try {
+    return await prisma.post.findMany({
+      where: { tag },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getPostById(id: string) {
-  try { return await prisma.post.findUnique({ where: { id } }); } catch { return null; }
+  try {
+    return await prisma.post.findUnique({ where: { id } });
+  } catch {
+    return null;
+  }
 }
 
 // --- 3. SECTION CONTENT MANAGER ---
 export async function getSectionContent(key: string) {
-  try { return await prisma.pageSection.findUnique({ where: { sectionKey: key } }); } 
-  catch (error) { console.error(error); return null; }
+  try {
+    return await prisma.pageSection.findUnique({ where: { sectionKey: key } });
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 }
 
 export async function saveSectionContent(formData: FormData) {
@@ -95,8 +119,8 @@ export async function saveSectionContent(formData: FormData) {
     });
     revalidatePath("/");
     return { success: true };
-  } catch (error) { 
+  } catch (error) {
     console.error(error);
-    return { success: false }; 
+    return { success: false };
   }
 }

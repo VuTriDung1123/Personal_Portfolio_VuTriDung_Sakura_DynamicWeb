@@ -2,20 +2,20 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { Lang } from "@/lib/data";
-import { usePathname } from "next/navigation"; 
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 
 const NAMES = {
-    vi: "Vũ Trí Dũng",
-    en: "David Miller",
-    jp: "明菜青い"
+  vi: "Vũ Trí Dũng",
+  en: "David Miller",
+  jp: "明菜青い",
 };
 
 const TAGLINES = {
-    vi: "Lập trình viên Đam mê ✨",
-    en: "Passionate Dev ✨",
-    jp: "情熱的な開発者 ✨"
+  vi: "Lập trình viên Đam mê ✨",
+  en: "Passionate Dev ✨",
+  jp: "情熱的な開発者 ✨",
 };
 
 interface TopNavProps {
@@ -23,43 +23,71 @@ interface TopNavProps {
   t: any;
   currentLang: Lang;
   setCurrentLang: (lang: Lang) => void;
-  resumeUrl?: string; 
+  resumeUrl?: string;
 }
 
 export default function SakuraNav({ t, currentLang, resumeUrl }: TopNavProps) {
-  const pathname = usePathname(); 
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Trạng thái mở menu mobile
-  
-  const navItems = ['home', 'about', 'profile', 'certificates', 'career', 'achievements', 'skills', 'experience', 'projects', 'blog', 'gallery', 'faq', 'contact'];
-  
+
+  const navItems = [
+    "home",
+    "about",
+    "profile",
+    "certificates",
+    "career",
+    "achievements",
+    "skills",
+    "experience",
+    "projects",
+    "blog",
+    "gallery",
+    "faq",
+    "contact",
+  ];
+
   const row1 = navItems.slice(0, 7);
   const row2 = navItems.slice(7, 13);
 
   const NavLink = ({ item }: { item: string }) => {
     let label = t[`nav_${item}`] || item.toUpperCase();
-    if(item === 'certificates') label = t.nav_cert || "CERTIFICATES"; 
-    if(item === 'experience') label = t.nav_exp || "EXPERIENCE"; 
-    if(item === 'projects') label = t.nav_proj || "PROJECTS";
-    if(item === 'faq') label = "FAQ / HELP"; 
+    if (item === "certificates") label = t.nav_cert || "CERTIFICATES";
+    if (item === "experience") label = t.nav_exp || "EXPERIENCE";
+    if (item === "projects") label = t.nav_proj || "PROJECTS";
+    if (item === "faq") label = "FAQ / HELP";
 
     let href = "";
-    if (item === 'home') href = "/";
-    else if (item === 'blog') href = "/blog";
-    else if (item === 'faq') href = "/faq";
-    else href = pathname === '/' ? `#${item}` : `/#${item}`;
+    if (item === "home") href = "/";
+    else if (item === "blog") href = "/blog";
+    else if (item === "faq") href = "/faq";
+    else href = pathname === "/" ? `#${item}` : `/#${item}`;
 
-    const isActive = (pathname === href) || (item === 'faq' && pathname === '/faq');
+    const isActive =
+      pathname === href || (item === "faq" && pathname === "/faq");
 
     return (
-        <Link 
-            href={href} 
-            className="nav-link"
-            style={isActive ? {color: '#ff69b4', fontWeight: 'bold'} : {}}
-            onClick={() => setIsMobileMenuOpen(false)} // Đóng menu khi click vào link
-        >
-            {label}
-            {isActive && <div className="nav-active-line" style={{position: 'absolute', bottom: 0, left: '10%', width: '80%', height: '2px', background: '#ff69b4', borderRadius: '2px'}}></div>}
-        </Link>
+      <Link
+        href={href}
+        className="nav-link"
+        style={isActive ? { color: "#ff69b4", fontWeight: "bold" } : {}}
+        onClick={() => setIsMobileMenuOpen(false)} // Đóng menu khi click vào link
+      >
+        {label}
+        {isActive && (
+          <div
+            className="nav-active-line"
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: "10%",
+              width: "80%",
+              height: "2px",
+              background: "#ff69b4",
+              borderRadius: "2px",
+            }}
+          ></div>
+        )}
+      </Link>
     );
   };
 
@@ -67,48 +95,117 @@ export default function SakuraNav({ t, currentLang, resumeUrl }: TopNavProps) {
     <nav className="navbar">
       <div className="nav-left">
         <div className="nav-logo-img">
-           <Image src="/pictures/VuTriDung.jpg" alt="Real Avatar" className="nav-real-img" width={50} height={50} />
-           <Image src="/pictures/sakura_avatar.png" alt="Frame" className="nav-frame-img" width={50} height={50} />
+          <Image
+            src="/pictures/VuTriDung.jpg"
+            alt="Real Avatar"
+            className="nav-real-img"
+            width={50}
+            height={50}
+          />
+          <Image
+            src="/pictures/sakura_avatar.png"
+            alt="Frame"
+            className="nav-frame-img"
+            width={50}
+            height={50}
+          />
         </div>
-        
-        <div className="nav-logo-text" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginLeft: '12px' }}>
-            <span className="logo-name" style={{
-                fontFamily: currentLang === 'en' ? 'inherit' : (currentLang === 'jp' ? "'Noto Serif JP', serif" : "'Noto Serif', serif"),
-                fontSize: '1.1rem', fontWeight: 'bold', color: '#5d4037', lineHeight: '1.2', whiteSpace: 'nowrap'
-            }}>
-                {NAMES[currentLang]}
-            </span>
-            <span className="logo-tag" style={{ fontSize: '0.75rem', color: '#ff69b4', fontWeight: 'bold', marginTop: '2px' }}>
-                {TAGLINES[currentLang]}
-            </span>
+
+        <div
+          className="nav-logo-text"
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            marginLeft: "12px",
+          }}
+        >
+          <span
+            className="logo-name"
+            style={{
+              fontFamily:
+                currentLang === "en"
+                  ? "inherit"
+                  : currentLang === "jp"
+                    ? "'Noto Serif JP', serif"
+                    : "'Noto Serif', serif",
+              fontSize: "1.1rem",
+              fontWeight: "bold",
+              color: "#5d4037",
+              lineHeight: "1.2",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {NAMES[currentLang]}
+          </span>
+          <span
+            className="logo-tag"
+            style={{
+              fontSize: "0.75rem",
+              color: "#ff69b4",
+              fontWeight: "bold",
+              marginTop: "2px",
+            }}
+          >
+            {TAGLINES[currentLang]}
+          </span>
         </div>
       </div>
 
       {/* Menu PC */}
       <div className="nav-center desktop-only-flex">
-          <div className="nav-row">{row1.map(i => <NavLink key={i} item={i} />)}</div>
-          <div className="nav-row" style={{borderTop: '1px dashed rgba(255, 105, 180, 0.3)', paddingTop: '5px'}}>{row2.map(i => <NavLink key={i} item={i} />)}</div>
+        <div className="nav-row">
+          {row1.map((i) => (
+            <NavLink key={i} item={i} />
+          ))}
+        </div>
+        <div
+          className="nav-row"
+          style={{
+            borderTop: "1px dashed rgba(255, 105, 180, 0.3)",
+            paddingTop: "5px",
+          }}
+        >
+          {row2.map((i) => (
+            <NavLink key={i} item={i} />
+          ))}
+        </div>
       </div>
 
       {/* Nút bên phải & Nút mở Menu Mobile */}
-      <div className="nav-right" style={{gap: '10px'}}>
-        <a href="https://portfolio-vutridung-hackermode.vercel.app" className="btn-switch-theme" target="_blank" title="Hacker Version">
-           👾 <span className="desktop-text">HACKER VER</span>
+      <div className="nav-right" style={{ gap: "10px" }}>
+        <a
+          href="https://portfolio-vutridung-hackermode.vercel.app"
+          className="btn-switch-theme"
+          target="_blank"
+          title="Hacker Version"
+        >
+          👾 <span className="desktop-text">HACKER VER</span>
         </a>
-        <a href={resumeUrl || "#"} target="_blank" className="btn-cv" title="Download CV">
-           📄 <span className="desktop-text">CV ⇩</span>
+        <a
+          href={resumeUrl || "#"}
+          target="_blank"
+          className="btn-cv"
+          title="Download CV"
+        >
+          📄 <span className="desktop-text">CV ⇩</span>
         </a>
-        
+
         {/* Nút Hamburger chỉ hiện trên Mobile */}
-        <button className="mobile-menu-btn mobile-only" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? '✖' : '☰'}
+        <button
+          className="mobile-menu-btn mobile-only"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? "✖" : "☰"}
         </button>
       </div>
 
       {/* Menu Dropdown cho Mobile */}
       {isMobileMenuOpen && (
         <div className="mobile-dropdown-menu mobile-only">
-           {navItems.map(i => <NavLink key={i} item={i} />)}
+          {navItems.map((i) => (
+            <NavLink key={i} item={i} />
+          ))}
         </div>
       )}
     </nav>

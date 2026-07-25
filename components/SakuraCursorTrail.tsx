@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 export default function SakuraCursorTrail() {
   // Dùng useRef để lưu thời gian lần cuối tạo cánh hoa
@@ -15,11 +15,11 @@ export default function SakuraCursorTrail() {
       lastRenderTime.current = now;
 
       // 1. Tạo thẻ span mới cho cánh hoa
-      const petal = document.createElement('span');
-      petal.classList.add('cursor-trail-petal'); // Gắn class CSS đã viết ở Bước 2
+      const petal = document.createElement("span");
+      petal.classList.add("cursor-trail-petal"); // Gắn class CSS đã viết ở Bước 2
 
       // 2. Random kích thước nhẹ (từ 12px đến 22px)
-      const size = Math.random() * 10 + 12; 
+      const size = Math.random() * 10 + 12;
       petal.style.width = `${size}px`;
       petal.style.height = `${size}px`;
 
@@ -38,12 +38,12 @@ export default function SakuraCursorTrail() {
     };
 
     // Gắn sự kiện vào toàn bộ document
-    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener("mousemove", handleMouseMove);
 
     // Dọn dẹp sự kiện khi component bị hủy (để tránh lỗi)
-    return () => document.removeEventListener('mousemove', handleMouseMove);
+    return () => document.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   // Component này chỉ chạy logic ngầm, không render gì ra giao diện chính
-  return null; 
+  return null;
 }

@@ -10,7 +10,7 @@ const prismaClientSingleton = () => {
       db: {
         // Ép buộc dùng biến POSTGRES_PRISMA_URL
         // Nếu biến này chưa có trên Vercel, nó sẽ báo lỗi rõ ràng hơn
-        url: process.env.POSTGRES_PRISMA_URL, 
+        url: process.env.POSTGRES_PRISMA_URL,
       },
     },
   });

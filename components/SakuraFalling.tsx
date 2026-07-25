@@ -15,15 +15,15 @@ export default function SakuraFalling() {
 
   useEffect(() => {
     const t = setTimeout(() => {
-        setIsMounted(true);
-        const arr = Array.from({ length: 30 }, (_, i) => ({
-          id: i,
-          left: Math.random() * 100 + "%", // Vị trí ngẫu nhiên chiều ngang
-          animDuration: 5 + Math.random() * 10 + "s", // Tốc độ rơi
-          size: 10 + Math.random() * 15 + "px", // Kích thước
-          delay: Math.random() * 5 + "s", // Độ trễ xuất hiện
-        }));
-        setPetals(arr);
+      setIsMounted(true);
+      const arr = Array.from({ length: 30 }, (_, i) => ({
+        id: i,
+        left: Math.random() * 100 + "%", // Vị trí ngẫu nhiên chiều ngang
+        animDuration: 5 + Math.random() * 10 + "s", // Tốc độ rơi
+        size: 10 + Math.random() * 15 + "px", // Kích thước
+        delay: Math.random() * 5 + "s", // Độ trễ xuất hiện
+      }));
+      setPetals(arr);
     }, 0);
     return () => clearTimeout(t);
   }, []);
@@ -35,49 +35,49 @@ export default function SakuraFalling() {
       {/* 1. Định nghĩa chuyển động ngay tại đây để chắc chắn chạy */}
       <style jsx global>{`
         @keyframes sakura-fall {
-            0% {
-                /* Thay vì top: -10%, dùng transform */
-                transform: translateY(-10vh) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                /* Thay vì top: 110%, dùng transform */
-                transform: translateY(110vh) rotate(360deg);
-                opacity: 0.1;
-            }
+          0% {
+            /* Thay vì top: -10%, dùng transform */
+            transform: translateY(-10vh) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            /* Thay vì top: 110%, dùng transform */
+            transform: translateY(110vh) rotate(360deg);
+            opacity: 0.1;
+          }
         }
       `}</style>
 
       {/* 2. Container full màn hình, nằm ĐÈ LÊN TRÊN (z-index cao) nhưng không chặn chuột (pointer-events-none) */}
-      <div 
+      <div
         style={{
-          position: 'fixed',
+          position: "fixed",
           top: 0,
           left: 0,
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'none', // Cho phép click xuyên qua
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none", // Cho phép click xuyên qua
           zIndex: 9999, // Luôn nổi lên trên cùng
-          overflow: 'hidden'
+          overflow: "hidden",
         }}
       >
         {petals.map((p) => (
           <div
             key={p.id}
             style={{
-              position: 'absolute',
+              position: "absolute",
               left: p.left,
               width: p.size,
               height: p.size,
-              background: '#ffc0cb', // Màu hồng phấn
-              borderRadius: '100% 0 100% 0', // Hình dáng cánh hoa
-              boxShadow: '1px 1px 2px rgba(0,0,0,0.1)',
-              animationName: 'sakura-fall', // Gọi keyframe ở trên
-              animationTimingFunction: 'linear',
-              animationIterationCount: 'infinite',
+              background: "#ffc0cb", // Màu hồng phấn
+              borderRadius: "100% 0 100% 0", // Hình dáng cánh hoa
+              boxShadow: "1px 1px 2px rgba(0,0,0,0.1)",
+              animationName: "sakura-fall", // Gọi keyframe ở trên
+              animationTimingFunction: "linear",
+              animationIterationCount: "infinite",
               animationDuration: p.animDuration,
               animationDelay: p.delay,
-              opacity: 0.8
+              opacity: 0.8,
             }}
           />
         ))}
