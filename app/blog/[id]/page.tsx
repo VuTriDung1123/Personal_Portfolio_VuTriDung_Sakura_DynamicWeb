@@ -12,7 +12,6 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { translations, Lang } from "@/lib/data";
 import { getPostById, getSectionContent } from "@/lib/actions";
 
-// Types
 type Post = {
   id: string;
   titleVi: string;
@@ -63,19 +62,24 @@ export default function BlogPost({
     localStorage.setItem("sakura_lang", lang);
   };
 
+  // FIX: Xử lý hiển thị an toàn
   const displayTitle = post
-    ? currentLang === "vi"
-      ? post.titleVi
-      : currentLang === "jp"
-        ? post.titleJp
-        : post.titleEn
+    ? (currentLang === "vi"
+        ? post.titleVi
+        : currentLang === "jp"
+          ? post.titleJp
+          : post.titleEn) ||
+      post.titleVi ||
+      "Untitled 🌸"
     : "";
   const displayContent = post
-    ? currentLang === "vi"
-      ? post.contentVi
-      : currentLang === "jp"
-        ? post.contentJp
-        : post.contentEn
+    ? (currentLang === "vi"
+        ? post.contentVi
+        : currentLang === "jp"
+          ? post.contentJp
+          : post.contentEn) ||
+      post.contentVi ||
+      ""
     : "";
 
   const getImageList = (json: string): string[] => {
@@ -252,7 +256,6 @@ export default function BlogPost({
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    // Tùy chỉnh hiển thị các thẻ HTML cho hợp tông Sakura
                     a: ({ node, ...props }) => (
                       <a
                         {...props}

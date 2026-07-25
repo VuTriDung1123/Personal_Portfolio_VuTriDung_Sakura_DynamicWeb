@@ -65,7 +65,6 @@ const HandwritingText = ({
   );
 };
 
-// --- TYPES (Đã sửa lại khớp với Schema mới) ---
 type Post = {
   id: string;
   titleVi: string;
@@ -128,10 +127,12 @@ const EmptyState = ({ message, lang }: { message?: string; lang?: Lang }) => (
 export default function SakuraHome() {
   const [currentLang, setCurrentLang] = useState<Lang>("en");
   const [isLoading, setIsLoading] = useState(true);
+
+  // FIX 1: Cung cấp giá trị mặc định cho bài thơ ngay từ đầu để không bị lỗi SVG text rỗng
   const [loadingQuotes, setLoadingQuotes] = useState({
-    en: "",
-    vi: "",
-    jp: "",
+    en: LOADING_POEMS.en[0],
+    vi: LOADING_POEMS.vi[0],
+    jp: LOADING_POEMS.jp[0],
   });
 
   const [dbUniProjects, setDbUniProjects] = useState<Post[]>([]);
@@ -149,9 +150,7 @@ export default function SakuraHome() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [globalConfig, setGlobalConfig] = useState<any>(null);
 
-  const [projLang, setProjLang] = useState<string>("ALL");
   const [projSort, setProjSort] = useState<"newest" | "oldest">("newest");
-
   const t = translations[currentLang];
 
   useEffect(() => {
@@ -164,6 +163,11 @@ export default function SakuraHome() {
       vi: LOADING_POEMS.vi[Math.floor(Math.random() * LOADING_POEMS.vi.length)],
       jp: LOADING_POEMS.jp[Math.floor(Math.random() * LOADING_POEMS.jp.length)],
     });
+
+    // FIX 2: Thêm Failsafe - Tự động mở web sau 5 giây dù Data có bị lỗi kẹt đi chăng nữa
+    const failsafe = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000);
 
     Promise.all([
       getPostsByTag("uni_projects").then((d) =>
@@ -225,6 +229,7 @@ export default function SakuraHome() {
           } catch {}
       }),
     ]).finally(() => {
+      clearTimeout(failsafe); // Clear failsafe nếu promise xong sớm
       const hasVisited = sessionStorage.getItem("sakura_intro_played");
       if (hasVisited) {
         setIsLoading(false);
@@ -235,6 +240,7 @@ export default function SakuraHome() {
         }, 2000);
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSetLanguage = (lang: Lang) => {
@@ -253,6 +259,7 @@ export default function SakuraHome() {
           : d.contentJp) || null
     );
   };
+
   const getJson = <T,>(key: string): T | null => {
     const d = dynamicSections[key];
     if (!d) return null;
@@ -307,13 +314,16 @@ export default function SakuraHome() {
     }
   };
 
-  // --- HÀM LẤY TIÊU ĐỀ THEO NGÔN NGỮ ---
-  const getTitle = (p: Post) =>
-    currentLang === "vi"
-      ? p.titleVi
-      : currentLang === "jp"
-        ? p.titleJp
-        : p.titleEn;
+  // FIX 3: Luôn có tên thay thế nếu tên ngôn ngữ hiện tại đang bị trống
+  const getTitle = (p: Post) => {
+    const t =
+      currentLang === "vi"
+        ? p.titleVi
+        : currentLang === "jp"
+          ? p.titleJp
+          : p.titleEn;
+    return t || p.titleVi || "Untitled 🌸";
+  };
 
   const profileBoxes = getJson<SectionBox[]>("profile");
   const contactBoxes = getJson<SectionBox[]>("contact");
@@ -328,7 +338,6 @@ export default function SakuraHome() {
 
   const filterProjects = (projects: Post[]) => {
     let res = [...projects];
-    // Nếu có dùng projLang để filter (hiện tại schema gộp chung nên filter lang có thể không cần thiết nữa, nhưng giữ nguyên logic cũ)
     res.sort((a, b) => {
       const tA = new Date(a.createdAt).getTime();
       const tB = new Date(b.createdAt).getTime();
@@ -336,6 +345,7 @@ export default function SakuraHome() {
     });
     return res;
   };
+
   const scrollCarousel = (id: string, direction: number) => {
     const container = document.getElementById(id);
     if (container)
@@ -652,7 +662,6 @@ export default function SakuraHome() {
                   <h2 className="section-title">
                     <span>✿ {t.sec_cert} ✿</span>
                   </h2>
-
                   <h3
                     style={{
                       fontSize: "1.5rem",
@@ -715,13 +724,7 @@ export default function SakuraHome() {
                     ) : (
                       <EmptyState
                         lang={currentLang}
-                        message={
-                          currentLang === "vi"
-                            ? "Chưa có chứng chỉ 🍃"
-                            : currentLang === "jp"
-                              ? "証明書が見つかりません 🍃"
-                              : "No certificates found 🍃"
-                        }
+                        message="Chưa có chứng chỉ 🍃"
                       />
                     )}
                   </div>
@@ -787,13 +790,7 @@ export default function SakuraHome() {
                     ) : (
                       <EmptyState
                         lang={currentLang}
-                        message={
-                          currentLang === "vi"
-                            ? "Chưa có chứng chỉ 🍃"
-                            : currentLang === "jp"
-                              ? "証明書が見つかりません 🍃"
-                              : "No certificates found 🍃"
-                        }
+                        message="Chưa có chứng chỉ 🍃"
                       />
                     )}
                   </div>
@@ -865,13 +862,7 @@ export default function SakuraHome() {
                     ) : (
                       <EmptyState
                         lang={currentLang}
-                        message={
-                          currentLang === "vi"
-                            ? "Chưa có chứng chỉ 🍃"
-                            : currentLang === "jp"
-                              ? "証明書が見つかりません 🍃"
-                              : "No certificates found 🍃"
-                        }
+                        message="Chưa có chứng chỉ 🍃"
                       />
                     )}
                   </div>
@@ -1191,7 +1182,6 @@ export default function SakuraHome() {
                   <h2 className="section-title">
                     <span>✿ {t.sec_proj} ✿</span>
                   </h2>
-
                   <div
                     className="glass-box"
                     style={{
@@ -1202,12 +1192,11 @@ export default function SakuraHome() {
                       display: "flex",
                       flexWrap: "wrap",
                       gap: "20px",
-                      justifyContent: "space-between",
+                      justifyContent: "flex-end",
                       alignItems: "center",
                       boxShadow: "0 4px 15px rgba(255, 105, 180, 0.15)",
                     }}
                   >
-                    {/* Có thể thêm bộ lọc ở đây nếu cần */}
                     <button
                       onClick={() =>
                         setProjSort((prev) =>
@@ -1365,18 +1354,7 @@ export default function SakuraHome() {
                             ))}
                           </div>
                         ) : (
-                          <div
-                            style={{
-                              textAlign: "center",
-                              padding: "30px",
-                              background: "rgba(255,255,255,0.5)",
-                              borderRadius: "20px",
-                              border: "2px dashed #ffc1e3",
-                              color: "#8d6e63",
-                            }}
-                          >
-                            🍃 Không có dữ liệu
-                          </div>
+                          <EmptyState lang={currentLang} />
                         )}
                       </div>
                     );
@@ -1508,8 +1486,6 @@ export default function SakuraHome() {
                       ✿
                     </span>
                   </h2>
-
-                  {/* IT Events */}
                   <h3
                     style={{
                       fontSize: "1.2rem",
@@ -1571,7 +1547,6 @@ export default function SakuraHome() {
                     <EmptyState lang={currentLang} />
                   )}
 
-                  {/* Other Events */}
                   <h3
                     style={{
                       fontSize: "1.2rem",

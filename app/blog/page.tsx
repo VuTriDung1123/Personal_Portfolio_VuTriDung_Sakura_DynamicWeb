@@ -9,7 +9,6 @@ import SakuraNav from "@/components/SakuraNav";
 import { translations, Lang } from "@/lib/data";
 import { getAllPosts, getSectionContent } from "@/lib/actions";
 
-// --- TYPES ---
 type Post = {
   id: string;
   titleVi: string;
@@ -23,7 +22,6 @@ type Post = {
   contentJp?: string;
 };
 
-// Danh sách Tag (Label để tiếng Anh làm gốc, ta sẽ dịch hiển thị bên dưới)
 const ALL_TAGS = [
   { value: "ALL", label: "All Stories" },
   { value: "my_confessions", label: "Confessions" },
@@ -36,21 +34,18 @@ const ALL_TAGS = [
 ];
 
 export default function BlogPage() {
-  // --- STATE ---
   const [currentLang, setCurrentLang] = useState<Lang>("en");
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [globalConfig, setGlobalConfig] = useState<any>(null);
 
-  // State bộ lọc
   const [search, setSearch] = useState("");
   const [selectedTag, setSelectedTag] = useState("ALL");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
   const t = translations[currentLang];
 
-  // --- INITIAL LOAD ---
   useEffect(() => {
     const savedLang = localStorage.getItem("sakura_lang") as Lang;
     if (
@@ -80,14 +75,12 @@ export default function BlogPage() {
     localStorage.setItem("sakura_lang", lang);
   };
 
-  // --- HELPER: FONT CHỮ THEO NGÔN NGỮ ---
   const getFontFamily = (lang: string) => {
     if (lang === "vi") return "'Noto Serif', serif";
     if (lang === "jp") return "'Noto Serif JP', serif";
     return "'Noto Sans', sans-serif";
   };
 
-  // --- HELPER: DỊCH THUẬT LABEL ---
   const getTrans = (key: string) => {
     if (currentLang === "vi") {
       if (key === "search_ph") return "🔍 Tìm kiếm bài viết...";
@@ -108,7 +101,6 @@ export default function BlogPage() {
       if (key === "loading") return "読み込み中...";
       if (key === "read_more") return "続きを読む →";
     }
-    // Default English
     if (key === "search_ph") return "🔍 Search posts...";
     if (key === "sort_new") return "⌚ Newest First";
     if (key === "sort_old") return "⌛ Oldest First";
@@ -119,7 +111,17 @@ export default function BlogPage() {
     return key;
   };
 
-  // --- LOGIC LỌC ---
+  // FIX: Lấy tên an toàn cho danh sách bài viết
+  const getTitle = (p: Post) => {
+    const title =
+      currentLang === "vi"
+        ? p.titleVi
+        : currentLang === "jp"
+          ? p.titleJp
+          : p.titleEn;
+    return title || p.titleVi || "Untitled 🌸";
+  };
+
   const filteredPosts = useMemo(() => {
     let result = [...posts];
     if (search.trim()) {
@@ -179,7 +181,6 @@ export default function BlogPage() {
           paddingRight: "20px",
         }}
       >
-        {/* Header */}
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
           <h1
             className="section-title"
@@ -206,7 +207,6 @@ export default function BlogPage() {
           </p>
         </div>
 
-        {/* --- BỘ CÔNG CỤ LỌC --- */}
         <div
           className="glass-box"
           style={{
@@ -219,7 +219,6 @@ export default function BlogPage() {
             gap: "20px",
           }}
         >
-          {/* Dòng 1: Search & Sort */}
           <div
             style={{
               display: "flex",
@@ -229,7 +228,6 @@ export default function BlogPage() {
               alignItems: "center",
             }}
           >
-            {/* Search Input */}
             <div style={{ flex: 1, minWidth: "250px", position: "relative" }}>
               <input
                 type="text"
@@ -250,7 +248,6 @@ export default function BlogPage() {
               />
             </div>
 
-            {/* Sort Toggle */}
             <button
               onClick={() =>
                 setSortOrder((prev) =>
@@ -282,7 +279,6 @@ export default function BlogPage() {
             </button>
           </div>
 
-          {/* Dòng 2: Tags Filter */}
           <div
             style={{
               display: "flex",
@@ -320,7 +316,6 @@ export default function BlogPage() {
           </div>
         </div>
 
-        {/* --- DANH SÁCH BÀI VIẾT --- */}
         {isLoading ? (
           <div
             style={{
@@ -352,12 +347,6 @@ export default function BlogPage() {
           >
             {filteredPosts.length > 0 ? (
               filteredPosts.map((post) => {
-                const displayTitle =
-                  currentLang === "vi"
-                    ? post.titleVi
-                    : currentLang === "jp"
-                      ? post.titleJp
-                      : post.titleEn;
                 return (
                   <Link
                     key={post.id}
@@ -377,7 +366,6 @@ export default function BlogPage() {
                         border: "1px solid white",
                       }}
                     >
-                      {/* Ảnh Thumbnail */}
                       <div
                         style={{
                           height: "200px",
@@ -388,7 +376,8 @@ export default function BlogPage() {
                       >
                         <img
                           src={getCover(post.images)}
-                          alt={displayTitle}
+                          alt={getTitle(post)}
+                          loading="lazy"
                           style={{
                             width: "100%",
                             height: "100%",
@@ -404,7 +393,6 @@ export default function BlogPage() {
                         />
                       </div>
 
-                      {/* Nội dung tóm tắt */}
                       <div
                         style={{
                           padding: "25px",
@@ -435,7 +423,7 @@ export default function BlogPage() {
                             fontWeight: "bold",
                           }}
                         >
-                          {displayTitle}
+                          {getTitle(post)}
                         </h3>
                         <div
                           style={{
